@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ps_test_input.schema.json",
+  "$comment": "Document ID: PS-V2-TESTSCHEMA | Version: 1.2.0 | Status: Workshop-Validated | Owner: Workshop (isolated) | Last Updated: 2026-07-13 | Changes in 1.2.0: added inferred_element_decisions (per-element removal checkbox) | Changes in 1.1.0: added excepted_inference_elements",
+  "title": "Pitch Synthase Workshop Test Input",
+  "version": "1.2.0",
+  "description": "Fill this out completely for a new test pitch. Every field maps 1:1 to a real job field or worker parameter -- no interpretation needed on the runner's end.",
+  "type": "object",
+  "required": ["test_name", "audience", "elevator_pitch", "conveys", "target_stage"],
+  "additionalProperties": false,
+  "properties": {
+    "test_name": {
+      "type": "string",
+      "description": "Short label for this test run, for bookkeeping only (job manifest / test registry). Not sent to any model."
+    },
+    "audience": {
+      "type": "string",
+      "description": "Who the pitch is for. Free text, e.g. 'early-stage hardware/consumer-AI seed investors and crowdfunding backers'."
+    },
+    "elevator_pitch": {
+      "type": "string",
+      "description": "The real invention, in problem/solution form. This is the one field the approach drafter and every downstream stage treats as ground truth for the mechanism -- do not summarize or soften it, paste the real content."
+    },
+    "conveys": {
+      "type": "string",
+      "description": "What the pitch should land as / what impression it must produce. Replaces the old free-text 'vibes' field. E.g. 'that this is a real, already-working architecture with concrete unit economics, not a concept pitch'."
+    },
+    "doc_text": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Raw supporting document text (full outline, spec, whitepaper excerpt, etc.), if any. Pasted verbatim, not summarized -- this becomes ground truth for the source-accuracy verifier once the pipeline reaches finalization."
+    },
+    "supporting_image_path": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Path to a reference image (e.g. a UI mockup), if any. IMPORTANT: only consumed starting at the paid Anchor Writer stage onward -- approach drafting and single-slide preview are text-only by design and will NOT see this image. If image content needs to inform an earlier stage, fold a written description into doc_text instead."
+    },
+    "archetype_id": {
+      "type": ["string", "null"],
+      "default": null,
+      "enum": [
+        "arch_odysseus", "arch_caesar", "arch_davinci", "arch_athena", "arch_newton",
+        "arch_cicero", "arch_copernicus", "arch_gutenberg", "arch_alexander", "arch_michelangelo",
+        null
+      ],
+      "description": "Fix one archetype from the current 10-entry catalog, or null to let the approach drafter auto-pick the best fit."
+    },
+    "target_stage": {
+      "type": "string",
+      "enum": ["approaches", "single_slide_previews", "full_deck", "finalized"],
+      "default": "approaches",
+      "description": "How far to run in one pass. 'approaches' = 4 strategic approaches, text only (cheapest, always start here). 'single_slide_previews' = adds one image per approach. 'full_deck' = requires approach_id below; generates the complete numbered-slide + hero deck. 'finalized' = runs the parallel verification pipeline on top of an existing full_deck run."
+    },
+    "approach_id": {
+      "type": ["string", "null"],
+      "default": null,
+      "enum": ["approach_1", "approach_2", "approach_3", "approach_4", null],
+      "description": "Required when target_stage is 'full_deck' or 'finalized' -- which of the 4 drafted approaches to carry forward. Null is only valid when target_stage is 'approaches' or 'single_slide_previews' (no approach has been picked yet)."
+    },
+    "slide_count": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 24,
+      "default": 16,
+      "description": "Only relevant when target_stage is 'full_deck'. Real limit is API throughput, not slide count -- see MAX_SELF_SERVE_SLIDE_COUNT in prompts.py."
+    },
+    "universal_refinement_instruction": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Only relevant when target_stage is 'finalized'. One deck-wide instruction adapted per-slide by the finalization stage, on top of the always-on silent quality bar."
+    },
+    "excepted_inference_elements": {
+      "type": "array",
+      "default": [],
+      "items": {"type": "string", "enum": ["pricing"]},
+      "description": "Starting set: [\"pricing\"], extend as more exception categories are added. Selecting an element authorizes the model to INFER it from latent training knowledge when the source material doesn't state it, instead of leaving that element structurally absent. This is NOT a blanket exemption from fact-checking: the inferred value is decided exactly once per deck (authorized_inferences, alongside visual_grammar) and every slide touching it must stay internally consistent with that one decided value -- inconsistency is still an actionable finding. Likewise, direct user edits made during refinement become canon deck-wide and must still be matched consistently, not merely left unchecked."
+    },
+    "inferred_element_decisions": {
+      "type": "object",
+      "default": {},
+      "additionalProperties": {"type": "boolean"},
+      "propertyNames": {"enum": ["pricing"]},
+      "description": "Only relevant when the same key is also present in excepted_inference_elements. Presented as a per-element checkbox right before the refinement stage. Unchecked/absent (default, false): keep the inferred content, auto-relabel 'inferred' wording to 'proposed' wording, values unchanged -- no user edits required. Checked (true): the element's decided value is withheld from verification for that slide and the user's own refinement edit (reviewed_slides) becomes the only thing that can settle it. The job is hard-blocked before finalization runs if a checked element has any affected slide with zero edits specified in reviewed_slides -- must uncheck or supply an edit. If an edit is supplied but the verifier still can't reconcile it (e.g. it doesn't actually address the element), that one slide is silently dropped from the concatenated deliverables (PDF/PPTX/HTML/MD) with the reason recorded in verification_report.json; the raw proof image stays in the archive untouched."
+    }
+  }
+}

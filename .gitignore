@@ -1,0 +1,15 @@
+# Generated job state/artifacts (db, per-job image/export output) -- large,
+# regenerable, not source. Test-run reports and dumps under local_state/ are
+# also generated output, not hand-authored.
+local_state/
+jobs/
+
+# Generated test-output bundle
+pitch_synthase_5_targets_test_outputs.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor/OS cruft
+.DS_Store

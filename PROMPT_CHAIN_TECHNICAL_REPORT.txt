@@ -1,0 +1,430 @@
+================================================================================
+PITCH SYNTHASE v2 -- PROMPT CHAIN TECHNICAL METHOD REPORT
+================================================================================
+Document ID   : PS-V2-PROMPTCHAIN
+Version       : 1.0.0
+Status        : Workshop-Validated -- Not Merged to Production
+Owner         : Workshop (isolated)
+Last Updated  : 2026-07-13
+Scope         : exactly how each model call in the pipeline is constructed,
+                what it receives, what it returns, and how the founder
+                archetype catalog steers it. Not a UI/data-model doc -- see
+                PITCH_SYNTHASE_V2_SPEC.md (PS-V2-SPEC) for that. This is the
+                mechanism only.
+Path          : /home/director/pitch_synthase_archetype_workshop
+
+Change history:
+  1.0.0  Initial version -- prompt chain call inventory, archetype catalog,
+         visual-grammar splice mechanism, measured timing.
+
+
+--------------------------------------------------------------------------------
+0. CALL INVENTORY
+--------------------------------------------------------------------------------
+
+    stage                    model         calls text/image   produces
+    -----------------------  ------------  ------------------ --------------------------------
+    pitch_quality_gate       gpt-5.4       1 text              {is_real_pitch, reason, missing_elements}
+    pitch_elaborator         gpt-5.4       1 text              {is_nonsense, elevator_pitch, invented_elements, conveys_suggestion}
+    approach_drafter         gpt-5.4       1 text              {archetype, approaches[4]}
+    approach_regenerate      gpt-5.4       1 text              {approaches[k]}  (k = flagged ids)
+    single_slide_drafter     gpt-5.4       1 text per approach {image_prompt}
+    single_slide_image       gpt-image-2   1 image per approach one slide PNG
+    anchor_writer            gpt-5.4       1 text              {user_inputs, deck_generation_prompt}
+    deck_builder             gpt-5.4       1 text              {visual_grammar, storyboard[N]}
+    per-slide render         gpt-image-2   N images (parallel) N slide PNGs
+    hero render               gpt-image-2   1 image             1 hero PNG
+    finalize_refiner         gpt-5.4       1 text              {slide_prompts[N]} (source-checked)
+    per-slide extraction     gpt-image-2   N images (parallel) N final PNGs
+    hero extraction          gpt-image-2   1 image             1 final hero PNG
+
+    All text-model calls in this workshop are forced to the full "gpt-5.4"
+    identifier, NOT whatever "-mini" variant the shared production env may
+    configure -- see section 6.
+
+    Image calls are rate-limited process-wide to 5 per rolling 60-second
+    window (_throttle_image_generation in workers.py) and batched in bounded
+    concurrency groups of 4 (_chunked_gather). A 16-slide + hero deck (17
+    image calls total) completes in ~8 minutes wall-clock, measured directly
+    from telemetry on a real run -- see section 7.
+
+
+--------------------------------------------------------------------------------
+1. PITCH INTAKE -> QUALITY GATE -> ELABORATOR
+--------------------------------------------------------------------------------
+
+INPUT (from the job record):
+    audience            free text
+    elevator_pitch       free text, problem/solution form
+    conveys              free text, what the pitch should land as
+    doc_text             optional, raw supporting document text
+    selected_archetype_id  optional, fixes the archetype up front
+
+pitch_quality_gate_prompt(elevator_pitch, doc_text) -> text call ->
+    { "is_real_pitch": bool, "reason": str, "missing_elements": [str] }
+
+    Cheap, no state mutation beyond telemetry. Caller decides whether to
+    block progress or offer the elaborator button based on is_real_pitch.
+
+pitch_elaborator_prompt(rough_input) -> text call ->
+    { "is_nonsense": bool, "elevator_pitch": str, "invented_elements": [str],
+      "conveys_suggestion": str, "reason_for_placeholder": str }
+
+    Framed as "reconstruct the pitch that ultimately ended up succeeding" --
+    NOT "invent something plausible." If rough_input is genuine nonsense,
+    the placeholder pitch it writes is self-aware and about the meta-failure
+    itself, not a generic unrelated joke. Return value is NEVER written to
+    job.elevator_pitch automatically -- caller shows it, user explicitly saves.
+
+
+--------------------------------------------------------------------------------
+2. APPROACH DRAFTING ("TEMPLATE GENERATION")
+--------------------------------------------------------------------------------
+
+approach_drafter_prompt(audience, elevator_pitch, conveys, selected_archetype,
+                        doc_text) -> ONE text call, text-only, no images.
+
+    If selected_archetype is given: prompt states
+        "The founder archetype is fixed by the user. Use exactly this
+         archetype for all four approaches -- do not substitute or
+         re-derive it:" <archetype JSON echoed verbatim>
+
+    If selected_archetype is None: prompt lists the full 10-entry catalog as
+        "- <label>, <role> [<archetype_id>]: <win_condition>"
+    for every archetype, and instructs the model to pick the single best-fit
+    one for THIS pitch and state which one it picked. All four approaches
+    then share that one chosen archetype -- only strategic angle and visual
+    direction vary between them.
+
+    Required divergence across the 4 approaches (explicit in the prompt):
+        - which claim leads
+        - evidence posture
+        - rhetorical temperature
+        - visual doctrine (artifact tradition, typography, material language,
+          composition)
+    Explicit constraint: approaches may differ in EMPHASIS and FRAMING only,
+    never in the underlying facts of the elevator pitch. No approach may
+    invent business proof (traction, customers, revenue, approvals) beyond
+    what elevator_pitch/doc_text actually state.
+
+    OUTPUT CONTRACT:
+    {
+      "archetype": {"archetype_id", "label", "role", "posture", "win_condition"},
+      "approaches": [
+        {
+          "approach_id": "approach_1..4",
+          "label": "",                 // 2-3 words, unique, not a paraphrase of the archetype
+          "pitch_angle": "",           // which claim leads, why it wins for this audience
+          "key_differentiator": "",    // what distinguishes it from the other 3
+          "visual_direction": ""       // artifact tradition/typography/material/composition,
+                                       // detailed enough for a later call to write one hero
+                                       // image prompt from it alone
+        }, ...
+      ]
+    }
+
+    VALIDATION (_validate_approach_manifest, code-enforced, not just prompted):
+        - exactly 4 approaches
+        - approach_id values exactly approach_1..approach_4, in that order
+        - all labels unique (casefolded) WITHIN this one batch
+        - pitch_angle / key_differentiator / visual_direction all non-empty
+    Gap: uniqueness is enforced only within a single call's 4 approaches, not
+    across a regeneration or across separate runs. Observed in practice:
+    identical labels ("Deterministic Chain", "Behavioral Truth", "Proof
+    Cascade") recurring across independent archetype runs on the same pitch.
+
+approach_regenerate_prompt(..., keep_approaches, regenerate_ids) -> text call
+    Same constraints, but only returns replacements for the flagged
+    approach_id(s); the kept approaches are given as context so the new
+    one(s) don't collide with them on label, claim order, or visual doctrine.
+
+
+--------------------------------------------------------------------------------
+3. SINGLE-SLIDE PREVIEW (first visual output)
+--------------------------------------------------------------------------------
+
+single_slide_drafter_prompt(audience, elevator_pitch, approach, archetype,
+                            doc_text) -> text call ->
+    { "image_prompt": str }
+
+    Grounded in the REAL elevator pitch and the ONE approved approach (not a
+    placeholder) -- this grounding is deliberate, the whole point of the
+    stage. May state the real mechanism/claims; may NOT fabricate business
+    proof beyond what's stated. Output directs "a photograph of one real
+    conference-room slide on screen, presenter offscreen" -- a mid-
+    presentation artifact, not a cover slide.
+
+single_slide_image_prompt(slide_draft) -> wraps the above image_prompt with
+    binding constraints, then ONE gpt-image-2 call -> one PNG.
+
+    NOTE: neither call in this stage accepts an image parameter. A supporting
+    reference image (e.g. a UI mockup) uploaded at intake is NOT consumed
+    here even if present -- it's saved to job intake/ for the later paid
+    stage. Observed directly: when a mockup's contents were folded into
+    doc_text as a text description instead, 3 of 4 independent single-slide
+    calls reconstructed the real screenshot's hardware specs exactly; the
+    4th independently hallucinated different ones. Same input, different
+    calls, different fidelity -- this is the general mechanism-fidelity
+    finding, not something specific to images.
+
+
+--------------------------------------------------------------------------------
+4. FULL PAID DECK GENERATION
+--------------------------------------------------------------------------------
+
+Phase A -- anchor_writer_prompt(mode="PAID", user_inputs, selected_template,
+           paid_slide_count_value, supporting_document, supporting_image)
+           -> ONE text call ->
+    { "user_inputs": {...}, "deck_generation_prompt": str }
+
+    This is the ONLY fiction layer in the whole pipeline. It writes a
+    "successful pitch" narrative frame -- deliberate, load-bearing for deck
+    coherence. It must NOT write slide copy, a storyboard, per-slide
+    prompts, or a transcript; those are the next call's job. Slide count is
+    validated here as a side effect (paid_slide_count, 4-24) but is
+    deliberately not embedded in this prompt's fictional framing -- the one
+    place it's stated explicitly is the artifact-request block the next
+    call appends.
+
+Phase B -- paid_deck_builder_prompt(deck_generation_prompt, user_inputs,
+           selected_template, slide_count) -> ONE text call ->
+    {
+      "visual_grammar": {
+        "background": "", "foreground": "", "accent": "",
+        "typography": "", "diagram_style": "", "panel_style": "",
+        "grid_system": "", "line_weight": ""
+      },
+      "storyboard": [
+        {"slide_number": 1, "title": "", "purpose": "", "style_tags": [""],
+         "image_prompt": ""}, ... (exactly `slide_count` entries, sequential)
+      ]
+    }
+
+    visual_grammar is chosen ONCE per deck. It is NOT re-typed by the model
+    into every slide's image_prompt (that was the OLD, broken mechanism --
+    see section 5). Validated in code: exact slide count, slide_number
+    values exactly [1..N] in order, every image_prompt non-empty.
+
+Phase C -- rendering. For each storyboard entry:
+    paid_slide_image_prompt(image_prompt, visual_grammar) splices the SAME
+    visual_grammar object (via format_visual_grammar_block) into every
+    slide's prompt in CODE, not by asking the model to remember/repeat it.
+    Then ONE gpt-image-2 call per slide, via the Responses API
+    image_generation tool. Hero slide uses hero_slide_image_prompt with the
+    same spliced grammar. All N+1 calls run concurrently (bounded to 4 at a
+    time), each individually rate-limited. One retry per slide on failure;
+    job only fails outright if >2 slides fail after retry.
+
+    On a real 16-slide + hero run: 19 model calls total (1 anchor + 1
+    storyboard + 17 images), zero failures, zero retries needed, ~8 minutes
+    wall-clock. See section 7 for the full per-call timing table.
+
+
+--------------------------------------------------------------------------------
+5. VISUAL GRAMMAR: THE PROSE-VS-STRUCTURED FIX
+--------------------------------------------------------------------------------
+
+    OLD ("style contract"):
+        One "storyboard" key. Each image_prompt independently asked to
+        restate a shared "visual-grammar paragraph" identically across all N
+        calls. Nothing enforces that N independent model calls actually
+        repeat themselves byte-for-byte -- consistency is emergent, not
+        guaranteed.
+
+    NEW (structured splice):
+        Two top-level keys: visual_grammar (chosen once) + storyboard.
+        format_visual_grammar_block() renders the object into a fixed text
+        block ONE TIME; that identical block is spliced into every slide's
+        prompt by code before the image call. The model never re-types it.
+
+    Fields (background, foreground, accent, typography, diagram_style,
+    panel_style, grid_system, line_weight) are deliberately NOT locked to
+    hex codes -- values can describe a gradient, texture, or imagery -- but
+    every field must be filled with something specific enough to repeat.
+
+    VALIDATED: a same-pitch, same-archetype, 4-slide A/B test ran both
+    mechanisms side by side (THGM/Firebringer, "Ground as Antenna"). Neither
+    broke visibly that run -- the old mechanism happened to stay consistent
+    (one dual-hue amber/red scheme applied uniformly). But that was
+    emergent: nothing in the old prompt fixes accent count or polarity, so a
+    looser input could still reproduce the color-inversion bug that
+    motivated this fix. The new mechanism's consistency is structural --
+    identical spliced bytes, every slide, by construction, not by luck.
+
+
+--------------------------------------------------------------------------------
+6. FINALIZATION REFINER -- NOW SOURCE-CHECKED, NOT JUST SPELL-CHECKED
+--------------------------------------------------------------------------------
+
+    finalize_refiner_prompt(slide_specs, reviewed_slides, universal_instructions,
+                            elevator_pitch, doc_text) -> ONE text+image call,
+    fed all N proof screenshots at once -> one JSON blob with N prompts:
+    {
+      "job_type": "final_powerpoint_slide_prompt_batch",
+      "slide_prompts": [
+        { "slide_index": 1, "content_inventory": {...},
+          "artifacts_to_remove": [...], "uncertainties": [...],
+          "source_corrections": [...],      <- NEW
+          "unverifiable_claims": [...],     <- NEW
+          "image_model_prompt": "" }, ...
+      ]
+    }
+
+    UNTIL THIS CHANGE: this call never received elevator_pitch or doc_text at
+    all -- only slide_specs (title/purpose, no real source text) and the
+    proof images themselves. It could apply the standing quality bar
+    ("immaculate spelling, precise professional typography, production-grade
+    polish") but had no ground truth to check AGAINST. It could tell
+    something looked like a typo, but had no way to know the correct form --
+    e.g. it could flag "Kokoro-itte" as suspicious-looking, but nothing told
+    it the source says "Kokoro-lite."
+
+    NOW: elevator_pitch and doc_text are threaded through as a reference-only
+    "source material" block, with an explicit new rule (23): cross-check
+    every proper noun, product name, technical term, number, and specific
+    claim visible on each slide against it. Where the source disambiguates
+    the correct form, correct the slide to match it exactly -- this takes
+    priority over the older "preserve nearest readable version" rule for
+    anything the source actually settles. If a slide states something that
+    doesn't appear in or follow from the source at all, it's surfaced in
+    unverifiable_claims rather than silently deleted -- removal is a bigger
+    intervention than correction, left for a human reviewer to confirm.
+
+    Two separate correction registers, kept distinct on purpose:
+        source_corrections   -> things fixed because the source settled them
+        unverifiable_claims  -> things left alone because the source is silent
+                                 on them (flagged for review, not auto-removed)
+
+    The always-on quality bar (rule 22) and the universal-instruction
+    adaptation rule (21) are unchanged and still apply on top of this.
+
+    Hero slide finalization (finalize_hero_slide_image_prompt) is a fixed,
+    non-LLM-planned prompt (no per-slide refiner call needed since the hero's
+    role never varies) and does NOT currently receive source material --
+    lower risk given a hero slide typically carries far less specific
+    factual text than a numbered content slide, but this is an asymmetry,
+    not a deliberate design decision, and is worth revisiting if hero slides
+    start carrying more specific claims.
+
+
+--------------------------------------------------------------------------------
+7. MEASURED TIMING (real run, 16 slides + hero, PetNavi/Copernicus/Proof Stack)
+--------------------------------------------------------------------------------
+
+    stage                 duration    notes
+    --------------------  ----------  --------------------------------------
+    anchor_writer            51.0 s
+    storyboard (16 slides)   24.3 s
+    hero render              44.4 s
+    slide renders (x16)   51-162 s    one outlier at 162s, single attempt,
+                                      no retry -- just slow, not a failure
+    --------------------------------------------------------------------
+    TOTAL WALL-CLOCK       ~8 minutes  (19 model calls: 2 text + 17 image)
+    SUM OF INDIVIDUAL
+    CALL DURATIONS        ~21 minutes  (concurrency + rate-limit overlap
+                                       compresses this to the ~8 min above)
+
+    Zero failures, zero retries across all 17 image calls in this run.
+    Confirms slide count scaling is sub-linear in wall-clock time, not
+    linear -- consistent with the architecture: every slide is its own
+    independent per-slide call regardless of N, throttled by a shared
+    process-wide rate limiter (5 calls / rolling 60s), not by slide count
+    itself. The old MAX_SELF_SERVE_SLIDE_COUNT=10 cap was written under the
+    (incorrect) assumption that rendering was a single n=10 image call; it
+    has been raised to 24 in this workshop -- see prompts.py.
+
+
+--------------------------------------------------------------------------------
+8. FOUNDER ARCHETYPE CATALOG
+--------------------------------------------------------------------------------
+
+    prompts.EXPERIMENT_FOUNDER_ARCHETYPES -- 10 fixed entries, each:
+        { archetype_id, label, role, posture, win_condition }
+
+    Exactly ONE archetype governs an entire 4-approach batch. It is either
+    pinned by the user before approach_drafter_worker runs, or the drafter
+    picks the single best fit from this list and echoes its choice back in
+    the response. The archetype shapes: which claim leads, evidence posture,
+    rhetorical register, and visual doctrine -- NOT the underlying facts,
+    which stay fixed to the real elevator pitch regardless of archetype.
+
+    archetype_id        label          role                      win_condition (mechanism)
+    -------------------  -------------  ------------------------  --------------------------------------------------
+    arch_odysseus        Odysseus       The Tactical Gap-Finder   Finds the blind spot/back door incumbents are too
+                                                                   rigid to see; wins via cunning, non-linear routing.
+    arch_caesar           Caesar         The Scale Architect       Operational dominance: superior execution + rapid
+                                                                   organized expansion outproduces less disciplined
+                                                                   competitors.
+    arch_davinci          Da Vinci       The Paradigm Shifter      Combines two unrelated fields into a category that
+                                                                   didn't exist yesterday.
+    arch_athena           Athena         The Strategic Rationalist Structural superiority: calculated risk, rigorous
+                                                                   logic, a fortress-like moat outlasts speed/charisma.
+    arch_newton           Newton         The Efficiency Optimizer  Takes an existing process and makes it an order of
+                                                                   magnitude faster/cheaper via provable understanding
+                                                                   of its governing laws.
+    arch_cicero           Cicero         The Market Evangelist     Captures the market's mindshare; builds a movement
+                                                                   that makes the product feel inevitable.
+    arch_copernicus       Copernicus     The Contrarian Pivot      Proves the industry's core assumption is wrong;
+                                                                   relocates the value proposition around the inversion.
+    arch_gutenberg        Gutenberg      The Democratizer          Takes a high-value service reserved for the few and
+                                                                   makes it radically accessible via a tech lever.
+    arch_alexander        Alexander      The Aggressive Captor     Sheer velocity/aggression achieves market dominance
+                                                                   before competitors or incumbents can react.
+    arch_michelangelo     Michelangelo   The Product Perfectionist The product is so qualitatively superior that users
+                                                                   switch on the strength of the product alone.
+
+    Replaces an earlier 8-entry catalog (Firebringer, Trickster, Architect,
+    Commander, Oracle, Alchemist, Healer, Steward) -- retired after
+    validation showed this set produces more distinct rhetorical
+    fingerprints per archetype on the same input pitch.
+
+    OBSERVED DIFFERENTIATION (10-archetype run against one real pitch,
+    guiclid): strongest where a pitch facet has an obvious archetype-
+    specific angle -- Alexander alone produced explicit conquest framing
+    ("push the old filesystem to the margins"); Gutenberg alone produced an
+    approach framed around who gets empowered rather than the mechanism.
+    Weakest where a facet has no obvious single-archetype reading (a strong,
+    generic "this is rigorous and fast" claim pulled multiple archetypes
+    toward near-identical labels: "Deterministic Interface" x2, "Proof
+    Cascade" x3, "Instant Legibility"/"Instant Comprehension"/"Instant
+    Orientation" collectively x5 across the ten). The archetype's voice
+    shows up reliably in visual_direction and framing register even when
+    the approach LABEL converges -- e.g. Copernicus's "Proof Cascade" reads
+    adversarial/pass-fail; Newton's reads bench-test-precise; Gutenberg's
+    reads plain and legible -- same label, different register underneath.
+
+
+--------------------------------------------------------------------------------
+9. MODEL CONFIGURATION (workshop-forced, not the shared production env)
+--------------------------------------------------------------------------------
+
+    ANCHOR_MODEL           = "gpt-5.4"   (hardcoded, ignores env override)
+    TEMPLATE_DRAFTER_MODEL = "gpt-5.4"   (hardcoded, ignores env override)
+    DECK_DRAFTER_MODEL     = "gpt-5.4"   (hardcoded, ignores env override)
+    IMAGE_MODEL             = "gpt-image-2"  (env-overridable, unchanged)
+
+    The shared intelluric-site.env pins PITCH_SYNTHASE_ANCHOR_MODEL and
+    PITCH_SYNTHASE_DECK_DRAFTER_MODEL to "-mini" variants. Smaller-context
+    models carry a higher hallucination/incoherence risk across longer
+    source material (a multi-page supporting doc, or a 16+ slide storyboard
+    plan) -- exactly the kind of material this workshop is now testing
+    against (the PetNavi run above used the full 16-slide real outline as
+    doc_text). The workshop constants above are hardcoded specifically so a
+    change to the shared env can't silently downgrade workshop test
+    fidelity; the shared env file itself was not touched.
+
+
+--------------------------------------------------------------------------------
+10. NOTED FOR LATER (not implemented -- explicitly deprioritized as a luxury)
+--------------------------------------------------------------------------------
+
+    Per-slide A/B variants: run each full-deck slide's image_generation call
+    (not the refiner) as n=2 with different seeds, so the user can pick
+    between two independently generated candidates per slide instead of
+    getting exactly one. Mechanically trivial to add (image_request_params
+    already takes an n parameter) -- deprioritized because it roughly doubles
+    image spend per deck for a quality-of-life win, not a correctness fix.
+    Revisit once the correctness-affecting items in the main spec's section
+    11 (open items) are closed out.
+
+================================================================================
