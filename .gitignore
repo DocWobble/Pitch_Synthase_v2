@@ -10,6 +10,7 @@ pitch_synthase_5_targets_test_outputs.zip
 # Python
 __pycache__/
 *.pyc
+.venv/
 
 # Editor/OS cruft
 .DS_Store
