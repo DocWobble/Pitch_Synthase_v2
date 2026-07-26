@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | Document ID | PS-V2-SPEC |
-| Version | 2.2.0 |
+| Version | 2.5.0 |
 | Status | Workshop-Validated — Not Merged to Production |
 | Owner | Workshop (isolated) |
 | Workshop path | `/home/director/pitch_synthase_archetype_workshop` |
-| Last Updated | 2026-07-14 |
+| Last Updated | 2026-07-24 |
 
 ### Change history
 
@@ -18,8 +18,11 @@
 | 2.0.0 | Full rewrite to plain Markdown — export-oriented docs use Markdown/monospace, not designed HTML (rev. 3) |
 | 2.1.0 | Parallel verification pipeline replaces the single-batch finalization refiner; slide-count ceiling corrected 4–24; image rate limit corrected to 20/min; ambiguity-gate / evidence-standard / confidence-gate mechanisms documented; testing harness section added (rev. 4) |
 | 2.2.0 | Selective non-canon exceptions (`excepted_inference_elements` / `authorized_inferences` / `canon_overrides`) and the per-element inferred-content removal checkbox (`inferred_element_decisions`) documented; pre-finalization hard-block gate added; judge `corrective_constraints` normalized to always be a string after a live JSON-array regression was caught and fixed (rev. 5) |
+| 2.3.0 | Added `mockup_prototype_design` as an authorized inference element alongside pricing; validated on the SAWC Outcome Factory 10-slide generation (rev. 6) |
+| 2.4.0 | Added six tri-state Pitch Aspect controls (`OMIT` / `INFER` / `SOURCE`, default `INFER`); narrowed pricing inference to invented offer pricing and related unit economics (rev. 7) |
+| 2.5.0 | Reconciled the specification with the current input contract and worker implementation: independent raw-source transport, authoritative supporting-image handoff, N+1 title ownership, completed-image-only generation, Pitch Aspect policy propagation through refinement, current runtime versions, and explicit evidence boundaries (rev. 8) |
 
-> This spec documents the isolated workshop prototype only. Nothing described here has been merged into the real backend at `intelluric/tools/instant/pitch-deck/backend/` — that code has been read for reference and copied, never edited. Every mechanism below has been run against real model calls at least once; results are cited inline where they came from a specific test. If a mechanism is later re-validated further, it becomes a *proposal* for new production canon, not a silent replacement of it.
+> This spec documents the isolated workshop prototype only. Nothing described here has been merged into the real backend at `intelluric/tools/instant/pitch-deck/backend/` — that code has been read for reference and copied, never edited. Evidence is stated mechanism by mechanism: some behavior is code-enforced, some prompt-enforced, some live-validated, and the newest six-aspect refinement propagation is contract-validated without a fresh complete finalized-deck run. The exact current prompt composition and worker call graph are documented in `PROMPT_CHAIN_TECHNICAL_REPORT.txt`.
 
 ## Contents
 
@@ -52,7 +55,7 @@ Prototype v2 replaces the template-first funnel with a **full-pitch-first** desi
 | 05 | Approach regeneration | Optional — regenerate only the flagged approach(es), holding the rest fixed. |
 | 06 | Single-slide preview | One text + one image call per approach the user wants to see rendered. |
 | 07 | Preview checkout | Paywall gate before full deck spend (production concept; not built as a gate in the workshop). |
-| 08 | Full deck generation | Anchor Writer → Deck Builder storyboard (with one shared visual grammar) → per-slide + hero image renders. |
+| 08 | Full deck generation | Anchor Writer → Deck Builder storyboard (one title slide + requested content slides, with one shared visual grammar) → per-slide image renders. |
 | 09 | Finalization | Parallel per-slide verification pipeline: 3 independent verifiers → judge → conditional regeneration, universal + per-slide instructions, silent quality bar always applied. |
 | 10 | Export | Zip containing per-slide PNGs, PDF, PPTX, standalone HTML, and Markdown. |
 
@@ -95,8 +98,8 @@ Merges the roles of the old Anchor Writer and Template Drafter into one path per
 Claims status `paid` → `generating_plan`. Three sub-phases:
 
 1. **Anchor Writer** (`anchor_writer_prompt`, mode `PAID`) writes the fictional "successful pitch" narrative frame that everything downstream reads from — the sole fiction layer; it never writes slide copy, a storyboard, or per-slide prompts directly.
-2. **Deck Builder storyboard** (`paid_deck_builder_prompt`) — one text call that plans all *N* slides and returns two top-level keys: `visual_grammar` (one structured object, chosen once) and `storyboard` (per-slide title/purpose/style_tags/image_prompt). Validated for exact slide count and sequential `slide_number`s before proceeding.
-3. **Rendering** — status moves to `rendering_slides`; the hero slide and every numbered slide render concurrently (bounded to 4 at a time via `_chunked_gather`), each slide's `image_prompt` passed through `paid_slide_image_prompt` with the shared `visual_grammar` spliced in by code. A slide gets one retry on failure; the job only fails outright if more than 2 slides fail after retry.
+2. **Deck Builder storyboard** (`paid_deck_builder_prompt`) — one text call that plans the complete deck and returns two top-level keys: `visual_grammar` (one structured object, chosen once) and `storyboard` (per-slide title/purpose/style_tags/image_prompt). The worker translates the requested *N* content slides into an *N+1* storyboard count. Slide 1 is contractually the one and only title/hero cover; slides 2 through *N+1* carry the argument. The result is validated for exact count and sequential `slide_number`s before proceeding.
+3. **Rendering** — status moves to `rendering_slides`; every storyboard slide renders through the same numbered-slide path (bounded to 4 at a time via `_chunked_gather`), with each `image_prompt` passed through `paid_slide_image_prompt` and the shared `visual_grammar` spliced in by code. No separate bonus-hero call exists. A slide gets one retry on failure; the job only fails outright if more than 2 slides fail after retry.
 
 ### Finalization — `verification_worker` (current mechanism, rev. 4)
 
@@ -269,7 +272,11 @@ Page numbers are an explicit exception to "preserve legitimate content on the sl
 
 ### Selective non-canon exceptions (`excepted_inference_elements` / `authorized_inferences` / `canon_overrides`)
 
-A job-level field, `excepted_inference_elements` (starting set: `["pricing"]`), lets the user authorize the model to *infer* a specific element from latent training knowledge when the source material is silent on it, rather than leaving the deck structurally incomplete. This is **not** a blanket exemption from fact-checking: the deck builder decides the inferred value exactly once per deck (`authorized_inferences`, a structured value sibling to `visual_grammar`, spliced verbatim into every slide that touches it), and every slide referencing it must stay internally consistent with that one decided value — inconsistency is still an actionable finding. Direct user edits made during refinement (`reviewed_slides`, aggregated deck-wide as `canon_overrides`) work the same way in reverse: they become canon and every slide touching the same fact must match them, not just the one edited slide. Neither mechanism relaxes spelling, diagram, or internal-consistency checks — they only change *which* value counts as ground truth for that one element.
+`pitch_aspect_modes` controls six content domains independently: customer/stakeholder/value; market/ecosystem/competition; commercialization/pricing/financials; proof/validation/defensibility; productization/execution/team/risk; and transaction/ask/use of proceeds. Each is `OMIT`, `INFER`, or `SOURCE`, defaulting to `INFER`. `OMIT` excludes that domain even when the source mentions it. `SOURCE` allows only user-provided material for that domain. `INFER` allows source-backed plus plausible reconstructed detail, with source precedence. The Deck Builder receives one grouped worker briefing containing only non-empty `SOURCE` and `INFER` clauses and an always-present `OMIT` clause; the latter always includes `generic fluff`, `pointless repetition`, and `typographical errors`.
+
+The same normalized mode map crosses the refinement seam. The source verifier receives the complete ordered storyboard as deck-wide comparison context. For `INFER`, source-backed values win whenever the source speaks; otherwise the earliest storyboard occurrence of a reconstructed concrete detail becomes canon and later uses must match it. For `SOURCE`, unsupported direct claims/examples/values are actionable and must be replaced from source or removed. For `OMIT`, any direct example, claim, number, named instance, diagram, or other substantive content from that aspect is actionable and must be removed. The disposition judge receives the identical policy, and conditional regeneration receives the normal worker briefing through `_deck_drafter_input`.
+
+The separate job-level field `excepted_inference_elements` (supported set: `["pricing", "mockup_prototype_design"]`) remains a narrower permission inside those modes. The `pricing` element controls only whether an explicit amount the pitch company charges for its own offer may be reconstructed; checked, it authorizes one proposed price/tier/package/licensing-fee and related unit-economics structure. Pitch Aspect modes are senior: a commercialization/financial aspect marked `SOURCE` or `OMIT` cannot be reopened by the pricing exception. `mockup_prototype_design` authorizes one proposed visual and interaction system; it does not authorize unsupported product, customer, pricing, commercial, or business-proof claims. These are **not** blanket exemptions from fact-checking: the deck builder decides each inferred value exactly once per deck (`authorized_inferences`, a structured value sibling to `visual_grammar`, spliced verbatim into every slide that touches it), and every slide referencing it must stay internally consistent with that one decided value.
 
 ### Per-element inferred-content removal checkbox (`inferred_element_decisions`)
 
@@ -297,12 +304,12 @@ Once every slide is finalized, four formats are built from the same composited s
 
 | Dependency | Version | Used for |
 |---|---|---|
-| `openai` | 2.43.0 | Responses API — all text and image generation calls |
+| `openai` | 2.46.0 | Responses API — all text and image generation calls |
 | `gpt-5.4` | model | Anchor Writer, Deck Builder, Template/Approach Drafter text calls |
-| `gpt-image-2` | model | All slide and hero image rendering |
+| `gpt-image-2` | model | All current numbered-slide image rendering; legacy paths still contain hero helpers |
 | `reportlab` | 5.0.0 | PDF export |
-| `python-pptx` | 1.0.2 | PPTX export |
-| `pillow` | 12.2.0 | Image compositing ahead of PDF export |
+| `python-pptx` | declared, not installed in the current workshop venv | PPTX export; installing the package is ordinary environment wiring, not an open architecture problem |
+| `pillow` | 12.3.0 | Image compositing ahead of PDF export |
 | `sqlite3` | stdlib | Job store (`db.py`) — single-file WAL-mode database |
 | `python-docx` | ad hoc | Used once outside the app to extract text from an uploaded `.docx` test fixture; not a standing runtime dependency of `workers.py` |
 
@@ -324,7 +331,7 @@ Every model call runs through an OpenAI API key loaded read-only from `intelluri
 
 - **Archetype differentiation is real but uneven.** Running all ten archetypes against one pitch produced genuinely distinct fingerprints where a facet has an obvious archetype-specific angle (Alexander's conquest framing, Gutenberg's "who gets empowered" angle). On facets with no obvious archetype-specific angle, multiple archetypes converge toward similar labels and framing — observed both at small scale (2 archetypes) and at full 10-archetype scale on a single pitch.
 
-- **Slide-count ceiling was never a technical limit — fixed.** Raised from 10 to 24. A real 16-slide + hero deck rendered with zero failures and zero retries in ~8 minutes wall-clock (19 model calls total), confirming sub-linear scaling: every slide is its own independent per-slide call regardless of *N*, throttled by a shared rate limiter, not by slide count.
+- **Slide-count ceiling was never a technical limit — fixed.** Raised from 10 to 24 requested content slides. The Deck Builder receives *N+1* total slides because it owns the single title slide. Every slide is its own independent per-slide call, throttled by a shared rate limiter rather than by slide count.
 
 - **Batch refiner JSON fragility — fixed by architecture change, not a patch.** The single-batch finalization mechanism's one-big-JSON-blob failure mode (a parse error zeroing out the whole deck's extraction prompts) is structurally eliminated by the parallel verification pipeline (§08) — many small independent calls instead of one large one, each independently retriable.
 
@@ -344,15 +351,13 @@ Every model call runs through an OpenAI API key loaded read-only from `intelluri
 
 - **Full regeneration doesn't guarantee pixel-level continuity.** Even with the anchor-context fix and verbatim-prompt splice, a fresh text-to-image regeneration is not an I2I edit — it can still shift exact composition details (panel arrangement, spacing) that an I2I patch would have held fixed, in exchange for speed and avoiding I2I's own fidelity loss on edits. Observed directly: a regenerated slide preserved theme, content, and visual grammar correctly but reorganized which UI panels appeared where, relative to its own proof. Accepted trade-off, not a bug, but worth knowing before assuming regenerated slides are visually identical to their proofs.
 
-- **Hero slide has no source-accuracy check.** The hero's fixed prompt template carries less specific factual text than a numbered content slide, so the risk is lower, but this is an asymmetry in the current pipeline, not a deliberate design decision.
-
 - **Open business decisions, not engineering tasks.** Where the paywall sits relative to the four-approach / single-slide-preview stages, and whether a "reroll" loop is offered at all, are monetization and product decisions this workshop surfaces but does not resolve.
 
 ---
 
 ## 12. Testing harness
 
-`ps_test_input.schema.json` (workshop root) — a JSON Schema mirroring every real intake field 1:1 (`audience`, `elevator_pitch`, `conveys`, `doc_text`, `archetype_id` with the live 10-value enum, `slide_count` bounded 4–24, plus a `target_stage` selector: `approaches` / `single_slide_previews` / `full_deck` / `finalized`). A filled instance can be handed off directly and run without re-deriving intent from looser notes. Companion usage notes and a worked example: `PS_TEST_INPUT_USAGE.md`.
+`ps_test_input.schema.json` (workshop root) is the current machine-readable intake contract: `audience`, `elevator_pitch`, `conveys`, `doc_text`, supporting image, the live 10-value archetype enum, `slide_count` bounded 4–24, six Pitch Aspect modes, narrow inference controls, and `target_stage` (`approaches` / `single_slide_previews` / `full_deck` / `finalized`). A filled instance preserves the user's intent without re-deriving it from looser notes. The generic `run_ps_test_input.py` harness currently dispatches `approaches`; the other stages use dedicated workshop scripts. Extending that switch is routine harness wiring, not a pipeline design gap. Companion usage notes and a worked example: `PS_TEST_INPUT_USAGE.md`.
 
 ---
-*Pitch Synthase — Prototype v2 · isolated workshop · rev. 4*
+*Pitch Synthase — Prototype v2 · isolated workshop · rev. 8*

@@ -85,14 +85,24 @@ def _raw_user_inputs_full_pitch(job: dict) -> dict:
 
 
 def _selected_template_payload_for_approach(job: dict) -> dict:
-    """Build the template payload from approach_candidates_json + selected_archetype_id."""
+    """Build the template payload from approach_candidates_json.
+
+    Uses the approach's own effective_archetype_id (set by the two-archetype
+    blend system) if present; falls back to the job-level selected_archetype_id
+    for jobs drafted before the blend system was introduced.
+    """
     approach_id = job.get("selected_candidate_id") or ""
     approach = next(
         (a for a in (job.get("approach_candidates_json") or [])
          if a.get("approach_id") == approach_id),
         None,
     )
-    archetype_id = job.get("selected_archetype_id") or ""
+    # Prefer the per-approach effective archetype (blend-system), fall back to job-level.
+    archetype_id = (
+        (approach or {}).get("effective_archetype_id")
+        or job.get("selected_archetype_id")
+        or ""
+    )
     archetype = _prompts.experiment_archetype_by_id(archetype_id) or {}
     return {
         "candidate_id": approach_id,
@@ -218,7 +228,7 @@ async def create_job(request: Request):
     pitch_aspect_modes = body.get("pitch_aspect_modes") or {
         cat: "INFER" for cat in _prompts.PITCH_ASPECT_CATEGORIES
     }
-    excepted = body.get("excepted_inference_elements") or ["pricing", "mockup_prototype_design"]
+    excepted = body.get("excepted_inference_elements") or ["pricing"]
     job_id, recovery = _db.create_job(
         problem_need="",
         audience=body.get("audience", ""),
@@ -320,6 +330,7 @@ def run_step(job_id: str, step: str):
     """
     steps:
       approaches      → approach_drafter_worker (resets to created)
+      designs         → design_drafter_worker (4 reference images, one per approach)
       previews        → single_slide_preview_worker ×4 (all approaches, parallel)
       paid            → generation_worker via full-pitch-first bridge
       verification    → verification_worker
@@ -327,6 +338,11 @@ def run_step(job_id: str, step: str):
     if step == "approaches":
         _db.update_job(job_id, status="created", approach_candidates_json=None, error_message=None)
         _run_async_in_thread(_workers.approach_drafter_worker, job_id)
+    elif step == "designs":
+        job = _db.get_job(job_id)
+        if not job or not job.get("approach_candidates_json"):
+            return JSONResponse({"error": "no approaches drafted yet"}, status_code=409)
+        _run_async_in_thread(_workers.design_drafter_worker, job_id)
     elif step == "previews":
         job = _db.get_job(job_id)
         approaches = job.get("approach_candidates_json") or [] if job else []

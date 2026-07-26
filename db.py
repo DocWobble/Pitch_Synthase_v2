@@ -15,7 +15,7 @@ _JSON_FIELDS = {
     "slide_specs", "expected_text_map", "quality_results", "reviewed_slides",
     "convert_keep_candidate_ids", "telemetry_context_json",
     "approach_candidates_json", "excepted_inference_elements",
-    "inferred_element_decisions",
+    "inferred_element_decisions", "pitch_aspect_modes",
 }
 
 
@@ -115,6 +115,9 @@ def init_db():
             "universal_refinement_instruction": "TEXT",
             "excepted_inference_elements": "TEXT",
             "inferred_element_decisions": "TEXT",
+            "pitch_aspect_modes": "TEXT",
+            "secondary_archetype_id": "TEXT",
+            "secondary_archetype_label": "TEXT",
         }.items():
             if name not in columns:
                 conn.execute(f"ALTER TABLE jobs ADD COLUMN {name} {sql_type}")
