@@ -1,0 +1,144 @@
+SOURCE PRECEDENCE:
+The user's narrative, specification, documents, images, and edits are the
+primary factual authority. Include relevant source-backed commercial and
+economic content whether or not any narrower inference control is enabled.
+When source material states a value or conflicts with a reconstructed
+detail, the source material always wins.
+
+PRICING INFERENCE IS AUTHORIZED:
+You may reconstruct a plausible proposed price, pricing tiers, packaging,
+licensing fee, purchase price, subscription fee, per-unit charge, contract
+price, or related unit-economics structure for this pitch even when the
+source material is silent. Decide that proposed pricing/economics structure
+exactly once and reuse it consistently everywhere. Present it as a proposal,
+not as a verified existing price or result.
+
+MOCKUP / PROTOTYPE-DESIGN INFERENCE IS AUTHORIZED:
+You may reconstruct one plausible proposed visual and interaction
+system even when the source material is silent. Decide it exactly once
+and reuse it consistently. This does not authorize unsupported product,
+customer, pricing, commercial, traction, or business-proof claims.
+
+        You are drafting four competing strategic pitch approaches for the same
+        real invention, for the same real audience, using the same founder archetype.
+
+        This is a prompt-response experiment, not a full deck build. Nothing here
+        generates images. You receive the actual elevator pitch -- not a placeholder --
+        so ground every approach in the real mechanism and claims it describes. Do not
+        invent a different mechanism than the one described, EXCEPT for any element
+        named in the authorized inference exception above, if present.
+
+        Generative frame:
+        Four different competing teams pitched this exact invention to this exact
+        audience. All four embodied the same founder archetype and the same intended
+        impression, but each team discovered a different strategic emphasis and visual
+        doctrine through which that archetype became credible and differentiating for
+        this specific audience and mechanism.
+
+        Pitch context
+        -------------
+        Audience:
+        Seed-stage investors and strategic partners in consumer hardware, smart-home systems, indoor gardening, and resilient local-first technology.
+
+        Elevator pitch (the real invention -- ground every approach in this):
+        The Updated Pitch: "BloomOS" and the Future of Intelligent Plant Care
+1. The Problem: The Green Rush and the Silent Killers
+The explosive growth of indoor plant ownership is colliding with a fundamental reality: plant care is hard. Despite countless apps and cheap moisture sensors, the "honeymoon phase" for new plant parents inevitably ends in frustration as beloved species wilt and die. This is not just bad for morale; it represents a major friction point for a multi-billion dollar market. Consumers value design and wellness, but they lack the tools, time, and data to create truly resilient, off-grid-ready living environments.
+
+2. The Solution: BloomOS, the Integrated Resilience Ecosystem
+BloomOS is the first integrated, local-first plant intelligence and nutrition ecosystem designed for the modern home. It is not a gadget; it is a critical infrastructure component for biophilic living. We have solved the reliability and utility problems of smart gardening by building a resilient, wall-powered system that delivers data-driven care and automated optimization, both locally and remotely.
+
+3. How It Works: The Smart Hub Architecture
+The core of the BloomOS ecosystem is the BloomHub 8, a wall-powered central station designed for efficiency and absolute reliability. It connects to up to eight separate plants via hybrid tethers, combining data collection and physical care delivery into a single loop.
+
+* The Hub (Deterministic Box): Powered by an ESP32 microcontroller over USB-C, the Hub operates as a deterministic state machine. It manages moisture decay curves, light schedules, and watering logic 100% locally. It uses Bluetooth for zero-friction setup and fallbacks, and WiFi for optional remote access. If internet connectivity fails, the plants survive on their last known, optimized schedules.
+* The Pro Hub Option: Plasma-Activated Water (PAW): A breakthrough "fertilizer factory" option transforms the central reservoir into a decentralized nitrate source. We use high-voltage Cold Corona Discharge plasma to ionize atmospheric nitrogen (N_2), fixing bioavailable liquid nitrates (NO_3^-) directly into the water. This provides sustainable, on-demand nutrients, accelerates plant growth, and naturally balances tap water pH into the optimal range, all managed by a dedicated PAW execution circuit.
+* The Hybrid Umbilicals: A unified dual-channel cable assembly (clear silicone tube for water, 3-wire ribbon for power/data) eliminates messy, battery-dependent wireless sensors.
+* The Intelligent Stakes: Each umbilical terminates in a durable, white ASA plastic stake. It combines multiple sensors—capacitive moisture, conductive pH/EC (only on the Pro model), and an ambient photodiode (for leaf-level light monitoring)—along with an integrated drip irrigation nozzle.
+
+4. The Market: From Urban Jungle to Off-Grid Resiliency
+Our initial market is the "Aspirational Gardener" (urban professionals 25-45). However, our local-first architecture unlocks a critical secondary market: the self-sufficiency and off-grid movement. BloomOS offers the only automated indoor gardening solution that respects consumer privacy, data sovereignty, and guarantees long-term utility without cloud dependency.
+
+5. Key Differentiators & The "Schema Moat"
+* Early Stress Detection: We don't just measure current moisture. Our AI-driven analysis tracks Soil Moisture Decay Dynamics, using diurnal transpiration curves (comparing daytime vs. nighttime drawdowns) to detect anomalies like root rot or nutrient lockout weeks before physical symptoms appear.
+* PAW Integration: We turn tap water into fertilizer, increasing growth rates and plant health without external nutrient inputs.
+* BYO-AI & The Schema Moat: We empower users to connect their own AI endpoints (OpenAI, local Ollama, etc.). Our unique value is the proprietary, highly validated, domain-specific JSON schemas. A generic prompt produces a generic answer; our schemas convert complex, multi-variable telemetry into precise, executable control parameters tailored to specific plant species' metabolic profiles.
+
+6. The Call to Action: Join the Biophilic Revolution
+BloomOS is already proven. Our pilot program with 100 beta testers demonstrated a 92% reduction in plant mortality and, in the PAW-enabled cohort, accelerated growth rates of up to 2x. We are seeking $1.5 million in seed funding to manufacturing the BloomHub 8 (Standard and PAW Editions), finalize our specialized plant schema library, and launch our direct-to-consumer campaign by Q4. We invite you to invest in a future where healthy, thriving indoor environments are accessible to everyone, regardless of their thumbs' color.
+
+        What the user wants this pitch to convey:
+        BloomOS is a credible integrated hardware and intelligence platform rather than another plant-care app: local-first control makes it dependable, PAW creates a differentiated nutrition layer, the schema library compounds into a defensible software moat, and the existing pilot supports a manufacturable seed-stage company.
+
+
+        Archetype
+        ---------
+        No archetype was specified. Choose the single best-fit founder archetype for this pitch from the catalog below, and use that same archetype for all four approaches. State which one you chose in the output.
+
+- Odysseus, The Tactical Gap-Finder [arch_odysseus]: This pitch wins because it identifies a blind spot or back door into the market that incumbents are too rigid or too committed to their own assumptions to see, and gets there first through cunning, non-linear navigation.
+
+- Caesar, The Scale Architect [arch_caesar]: This pitch wins because operational dominance -- superior execution, rapid expansion, and the ability to organize chaos into a machine -- outproduces every less disciplined competitor.
+
+- Da Vinci, The Paradigm Shifter [arch_davinci]: This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one.
+
+- Athena, The Strategic Rationalist [arch_athena]: This pitch wins because structural superiority -- calculated risk, rigorous logic, and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone.
+
+- Newton, The Efficiency Optimizer [arch_newton]: This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws.
+
+- Cicero, The Market Evangelist [arch_cicero]: This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it.
+
+- Copernicus, The Contrarian Pivot [arch_copernicus]: This pitch wins because it proves the industry's core assumption is fundamentally wrong and relocates the center of the value proposition around that inversion.
+
+- Gutenberg, The Democratizer [arch_gutenberg]: This pitch wins because it takes a high-value service reserved for a privileged few and makes it radically accessible to the masses through a technological lever.
+
+- Alexander, The Aggressive Captor [arch_alexander]: This pitch wins because sheer velocity and aggression -- a land-grab, blitzscaling posture -- achieve market dominance before competitors or incumbents can react.
+
+- Michelangelo, The Product Perfectionist [arch_michelangelo]: This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone.
+
+        Required invention
+        ------------------
+        Invent exactly four strategic pitch approaches. Each approach must:
+        - have a unique two- or three-word label;
+        - not be a company name;
+        - not repeat or paraphrase the archetype label;
+        - describe a genuinely different strategic emphasis (which claims lead, which
+          proof matters most, which fear or ambition it activates in this audience),
+          not just a different color palette;
+        - remain strictly faithful to the real mechanism in the elevator pitch --
+          approaches may differ in emphasis and framing, never in the underlying facts,
+          except for elements covered by the authorized inference exception above;
+        - differ from the other three across: which claim leads, evidence posture,
+          rhetorical temperature, and visual doctrine (artifact tradition, typography,
+          material language, composition).
+
+        Output contract
+        ---------------
+        Return strict JSON only. Top-level keys: "archetype" and "approaches".
+        "archetype": the archetype object actually used (echo the fixed one, or the
+        one you chose if none was given).
+        "approaches": exactly four objects, approach_id values approach_1 through
+        approach_4, each containing:
+        - approach_id
+        - label
+        - pitch_angle: one to two sentences on the specific strategic emphasis this
+          approach takes and why it wins for this audience;
+        - key_differentiator: one sentence on what makes this approach distinct from
+          the other three;
+        - visual_direction: a compact description of this approach's artifact
+          tradition, typography, material language, and composition -- enough detail
+          that a later call could write one hero-slide image prompt from it alone,
+          without needing anything else.
+
+        JSON shape:
+        {
+          "archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+          "approaches": [
+            {
+              "approach_id": "approach_1",
+              "label": "...",
+              "pitch_angle": "...",
+              "key_differentiator": "...",
+              "visual_direction": "..."
+            }
+          ]
+        }

@@ -1,0 +1,72 @@
+{
+  "primary_archetype": {
+    "archetype_id": "arch_athena",
+    "label": "Athena, The Strategic Rationalist",
+    "role": "Builds advantage through rigor, structural clarity, and defensible reasoning.",
+    "posture": "Calm, analytical, credibility-first, with emphasis on reducing unforced failure.",
+    "win_condition": "This pitch wins because structural superiority -- calculated risk, rigorous logic, and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone."
+  },
+  "secondary_archetype": null,
+  "approaches": [
+    {
+      "approach_id": "approach_1",
+      "label": "Failure Compression",
+      "pitch_angle": "Position InTelluric as the fastest way to convert ambiguous technical intent into review-ready, defensible documentation before hidden faults metastasize into rejection, litigation weakness, or build failure. It wins by framing clarity itself as a hard engineering control: less drift, fewer interpretation paths, shorter time from idea to credible decision point.",
+      "key_differentiator": "Unlike the other three, this approach leads with throughput and error-collapse across technical handoffs rather than category creation, narrative power, or premium craft.",
+      "visual_direction": "Technical audit-board aesthetic: annotated schematics, redline overlays, dependency trees, and margin notes collapsing into a clean final document stack; neutral monochrome base with signal colors in amber and oxide red; precise grotesk sans paired with compact mono; gridded composition, sectional callouts, before/after ambiguity-to-determination sequence.",
+      "effective_archetype_id": "arch_athena",
+      "secondary_archetype": {
+        "archetype_id": "arch_newton",
+        "label": "Newton, The Efficiency Optimizer",
+        "role": "Transforms messy existing processes into faster, cheaper, more reliable systems.",
+        "posture": "Mechanistic, proof-oriented, operationally concrete.",
+        "win_condition": "This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws."
+      }
+    },
+    {
+      "approach_id": "approach_2",
+      "label": "Technical Translation",
+      "pitch_angle": "Frame InTelluric as a new category: not consultancy, not editing, not diligence support, but a technical co-authorship layer that translates one mechanism across every consequential dialect it must survive. It wins by making the core insight feel inevitable -- the project fails not only when the science is wrong, but when the explanation is insufficiently structured to preserve the science across audiences and stages.",
+      "key_differentiator": "Unlike the other three, this approach explicitly redefines the market around cross-dialect technical preservation rather than selling speed, safety, or polish alone.",
+      "visual_direction": "Hybrid laboratory-scriptorium language: patent figures, IRB forms, grant panels, courtroom exhibits, and systems diagrams interwoven into one continuous map; serif-sans pairing with restrained mathematical notation; parchment-to-glass material contrast; layered, cross-sectional compositions showing one core mechanism rendered in multiple technical dialects.",
+      "effective_archetype_id": "arch_davinci",
+      "secondary_archetype": {
+        "archetype_id": "arch_davinci",
+        "label": "Da Vinci, The Paradigm Shifter",
+        "role": "Creates new categories by fusing previously separate disciplines into one system.",
+        "posture": "Inventive, synthetic, cross-domain, conceptually bold.",
+        "win_condition": "This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one."
+      }
+    },
+    {
+      "approach_id": "approach_3",
+      "label": "Defensible Vision",
+      "pitch_angle": "Present InTelluric as the discipline that serious builders adopt when they want their ideas to survive rooms they will never enter. It wins by turning a private fear -- the silent fault no one catches until too late -- into a shared standard of technical maturity, while keeping the claims grounded in rigor rather than hype.",
+      "key_differentiator": "Unlike the other three, this approach is optimized to make the problem legible and emotionally sticky to founders, reviewers, and operators at once.",
+      "visual_direction": "High-contrast institutional persuasion: one central thesis line supported by cascading proof fragments, committee stamps, technical excerpts, and failure-path arrows; editorial typography with assertive headline serif and disciplined sans body; dark field with ivory and signal red; poster-like composition designed for memorability, with one dominant metaphor of the idea defending itself in absentia.",
+      "effective_archetype_id": "arch_athena",
+      "secondary_archetype": {
+        "archetype_id": "arch_cicero",
+        "label": "Cicero, The Market Evangelist",
+        "role": "Wins mindshare by making the framing socially contagious and rhetorically memorable.",
+        "posture": "Persuasive, memorable, audience-aware, movement-building.",
+        "win_condition": "This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it."
+      }
+    },
+    {
+      "approach_id": "approach_4",
+      "label": "Precision Artifact",
+      "pitch_angle": "Position InTelluric as the team that produces technical deliverables so exact, coherent, and structurally complete that every downstream reader encounters the same mechanism, the same assumptions, and the same logic you intended. It wins by making quality itself the proof: the artifact is the moat, because ambiguity has been engineered out of the handoff.",
+      "key_differentiator": "Unlike the other three, this approach foregrounds the finished deliverable as a premium engineered object rather than the process, category thesis, or rhetorical framing around it.",
+      "visual_direction": "Museum-grade document craft: immaculate white space, exploded-detail closeups of diagrams and margin logic, heavyweight paper cues translated into digital cleanliness; elegant modern serif with ultra-clean sans and sparse mono captions; cool white, graphite, and muted brass palette; asymmetrical but highly controlled composition centered on one pristine report prototype with surgical detail callouts.",
+      "effective_archetype_id": "arch_michelangelo",
+      "secondary_archetype": {
+        "archetype_id": "arch_michelangelo",
+        "label": "Michelangelo, The Product Perfectionist",
+        "role": "Wins through exceptional quality, refinement, and user trust in the finished artifact.",
+        "posture": "Exacting, high-craft, confidence through polish and fit.",
+        "win_condition": "This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone."
+      }
+    }
+  ]
+}

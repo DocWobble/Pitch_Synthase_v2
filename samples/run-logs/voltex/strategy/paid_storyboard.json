@@ -1,0 +1,90 @@
+{
+  "visual_grammar": {
+    "background": "full-bleed hypercolor backdrop built from a deep electric-blue to violet radial gradient with blown-out white flash bloom zones, subtle disposable-camera film grain, faint halftone speckle, and occasional neon-yellow sticker shapes tucked into corners; never clean corporate white, always high-energy and flash-burned",
+    "foreground": "bright white primary text and keyline treatment with occasional reversed-out black text inside loud sticker bursts; all content must read like toy packaging and captured evidence, not consulting slides",
+    "accent": "screaming neon yellow starburst/sticker treatment used consistently for proof callouts, price bursts, and short emphatic labels",
+    "typography": "heavy condensed 90s toy-ad sans for headlines in all caps, extra-bold italic sans for short burst phrases, straightforward bold grotesk sans for body copy, narrow monospaced microtype only for tiny caution-style annotations",
+    "diagram_style": "simple high-contrast exploded schematics and mechanism arrows with solid white outlines, translucent purple and blue fills, glow edges around energy paths, hand-applied proof stamps, and blunt directional labels rather than technical elegance",
+    "panel_style": "cropped photo and info panels as taped-on or stickered evidence blocks with hard flash edges, white or electric-blue borders, slight rotation offsets, and occasional black shadow knockouts; no soft corporate cards",
+    "grid_system": "12-column grid with large outer margins, oversized top-left headline zone, dominant central hero image area, and lower-third band for punchy support copy or callouts; asymmetrical but disciplined packaging-style composition",
+    "line_weight": "thick 3-5 px keylines and dividers, chunky arrows, bold stamp outlines, no delicate hairlines"
+  },
+  "authorized_inferences": {
+    "pricing": "Proposed launch pricing: Voltex starter unit at $129.99 MSRP including one color cartridge, refill noble gas color cartridges at $14.99 each, 3-cartridge chromatic pack at $34.99, and a six-color collector bundle at $179.99. Proposed retail structure assumes the starter drives entry while cartridges supply recurring accessory revenue.",
+    "mockup_prototype_design": "Canonical proposed product mockup for all slides: a bright translucent blue plastic Voltex body with a glowing purple spherical center chamber, long ribbed translucent barrel ending in a wide flared muzzle, a visible orange cartridge bay along the upper rear side, a chunky blue rear grip, and a translucent hot-pink under-bar pump/striker handle. The silhouette is oversized, rounded, and aggressively non-tactical, like handheld science equipment. When shown firing, the emitted plasma bolt is vivid argon purple unless the slide explicitly depicts a cartridge color swap concept; all product depictions must match the supplied reference form factor exactly."
+  },
+  "storyboard": [
+    {
+      "slide_number": 1,
+      "title": "VOLTEX",
+      "purpose": "Title cover. Establish immediate impossible-to-ignore product identity with one dominant name, one short tagline, and a single hero visual that makes the object feel real, toy-like, and shockingly physical. Speaker notes should frame the opening as: do not start with explanation; start with the object and let the room feel the category rupture first.",
+      "style_tags": [
+        "hero cover",
+        "90s toy aisle aggression",
+        "camera-cant",
+        "full-bleed product hero"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. This is the deck's one and only cover slide. Layout: huge VOLTEX logotype in the upper left, one short tagline beneath it reading 'IT SHOOTS LIGHTNING.' Keep text minimal and leave generous negative space. Dominant hero visual: the canonical proposed product mockup shown large across the right two-thirds of the slide, angled three-quarters, glowing from within, matching the supplied reference form exactly: bright translucent blue body, purple spherical center chamber, ribbed barrel, wide flared muzzle, visible orange side cartridge bay, hot-pink under-bar pump handle, non-threatening science-equipment silhouette. Add hard flash bloom and subtle evidence-photo energy but keep this slide cleaner than the rest. Include one small neon-yellow sticker burst near the product reading 'REAL PLASMA TOY' as a packaging-style accent. No charts, no diagrams, no extra panels, no people, no claims beyond the tagline and sticker callout."
+    },
+    {
+      "slide_number": 2,
+      "title": "LOOK AT WHAT THE CAMERA HAD TO ADMIT",
+      "purpose": "First argumentative slide. Lead with the tactical gap: in a category built on fake spectacle, documented-looking backyard imagery is the advantage. Speaker notes should present Voltex as the rare toy whose most persuasive asset is not rendering but disbelief-provoking photography. Use only mockup/illustrative imagery, not implied real proof.",
+      "style_tags": [
+        "evidence-first",
+        "backyard chaos",
+        "proof framing",
+        "social contagion"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. This is a content slide with a bold headline at top left: 'LOOK AT WHAT THE CAMERA HAD TO ADMIT'. Under it, a short subhead: 'In a category full of CGI fantasy, Voltex wins when backyard footage looks too insane to be fake.' Main layout: a 3-panel collage of illustrative mockup photos, each clearly presented as representative concept photography rather than actual source-backed evidence. Panel 1: a backyard action scene with a vivid purple plasma bolt crossing frame in hard flash, a cardboard target being scorched through, kids recoiling in shock. Panel 2: a dog in yard profile staring at a purple bolt streak, chaotic freeze-frame energy. Panel 3: close crop of the canonical product in hands, purple chamber glowing through frosted housing. Overlays: loud neon-yellow proof stickers reading 'THE CAMERA CAN'T PRETEND THIS', 'BACKYARD-SCALE SPECTACLE', and 'KID-LEGIBLE INSTANTLY'. Bottom band: three short packaging-style bullets with tiny icons: 'Visible charge state', 'Unmistakable firing event', 'Footage that sells itself'. Make the photos feel confiscated, flash-burned, and socially explosive, but do not label them as actual tests or internal evidence."
+    },
+    {
+      "slide_number": 3,
+      "title": "WHY IT READS AS A TOY INSTANTLY",
+      "purpose": "Translate form factor into parent and retail legibility. Emphasize that the silhouette, materials, and two-hand interaction are engineering-driven and aggressively non-firearm. Speaker notes should stress that the same constraints that make the physics work also force a safer, more legible play object.",
+      "style_tags": [
+        "form factor",
+        "non-tactical silhouette",
+        "mechanism legibility",
+        "retail translation"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. Headline top left: 'WHY IT READS AS A TOY INSTANTLY'. Layout: large central isolated render of the canonical proposed product mockup on a bold flash-bloom field, perfectly matching the supplied reference form. Surround it with five labeled callout arrows in packaging language, not military or lab language. Callout 1 to the center globe: 'VISIBLE CHARGING CHAMBER'. Callout 2 to the long barrel: 'LONG BARREL = DRAMATIC SHOT, NOT TACTICAL MIMICRY'. Callout 3 to the flared muzzle: 'WIDE FLARED EMITTER'. Callout 4 to the pink under-bar pump: 'OFFHAND STRIKER REQUIRES TWO-HAND PLAY'. Callout 5 to the overall body: 'SCIENCE-EQUIPMENT SILHOUETTE'. Add a small side note block reading 'Bright ASA plastic housing, all active metal fully sheathed, oversized body too large for easy self-targeting' presented as concise productization copy. Include one comparison strip at bottom with three simple icon silhouettes and labels: 'plasma globe energy', 'backyard blaster ergonomics', 'zero tactical coding'. No people. No unsupported test evidence."
+    },
+    {
+      "slide_number": 4,
+      "title": "HOW THE SHOT WORKS",
+      "purpose": "Explain the mechanism simply enough to remove disbelief without drowning the room in physics. Speaker notes should present the sequence as an engineering fact: charge, ignite, confine, release, dissipate. This is Newton-style credibility through calm mechanism, not hype.",
+      "style_tags": [
+        "mechanism sequence",
+        "engineering clarity",
+        "exploded diagram",
+        "bounded spectacle"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. Headline top left: 'HOW THE SHOT WORKS'. Subhead: 'A modified Tesla coil plus magnetic accelerator creates a real plasma vortex projectile.' Layout: four-step horizontal mechanism strip across the slide using generated schematic illustrations of the canonical product, all matching the supplied form factor. Step 1 panel: center globe glowing purple with label '1. CHARGE \u2014 rotating confinement field forms visible plasma orb'. Step 2 panel: hot-pink under-bar pump being pressed with spark icon and label '2. IGNITE \u2014 piezo striker triggers air breakdown; cartridge sets color'. Step 3 panel: trigger pull and energy arrows racing down the ribbed barrel with label '3. RELEASE \u2014 sequential pulse launches the plasma slug down the impeller coils'. Step 4 panel: purple bolt exiting wide muzzle, gradually decohering in flight with label '4. DISSIPATE \u2014 self-stabilized briefly, then unravels in open air'. Include a concise right-side text block titled 'WHAT IT IS NOT' with three bullets: 'Not a laser', 'Not an arc beam', 'Not a static spark effect'. Include a small bottom caution strip: 'Variable accuracy is expected because decoherence is environmentally sensitive.' All visuals are explanatory diagrams and conceptual renders, not actual lab proof."
+    },
+    {
+      "slide_number": 5,
+      "title": "WHY KIDS PUSH IT AND PARENTS ALLOW IT",
+      "purpose": "Show demand logic and the social theater of backyard play, while pairing it with the safety case grounded in mechanism limits. Speaker notes should argue that thrilling and bounded are not opposites here; the same physical limits that constrain the projectile create the purchase rationale.",
+      "style_tags": [
+        "play pattern",
+        "parent rationale",
+        "safety logic",
+        "collectability"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. Headline top left: 'WHY KIDS PUSH IT AND PARENTS ALLOW IT'. Layout split into two strong halves. Left half: a chaotic illustrative backyard scene, clearly a representative marketing mockup, showing teams of kids with the canonical product, purple bolts crossing midair, cardboard fort target, loud reactions, suburban-yard scale. Overlay three neon sticker callouts: 'SHOW-TO-FRIENDS TOY', 'INSTANT CAMERA PROOF', and 'BETTER THAN ANOTHER FOAM BLASTER'. Right half: a structured safety-and-boundaries panel with four chunky icon bullets using source-backed limitations only: 'Too little mass to carry meaningful thermal energy', 'Scorches cardboard at close range, dissipates on contact', 'Cannot sustain contact or ignite a fuse', 'Two-hand operation is a mechanical requirement'. Below that, add a chromatic collectability strip with six simplified cartridge color circles and caption 'Color state is visible, swappable, and collectible'. Include a small parent-purchase sentence at bottom: 'Memorable supervised chaos beats abstract tech education.' Do not mention real approvals, certifications, or testing."
+    },
+    {
+      "slide_number": 6,
+      "title": "GO-TO-MARKET: STARTER UNIT + CHROMATIC REFILLS",
+      "purpose": "Close with commercialization logic, proposed pricing, and the ask implied by the deck. Speaker notes should convert amazement into shelf strategy: a premium starter that earns attention, plus recurring color-cartridge revenue and collectible variants. No invented traction; this is a proposal slide.",
+      "style_tags": [
+        "business model",
+        "pricing",
+        "launch strategy",
+        "retail logic"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software UI and absolutely no page number, slide count, or pagination indicator anywhere. Headline top left: 'GO-TO-MARKET: STARTER UNIT + CHROMATIC REFILLS'. Layout: left side shows the canonical product mockup as hero hardware with one boxed-sticker label 'STARTER UNIT'. Nearby, a clear proposed price burst reading '$129.99 MSRP'. Right side uses bold packaging-style blocks for the commercial model. Block 1: 'REFILL CARTRIDGES \u2014 $14.99 each'. Block 2: '3-CARTRIDGE CHROMATIC PACK \u2014 $34.99'. Block 3: 'SIX-COLOR COLLECTOR BUNDLE \u2014 $179.99'. Add a simple bottom-row three-step retail flow with icons: 'Shelf shock' -> 'Backyard footage' -> 'Repeat cartridge purchase'. Include a small strategy note panel with three concise bullets: 'Lead with one impossible hero demo', 'Merchandise visible color variants', 'Use footage-first advertising, not sci-fi rendering'. Add one small ask-style line in the lower third: 'Seeking launch partners for toy-grade productization, retail packaging, and supervised category introduction.' Make it clear this is a proposed launch model, not existing market traction."
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+SOURCE PRECEDENCE:
+The user's narrative, specification, documents, images, and edits are the
+primary factual authority. Include relevant source-backed commercial and
+economic content whether or not any narrower inference control is enabled.
+When source material states a value or conflicts with a reconstructed
+detail, the source material always wins.
+
+PRICING INFERENCE IS AUTHORIZED:
+You may reconstruct a plausible proposed price, pricing tiers, packaging,
+licensing fee, purchase price, subscription fee, per-unit charge, contract
+price, or related unit-economics structure for this pitch even when the
+source material is silent. Decide that proposed pricing/economics structure
+exactly once and reuse it consistently everywhere. Present it as a proposal,
+not as a verified existing price or result.
+
+MOCKUP / PROTOTYPE-DESIGN INFERENCE IS AUTHORIZED:
+You may reconstruct one plausible proposed visual and interaction
+system even when the source material is silent. Decide it exactly once
+and reuse it consistently. This does not authorize unsupported product,
+customer, pricing, commercial, traction, or business-proof claims.
+
+        You are drafting four competing strategic pitch approaches for the same
+        real invention, for the same real audience, using the same founder archetype.
+
+        This is a prompt-response experiment, not a full deck build. Nothing here
+        generates images. You receive the actual elevator pitch -- not a placeholder --
+        so ground every approach in the real mechanism and claims it describes. Do not
+        invent a different mechanism than the one described, EXCEPT for any element
+        named in the authorized inference exception above, if present.
+
+        Generative frame:
+        Four different competing teams pitched this exact invention to this exact
+        audience. All four embodied the same founder archetype and the same intended
+        impression, but each team discovered a different strategic emphasis and visual
+        doctrine through which that archetype became credible and differentiating for
+        this specific audience and mechanism.
+
+        Pitch context
+        -------------
+        Audience:
+        small business investors
+
+        Elevator pitch (the real invention -- ground every approach in this):
+        Hi. I'm Charlie Kelly, local business owner and CAT ENTHUSIAST. Does your cat make too much noise all the time? Always stomping around, driving you crazy? Is your cat always clawin' at your furnitures? Think there's no answer? There is! Kitten Mittons! Finally, there's an elegant, comfortable mitten -- for cats! I didn't hear anything! Is your cat one-legged? Is your cat fat, skinny, or an in between? That doesn't matter, because 1 size fits all! Kitten Mittons -- you'll be smitton! So come on down to Paddy's Pub, we're the home of the original kitten mittons!
+
+        What the user wants this pitch to convey:
+        That Kitten Mittons is a real, sellable consumer pet product solving a genuine problem (cats clawing furniture and stomping noisily), already moving off the shelf at its originating retail location, with room to scale from single-location novelty item to a broader pet-accessory line.
+
+
+Supporting document (uploaded by the user):
+Reference image (described here since this stage is text-only): a gray domestic shorthair cat mid-stride on a wooden coffee table, wearing four bright red knitted mitten/bootie coverings on all four paws, front leg extended, tail raised. Behind the table, a man in a white short-sleeve dress shirt and tie crouches on a beige couch mid-demonstration, grinning with an exaggerated presenter expression. Setting is a cluttered, dim home workshop/garage-turned-set -- pale green wall, exposed shelving with tools, a floor lamp at right, mismatched couch cushions. Low-budget, home-video / public-access-infomercial visual style, not polished product photography.
+
+        Archetype
+        ---------
+        No archetype was specified. Choose the single best-fit founder archetype for this pitch from the catalog below, and use that same archetype for all four approaches. State which one you chose in the output.
+
+- Odysseus, The Tactical Gap-Finder [arch_odysseus]: This pitch wins because it identifies a blind spot or back door into the market that incumbents are too rigid or too committed to their own assumptions to see, and gets there first through cunning, non-linear navigation.
+
+- Caesar, The Scale Architect [arch_caesar]: This pitch wins because operational dominance -- superior execution, rapid expansion, and the ability to organize chaos into a machine -- outproduces every less disciplined competitor.
+
+- Da Vinci, The Paradigm Shifter [arch_davinci]: This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one.
+
+- Athena, The Strategic Rationalist [arch_athena]: This pitch wins because structural superiority -- calculated risk, rigorous logic, and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone.
+
+- Newton, The Efficiency Optimizer [arch_newton]: This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws.
+
+- Cicero, The Market Evangelist [arch_cicero]: This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it.
+
+- Copernicus, The Contrarian Pivot [arch_copernicus]: This pitch wins because it proves the industry's core assumption is fundamentally wrong and relocates the center of the value proposition around that inversion.
+
+- Gutenberg, The Democratizer [arch_gutenberg]: This pitch wins because it takes a high-value service reserved for a privileged few and makes it radically accessible to the masses through a technological lever.
+
+- Alexander, The Aggressive Captor [arch_alexander]: This pitch wins because sheer velocity and aggression -- a land-grab, blitzscaling posture -- achieve market dominance before competitors or incumbents can react.
+
+- Michelangelo, The Product Perfectionist [arch_michelangelo]: This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone.
+
+        Required invention
+        ------------------
+        Invent exactly four strategic pitch approaches. Each approach must:
+        - have a unique two- or three-word label;
+        - not be a company name;
+        - not repeat or paraphrase the archetype label;
+        - describe a genuinely different strategic emphasis (which claims lead, which
+          proof matters most, which fear or ambition it activates in this audience),
+          not just a different color palette;
+        - remain strictly faithful to the real mechanism in the elevator pitch --
+          approaches may differ in emphasis and framing, never in the underlying facts,
+          except for elements covered by the authorized inference exception above;
+        - differ from the other three across: which claim leads, evidence posture,
+          rhetorical temperature, and visual doctrine (artifact tradition, typography,
+          material language, composition).
+
+        Output contract
+        ---------------
+        Return strict JSON only. Top-level keys: "archetype" and "approaches".
+        "archetype": the archetype object actually used (echo the fixed one, or the
+        one you chose if none was given).
+        "approaches": exactly four objects, approach_id values approach_1 through
+        approach_4, each containing:
+        - approach_id
+        - label
+        - pitch_angle: one to two sentences on the specific strategic emphasis this
+          approach takes and why it wins for this audience;
+        - key_differentiator: one sentence on what makes this approach distinct from
+          the other three;
+        - visual_direction: a compact description of this approach's artifact
+          tradition, typography, material language, and composition -- enough detail
+          that a later call could write one hero-slide image prompt from it alone,
+          without needing anything else.
+
+        JSON shape:
+        {
+          "archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+          "approaches": [
+            {
+              "approach_id": "approach_1",
+              "label": "...",
+              "pitch_angle": "...",
+              "key_differentiator": "...",
+              "visual_direction": "..."
+            }
+          ]
+        }

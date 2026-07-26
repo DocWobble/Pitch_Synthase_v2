@@ -1,0 +1,39 @@
+{
+  "archetype": {
+    "archetype_id": "arch_athena",
+    "label": "Athena, The Strategic Rationalist",
+    "role": "Founder as systems strategist who wins through structural superiority, rigorous logic, and compounding defensibility.",
+    "posture": "Calm, evidence-led, technically fluent, and moat-conscious; emphasizes reliability, risk reduction, and architecture over hype.",
+    "win_condition": "This pitch wins by proving BloomOS is not a novelty device but a fortress-like integrated platform whose local-first control, PAW nutrition layer, and schema library create durable strategic advantage."
+  },
+  "approaches": [
+    {
+      "approach_id": "approach_1",
+      "label": "Resilience Stack",
+      "pitch_angle": "Lead with BloomOS as critical home infrastructure for living systems: a wall-powered, deterministic, local-first control layer that keeps plants alive even when cloud services, batteries, or connectivity fail. This wins with hardware and resilient-tech investors by repositioning plant care from consumer novelty to dependable household automation with off-grid relevance.",
+      "key_differentiator": "Unlike the other three, this approach makes reliability under failure conditions the primary source of category creation and investor conviction.",
+      "visual_direction": "Artifact tradition of industrial systems diagrams and mission-critical control manuals; neutral grotesk typography with monospaced technical annotations; matte white, graphite, sage, and signal-blue material language; grid-heavy composition with hub-and-spoke layouts, cable paths, state-machine callouts, and clean cutaway views of the BloomHub 8 and hybrid umbilicals."
+    },
+    {
+      "approach_id": "approach_2",
+      "label": "Nutrient Engine",
+      "pitch_angle": "Lead with the Pro Hub's plasma-activated water system as the breakthrough that turns BloomOS from monitoring hardware into an active plant-metabolism platform. This wins by giving investors and strategic partners a technically differentiated wedge: decentralized nitrate generation, pH balancing, and automated nutrition in one closed-loop consumer device.",
+      "key_differentiator": "Unlike the other three, this approach centers the PAW execution circuit as the headline innovation and the clearest reason BloomOS can command premium hardware economics.",
+      "visual_direction": "Artifact tradition of advanced materials science briefs and next-gen appliance launches; high-contrast serif-sans pairing to signal scientific novelty plus consumer refinement; luminous electric violet, water-clear cyan, white ceramic, and brushed aluminum material language; dramatic compositions featuring glowing reservoir cross-sections, plasma corona halos, molecular notation overlays, and premium product-isolation shots."
+    },
+    {
+      "approach_id": "approach_3",
+      "label": "Schema Fortress",
+      "pitch_angle": "Lead with BloomOS as a hardware-anchored intelligence platform whose real moat is the validated plant-care schema library that converts noisy telemetry into executable control parameters. This wins for seed investors because it frames the company as a compounding software-and-data business embedded in proprietary hardware, with BYO-AI flexibility reducing model risk while preserving schema ownership.",
+      "key_differentiator": "Unlike the other three, this approach treats hardware primarily as the trusted data capture and actuation substrate for a defensible domain-specific software moat.",
+      "visual_direction": "Artifact tradition of enterprise platform architecture maps and quantitative strategy memos; crisp neo-grotesk typography with code-style monospaced schema fragments; dark evergreen, black, bone, and amber accents; layered compositions showing telemetry in, schema validation in the middle, and executable outputs to watering/light/nutrient actions, with JSON blocks, decision trees, and moat flywheels."
+    },
+    {
+      "approach_id": "approach_4",
+      "label": "Pilot to Production",
+      "pitch_angle": "Lead with proof of manufacturable traction: a 100-user pilot, 92% mortality reduction, and up to 2x growth in PAW cohorts, all tied to a product architecture built for straightforward scaling into Standard and Pro editions. This wins by reducing the classic seed-stage hardware fear that the science is interesting but the company is not yet production-ready.",
+      "key_differentiator": "Unlike the other three, this approach is organized around evidence, execution readiness, and the de-risking path from validated prototype to commercial launch.",
+      "visual_direction": "Artifact tradition of board-level operating reviews and premium crowdfunding launch decks; authoritative sans typography with compact data-table styling; warm white, forest green, charcoal, and copper material language; asymmetric composition mixing KPI tiles, cohort comparison charts, annotated product photos, BOM/manufacturing pathway callouts, and a disciplined rollout timeline."
+    }
+  ]
+}

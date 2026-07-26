@@ -1,0 +1,39 @@
+{
+  "archetype": {
+    "archetype_id": "arch_cicero",
+    "label": "Cicero, The Market Evangelist",
+    "role": "A founder who turns a quirky product into a memorable consumer movement through narrative, repetition, and cultural stickiness.",
+    "posture": "High-conviction, audience-aware, commercially minded, and comfortable using showmanship as proof of demand rather than apologizing for it.",
+    "win_condition": "This pitch wins by making Kitten Mittons feel instantly legible, talked-about, and easy to sell through retail and impulse-buy channels before larger pet brands can copy the story."
+  },
+  "approaches": [
+    {
+      "approach_id": "approach_1",
+      "label": "Retail Proof",
+      "pitch_angle": "This approach leads with the simplest investor claim: Kitten Mittons is already a real physical product selling at Paddy's Pub, proving that even a novelty-seeming item can convert into cash when the problem and demonstration are clear. It wins for small business investors by framing the opportunity as low-theory, shelf-tested retail expansion into pet stores, gift shops, and local chains.",
+      "key_differentiator": "Unlike the other three, this version treats origin-location sell-through and repeatable point-of-sale merchandising as the main evidence of viability.",
+      "visual_direction": "Bodega-meets-endcap retail board; bold condensed sans typography with price-burst numerals; material language of peg hooks, kraft hang tags, red knit texture, receipt paper, and handwritten sell-through notes; composition built around a hero product card and small proof panels showing the red mittened cat in a scrappy real-world demo environment."
+    },
+    {
+      "approach_id": "approach_2",
+      "label": "Problem Tamer",
+      "pitch_angle": "This approach leads with the consumer pain: scratched furniture, noisy floors, and frustrated cat owners who want a non-destructive, humorous-but-useful fix. It wins by making Kitten Mittons feel less like a gag and more like an accessible behavioral-management accessory with broad household relevance and an easy proposed price point of $19.99 per four-mitten pack.",
+      "key_differentiator": "Unlike the other three, this version centers the daily annoyance solved in the home rather than the novelty, retail traction, or brand-extension upside.",
+      "visual_direction": "Direct-response infomercial language; oversized serif-and-sans contrast typography with problem/solution callouts; material language of split-screen before-and-after frames, scratched sofa closeups, wood-floor sound cues, red yarn swatches, and TV-demo caption boxes; composition uses a dramatic left-right contrast with chaos on one side and the mittened cat gliding silently on the other."
+    },
+    {
+      "approach_id": "approach_3",
+      "label": "Cult Shelf",
+      "pitch_angle": "This approach argues that the product's advantage is not just utility but memorability: Kitten Mittons is the kind of item people notice, talk about, gift, and buy on sight, creating organic word-of-mouth that most small pet accessories never achieve. It wins for this audience by presenting a rare small-business asset: a product that can move as both practical pet accessory and conversation-piece impulse purchase.",
+      "key_differentiator": "Unlike the other three, this version makes cultural recall and impulse-buy virality the core moat.",
+      "visual_direction": "Public-access-comedy turned intentional brand system; chunky playful display typography paired with simple retail sans; material language of VHS scan lines, freeze-frame demo stills, bright red knit against drab workshop greens and beiges, sticker-like badges, and comic callouts; composition is high-energy and poster-like, with the mittened cat as the central icon and layered slogan fragments around it."
+    },
+    {
+      "approach_id": "approach_4",
+      "label": "Line Expansion",
+      "pitch_angle": "This approach starts with Kitten Mittons as the wedge: one size fits all, easy to demo, easy to gift, and already validated enough to open a broader line of cat comfort and claw-management accessories. It wins by showing small business investors a path from one eccentric hero SKU to a compact branded pet-accessory business, with proposed wholesale pricing of $9 per pack on a $19.99 MSRP and future matching accessories under the same banner.",
+      "key_differentiator": "Unlike the other three, this version is built around SKU strategy and brand platform potential rather than immediate sell-through or single-product theatrics.",
+      "visual_direction": "Category-roadmap merchandising board; clean geometric sans typography with orderly product-family labeling; material language of packaging mockups, assortment grids, red knit pattern bands, simple line icons, and margin callout tabs; composition is modular and investor-facing, anchoring the original mittened-cat demo image as the hero proof while branching into a tidy future product architecture."
+    }
+  ]
+}

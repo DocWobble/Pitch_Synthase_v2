@@ -1,0 +1,165 @@
+INFERENCE AUTHORITY RULE:
+Source material is the primary factual authority; it always wins when it speaks.
+
+Beyond the source, two categories of content are also authorized:
+
+Forced implications — logical, physical, and societal consequences that
+necessarily follow from stated facts. These are not inferences; they are
+completions the source requires. Carry them through specifically. An unexplained
+mechanism, an unspecified physical requirement, a safety property the design
+demands — fill these in with the specificity the pitch needs. Vagueness on a
+required implication is incompleteness, not caution.
+
+Gap-bridging inference — content the pitch needs that the source does not
+address, when no one in the audience could falsify the claim using knowledge
+they brought in from the world. Additional use cases the pitch didn't enumerate,
+visual angles the prototype was never shown from, unidentified people in use
+scenarios, market framing that follows from category — these have no external
+referent to contradict them.
+
+Forbidden: specific claims about verifiable past or present reality the model
+cannot know — real names of people or companies, historical dates, measured
+test outcomes, certifications, revenue or sales figures. These carry a non-zero
+probability of being wrong in ways an informed audience member could independently
+verify.
+
+The test: could someone in that room call bullshit on it based on knowledge they
+walked in with — knowledge from the world, not derived from this pitch? If yes,
+it is forbidden. If the only path to falsification runs through undisclosed
+information or testing not yet performed, it is authorized.
+
+PRICING AUTHORIZED — infer a proposed price point:
+You may reconstruct a plausible proposed price, pricing tiers, or
+unit-economics structure even when the source material is silent.
+Decide it exactly once and reuse it consistently. Present it as a
+proposal, not as a validated or existing price.
+
+PROTOTYPE DESIGN AUTHORIZED — infer one proposed product design:
+You may reconstruct one plausible proposed visual and interaction system
+even when the source material is silent. Decide it exactly once and
+reuse it consistently everywhere.
+
+        You are drafting four competing strategic pitch approaches for the same real
+        invention and audience. Each approach is the interference sum of the shared
+        primary archetype with a different secondary archetype.
+
+        This is a prompt-response experiment, not a full deck build. Nothing here
+        generates images. Ground every approach in the real mechanism and claims the
+        elevator pitch describes. Do not invent a different mechanism, EXCEPT for any
+        element named in the authorized inference exception above.
+
+        Archetype selection
+        -------------------
+        No archetype was specified. First choose the PRIMARY archetype that best fits this pitch overall from the catalog below. Then for each of the four approaches pair it with a DIFFERENT secondary archetype. The four secondaries must all be distinct from each other and from the primary.
+
+Archetype catalog:
+- Odysseus, The Tactical Gap-Finder [arch_odysseus]: This pitch wins because it identifies a blind spot or back door into the market that incumbents are too rigid or too committed to their own assumptions to see, and gets there first through cunning, non-linear navigation.
+
+- Caesar, The Scale Architect [arch_caesar]: This pitch wins because operational dominance -- superior execution, rapid expansion, and the ability to organize chaos into a machine -- outproduces every less disciplined competitor.
+
+- Da Vinci, The Paradigm Shifter [arch_davinci]: This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one.
+
+- Athena, The Strategic Rationalist [arch_athena]: This pitch wins because structural superiority -- calculated risk, rigorous logic, and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone.
+
+- Newton, The Efficiency Optimizer [arch_newton]: This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws.
+
+- Cicero, The Market Evangelist [arch_cicero]: This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it.
+
+- Copernicus, The Contrarian Pivot [arch_copernicus]: This pitch wins because it proves the industry's core assumption is fundamentally wrong and relocates the center of the value proposition around that inversion.
+
+- Gutenberg, The Democratizer [arch_gutenberg]: This pitch wins because it takes a high-value service reserved for a privileged few and makes it radically accessible to the masses through a technological lever.
+
+- Alexander, The Aggressive Captor [arch_alexander]: This pitch wins because sheer velocity and aggression -- a land-grab, blitzscaling posture -- achieve market dominance before competitors or incumbents can react.
+
+- Michelangelo, The Product Perfectionist [arch_michelangelo]: This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone.
+
+        Interference rule
+        -----------------
+        Each approach is the waveform interference sum of its two archetypes. For every
+        dimension of the pitch (which claim leads, evidence posture, rhetorical
+        temperature, visual doctrine, emotional register):
+
+        - Where the two archetypes CONFLICT: that dimension flattens -- avoid it or
+          treat it neutrally; do not force either extreme.
+        - Where the two archetypes SYNERGIZE: that dimension amplifies -- express it
+          with higher confidence, more direct language, and willingness to take the
+          riskier or bolder form of that claim.
+
+        If the same archetype is chosen as both primary and secondary (allowed), every
+        dimension is constructive interference: the win condition is pushed to its
+        functional extreme, rhetorical temperature is at its highest natural setting,
+        evidence posture is at its most committed form. This is higher amplitude, not
+        repetition.
+
+        Pitch context
+        -------------
+        Audience:
+        Early-stage technical founders, research teams, and startup operators approaching a critical development threshold — seeking investment, regulatory approval, grants, or patent protection
+
+        Elevator pitch (the real invention -- ground every approach in this):
+        you have a vision for something. that thing needs people—including you—to understand it inside and out. otherwise they won't fund building it, or support researching it, or grant it regulatory permission to exist. and worst case? Nature itself refuses to let it compile because the mechanism it's based on doesn't work, a fact that no one caught because at no point did anyone fully interrogate the thing against our expansive collective corpus of data regarding 'making things that work'. 
+
+if you have a technical project and it's crossing a threshold to the next stage of development—regardless of what stage that is—you are approaching the most critical vulnerability your project has faced to date; a scientific oversight, an outdated design element, an untested assumption, or so much as the wrong typo in the wrong place can kill your project. It happens the moment that fault is committed to documentation you won't be personally interpreting for every future reader, and you won't even know it's dead until you don't get the grant or the patent litigation fails or, ultimately, the thing just doesn't work the way it's supposed to.
+
+This is very much not hypothetical. do you think Theranos set out to be a scam? probably not. do you think that matters to anyone who saw a company fail to perform so much as a preliminary feasibility assessment on their stupidly impossible magic blood test before selling it to investors as a 'solved problem'? definitely not.
+
+physics, chemistry, metallurgy, programming, these are simple because the same inputs always produce the same outputs; get someone thinking about how to make a clock for long enough and they'll invent the escapement and the tourbillon and eventually even the quartz oscillator because those problems have absolute solutions that work. 
+
+and you know what it takes for those decades or centuries of accumulated knowledge to still produce nothing but a failed system that keeps time inaccurately or not at all? one single bad handoff to the person who has to make the clock based on someone else's design.
+
+you have all the time in the world to refine and test and implement an idea when you alone are responsible for all of those steps, but you can't always be there to personally defend your idea. if you want it to become something real, that idea will need to defend itself.
+
+That's why intelluric exists. it doesn't matter who you're communicating to, what you need them to understand, or how many steps still exist between now and the next stage of development—we will make your vision structurally unambiguous and logically defensible in every technical dialect:
+- Pitch decks
+- IRB proposals
+- grant applications
+- patent litigation
+- feasibility assessments 
+- mock committee feedback
+- independent technical review
+- red team audits
+- due diligence 
+- and yes, even the unfinished technical basis report—you know, the one that's still several R&D cycles shy of deriving the dependency stack your tech needs before it can exist outside a hypothetical scenario 
+
+We specialize in chewing through ambiguity and hunting down the unknown-unknowns unique to your project's domain. Engagements are scoped based on the outputs and revision rounds—no exclusivity clauses, no IP claims, no billable hours. Instead, expect a turnaround time of 2 to 7 solar days (scope dependent) and deliverables that are comprehensive, defensible, and unambiguous enough that you could entrust your project to a reasonably-literate house cat and still deliver the fully determined technical system as you envisioned it (*we do not recommend attempting this without at least a supervised probationary period if it would be the cat's first executive role*).
+
+You have a vision—we draw the rest of it.
+
+        What the user wants this pitch to convey:
+        InTelluric is the technical co-author who catches the silent fault before it becomes the fatal flaw — making your vision structurally unambiguous and defensible to every reader who will never hear you explain it in person
+
+
+        Output contract
+        ---------------
+        Return strict JSON only. Top-level keys: "primary_archetype" and "approaches".
+        "primary_archetype": the shared primary archetype object.
+        "approaches": exactly four objects, approach_id values approach_1 through
+        approach_4. Each approach has its OWN secondary archetype (all four must differ).
+        Each approach object contains:
+        - approach_id
+        - secondary_archetype: the full archetype object chosen for this approach
+        - effective_archetype_id: the archetype_id of whichever of the two is dominant
+          in the resulting interference sum for this approach
+        - label: unique two- or three-word label; not a company name; not an archetype label
+        - pitch_angle: one to two sentences on the strategic emphasis and why it wins
+        - key_differentiator: one sentence on what makes this approach distinct from
+          the other three
+        - visual_direction: artifact tradition, typography, material language, and
+          composition -- enough for a later call to write a single hero-slide image
+          prompt from this alone
+
+        JSON shape:
+        {
+          "primary_archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+          "approaches": [
+            {
+              "approach_id": "approach_1",
+              "secondary_archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+              "effective_archetype_id": "...",
+              "label": "...",
+              "pitch_angle": "...",
+              "key_differentiator": "...",
+              "visual_direction": "..."
+            }
+          ]
+        }

@@ -1,0 +1,96 @@
+{
+  "visual_grammar": {
+    "background": "warm off-white paper base with a subtle low-budget TV-studio grain overlay, plus occasional split-screen fields of muted olive-green and dark charcoal blocks used to stage problem-versus-solution contrast; no glossy gradients",
+    "foreground": "near-black text and linework with occasional reversed white text on dark blocks for headline impact",
+    "accent": "bright knitted-yarn red matching the mitten color, used sparingly for product highlights, callout boxes, arrows, and key price moments",
+    "typography": "bold condensed serif headlines in uppercase for problem/solution statements, paired with plain grotesk sans-serif body text and labels; short direct-response phrases, mixed with occasional italic subheads; all labels tightly kerned and retail-poster-like",
+    "diagram_style": "simple retail-infomercial explainer graphics with flat icon silhouettes, split panels, chunky arrows, stamped burst shapes, and minimal charting; no technical UI styling",
+    "panel_style": "cream or pale gray rectangular cards with thin charcoal borders, slight inset shadow, and occasional red caption ribbons; feels like hand-composed local advertising rather than corporate SaaS",
+    "grid_system": "12-column poster grid with generous outer margins, strong left alignment, oversized top headline band, and asymmetrical image-text splits that privilege one dominant visual plus 2 to 4 supporting callouts",
+    "line_weight": "medium-weight 2 to 3 px divider and outline treatment, with heavier 4 px emphasis rules for before/after splits and price callouts"
+  },
+  "authorized_inferences": {
+    "pricing": "Proposed retail price: $19.99 per four-mitten pack; proposed wholesale price to small retailers: $10.00 per pack; proposed counter-display starter case: 24 packs for $240 wholesale; implied gross margin at retail: approximately 50%; pricing presented as a proposal, not a verified current price.",
+    "mockup_prototype_design": "Proposed product system: one four-mitten pack containing bright red knitted cat mittens/booties sized as a universal-fit soft-goods accessory, sold on a hanging retail card with a die-cut window showing the yarn texture, bold KITTEN MITTONS wordmark, a simple 3-step illustrated use panel, and a small badge reading '1 SIZE FITS ALL' as pitch language rather than validated sizing proof."
+  },
+  "storyboard": [
+    {
+      "slide_number": 1,
+      "title": "Kitten Mittons",
+      "purpose": "Hero cover slide establishing the unforgettable product name, the core promise of quieter, less destructive cats, and the product's visual identity in a single memorable frame. Speaker notes should let Charlie's voice carry the opening while the slide stays clean and sellable.",
+      "style_tags": [
+        "hero cover",
+        "direct-response retail",
+        "consumer product",
+        "memorable name",
+        "problem-solution"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. This is the one and only title cover slide. Use one dominant hero visual: an illustrative mockup based on the provided source scene showing a gray cat mid-stride wearing four bright red knitted paw mittens on a wooden tabletop, with the quirky home-demo energy preserved but composed more cleanly for a pitch cover. Keep the crouched presenter only as a subtle background figure, secondary to the cat. Large dominant product name at upper left: \u201cKITTEN MITTONS\u201d. One short tagline beneath it: \u201cQuiet paws. Safer furniture.\u201d No other argument text, no charts, no diagrams, no multi-panel layout. Leave generous negative space around the title and hero image so the slide feels like a real exported cover slide."
+    },
+    {
+      "slide_number": 2,
+      "title": "The Household Annoyance Is Instantly Legible",
+      "purpose": "Open the argument with the pain, not the joke: noisy paw impacts and clawed furniture. This slide must make the problem feel familiar and retail-urgent for small business investors in seconds.",
+      "style_tags": [
+        "pain point",
+        "before state",
+        "domestic frustration",
+        "split-screen",
+        "investor framing"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Build the slide around a strong left-right contrast. Left half: the problem state, using illustrative stock-style domestic imagery rather than real proof photos\u2014close-up of scratched sofa fabric, stylized claw marks, simple comic sound-caption treatment like 'stomp stomp' near a hardwood floor silhouette, and a frustrated cat-owner context implied through objects not faces. Right half: concise text framing the problem. Large headline across the top: \u201cCATS SCRATCH. CATS STOMP. OWNERS NOTICE.\u201d Below, three short stacked problem callouts: \u201cClawed furniture\u201d, \u201cNoisy floors and tables\u201d, \u201cLow-grade daily irritation\u201d. Add one small source-backed quote box near the lower right using the raw pitch language exactly: \u201cDoes your cat make too much noise all the time? Always stomping around, driving you crazy?\u201d This is a rhetorical slide, not a data slide; do not invent metrics, customer counts, or market size."
+    },
+    {
+      "slide_number": 3,
+      "title": "A Visible Fix You Can Understand in One Look",
+      "purpose": "Introduce the product as the oddly sensible answer: elegant, comfortable mittens for cats. The slide should preserve the humor while making the item feel physically real and shelf-ready.",
+      "style_tags": [
+        "product reveal",
+        "solution framing",
+        "soft goods",
+        "retail packaging",
+        "demonstrability"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Use an asymmetrical layout with one large hero product mockup on the left: proposed packaged four-mitten retail card showing bright red knitted cat mittens/booties with a die-cut window, bold KITTEN MITTONS wordmark, a small badge reading '1 SIZE FITS ALL', and a simple 3-step illustrated use panel. On the right, place a large headline: \u201cFINALLY, THERE\u2019S AN ELEGANT, COMFORTABLE MITTEN \u2014 FOR CATS!\u201d Beneath it, three concise feature callouts grounded in source language and non-technical logic: \u201cSoft knitted paw coverings\u201d, \u201cSimple four-mitten pack\u201d, \u201cDesigned to be instantly understood at the shelf\u201d. Include a small secondary illustrative vignette of the mittened gray cat walking quietly across a tabletop. Add one modest caption ribbon: \u201cProposed retail pack design.\u201d Do not imply laboratory validation, veterinary approval, or proven performance claims."
+    },
+    {
+      "slide_number": 4,
+      "title": "Why This Sells at the Counter",
+      "purpose": "Translate the memorable idea into merchant logic: impulse-buy clarity, fast explanation at shelf, and local-origin credibility. This is where the joke becomes reorder logic.",
+      "style_tags": [
+        "merchant logic",
+        "impulse purchase",
+        "retail sell-through",
+        "counter display",
+        "small business investors"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Layout: top headline band, then three-column content row. Headline: \u201cMEMORABLE NAME. FAMILIAR PROBLEM. EASY IMPULSE BUY.\u201d Column 1 should show a proposed countertop display mockup holding 24 packaged four-mitten packs, labeled as a proposed starter case for small retailers. Column 2 should explain in short bullets why the product can move in a tight retail footprint: \u201cExplains itself visually\u201d, \u201cFunny enough to pick up\u201d, \u201cUseful enough to purchase\u201d, \u201cGiftable and demonstrable\u201d. Column 3 should contain a simple proposed pricing card using the authorized pricing canon only: \u201cProposed retail: $19.99 / 4-mitten pack\u201d, \u201cProposed wholesale: $10.00 / pack\u201d, \u201cProposed starter case: 24 packs / $240 wholesale\u201d. Add a small lower caption citing source-backed location language without inflating claims: \u201cOrigin story: available through Paddy\u2019s Pub, home of the original kitten mittons.\u201d Do not invent sell-through percentages, reorder rates, or revenue figures."
+    },
+    {
+      "slide_number": 5,
+      "title": "What Makes It Investable",
+      "purpose": "Show disciplined upside without pretending scale is already proven: one strong SKU can lead a broader pet-accessory line if demand continues. This slide should reassure investors that the founders understand sequencing.",
+      "style_tags": [
+        "growth logic",
+        "adjacent SKU roadmap",
+        "brand architecture",
+        "measured ambition",
+        "consumer line extension"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Use a left-to-right roadmap composition. Left side: one large box for the current hero SKU, showing the proposed Kitten Mittons four-pack as the entry product. Center and right: three smaller adjacent concept boxes for future pet-accessory extensions, clearly labeled as illustrative line-extension possibilities rather than existing products\u2014examples can include quiet-paw accessories, protective pet soft goods, and humorous giftable pet accessories, all kept generic and not overdesigned. Top headline: \u201cSTART WITH ONE SKU. EXPAND ONLY IF DEMAND HOLDS.\u201d Add a short subhead: \u201cThe first product carries the story; the broader line follows proof.\u201d Include a concise bottom strip with three sequencing principles: \u201cWin attention\u201d, \u201cEarn purchase\u201d, \u201cTest reorder\u201d, \u201cExtend carefully\u201d. Do not invent launch dates, retailer commitments, or expanded product sales."
+    },
+    {
+      "slide_number": 6,
+      "title": "Why This Room Should Believe It",
+      "purpose": "Close with founder voice, disciplined ask posture, and the core investment logic: a real consumer product with local proof-of-concept energy, strong merchandising power, and a straightforward path to test broader retail rollout.",
+      "style_tags": [
+        "closing argument",
+        "founder voice",
+        "investment logic",
+        "retail discipline",
+        "ask framing"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Design a strong closing slide with a dominant quote-treatment on the left and a structured investor summary on the right. Left side: oversized quotation text using the raw source voice exactly for the closing emotional hook: \u201cKitten Mittons \u2014 you\u2019ll be smitton!\u201d Beneath it, a smaller line: \u201c\u2014 Charlie Kelly, local business owner and CAT ENTHUSIAST\u201d. Right side should have four stacked boxes labeled: \u201cReal problem\u201d, \u201cVisible fix\u201d, \u201cRetail-ready packaging\u201d, \u201cRoom to scale carefully\u201d. At the bottom, include a restrained closing strip that frames next-step use without inventing a deal already in motion: \u201cInvestment case: fund inventory, packaging, and broader small-retail testing.\u201d Include a small supportive illustrative vignette of the mittened gray cat and packaged product together. Do not include fundraising amount, valuation, endorsements, approvals, or traction numbers unless source-backed; keep the ask qualitative and disciplined."
+    }
+  ]
+}

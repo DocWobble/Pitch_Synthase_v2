@@ -1,0 +1,71 @@
+{
+  "primary_archetype": {
+    "archetype_id": "arch_newton",
+    "label": "Newton",
+    "role": "The Efficiency Optimizer",
+    "posture": "Precise, data-backed, optimized, and corrective.",
+    "win_condition": "This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws."
+  },
+  "approaches": [
+    {
+      "approach_id": "approach_1",
+      "secondary_archetype": {
+        "archetype_id": "arch_cicero",
+        "label": "Cicero",
+        "role": "The Market Evangelist",
+        "posture": "Persuasive, socially contagious, emotionally legible, and movement-building.",
+        "win_condition": "This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it."
+      },
+      "effective_archetype_id": "arch_cicero",
+      "label": "Scream Proof",
+      "pitch_angle": "Lead with the impossible visual fact that Voltex forms a real glowing plasma orb, launches a self-stabilizing bolt, and does it in a package engineered for backyard play. This wins by turning physics into playground legend: the more mechanically explainable it is, the more contagious the kid reaction becomes.",
+      "key_differentiator": "This is the loudest, most memeable approach: technical credibility exists mainly to intensify social disbelief and make on-camera kid hysteria feel earned.",
+      "visual_direction": "Hypercolor 90s toy-ad collateral fused with tabloid-proof photo evidence: oversaturated electric blues, hot pinks, acid yellows, and argon purple; huge italic block typography with chrome-outline drop shadows; freeze-frame action photography of kids mid-scream and bolts crossing real backyards; caption-callouts like 'REAL PLASMA VORTEX PROJECTILE' and 'UP TO THIRTY FEET' stamped over raw photographic moments; translucent frosted plastic body always brightly lit from within, cartridge bay visibly glowing, wide flared muzzle centered in aggressive low-angle compositions; packaging and slide language should feel like Super Soaker box art collided with lab-proof spectacle, never sleek consumer electronics."
+    },
+    {
+      "approach_id": "approach_2",
+      "secondary_archetype": {
+        "archetype_id": "arch_michelangelo",
+        "label": "Michelangelo",
+        "role": "The Product Perfectionist",
+        "posture": "Craft-obsessed, sensorially exacting, uncompromising, and quality-signaling.",
+        "win_condition": "This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone."
+      },
+      "effective_archetype_id": "arch_newton",
+      "label": "Glow Engine",
+      "pitch_angle": "Center the pitch on Voltex as a toy whose experience is qualitatively unmatched because every visible behavior is doing real work: the charging globe, the piezo click, the noble-gas color bloom, the rotating confinement field, the launched bolt. This wins by making the product feel not gimmicky but perfectly tuned, where the radical look is the direct output of optimized plasma physics.",
+      "key_differentiator": "Unlike the other approaches, this one is most focused on the product ritual itself -- charge, glow, pump, fire, watch the vortex hold together -- as the source of obsession.",
+      "visual_direction": "90s radical toy photography but with fetish-level material attention: macro close-ups of the frosted translucent ASA shell, glowing center globe, visible cartridge bay, and crawling internal arc; dense chunky display type paired with tiny technical burst labels; compositions alternate between hero product spins on black and tactile hand-held action shots showing the mandatory two-hand form; color story stays neon and candy-bright, with six variant bodies arrayed like collectible artifacts; every image should make the device read as a handheld plasma globe weaponized for play, clearly non-firearm in silhouette and irresistibly polished in execution."
+    },
+    {
+      "approach_id": "approach_3",
+      "secondary_archetype": {
+        "archetype_id": "arch_davinci",
+        "label": "Da Vinci",
+        "role": "The Paradigm Shifter",
+        "posture": "Inventive, cross-disciplinary, category-creating, and synthesis-driven.",
+        "win_condition": "This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one."
+      },
+      "effective_archetype_id": "arch_davinci",
+      "label": "Toygrade Plasma",
+      "pitch_angle": "Frame Voltex as the category break where plasma confinement, Tesla-coil theatrics, magnetic acceleration, and 90s backyard blaster culture collapse into one object. This wins by refusing comparison to Nerf entirely: it is not a better dart blaster, it is the first mass-play expression of real projectile plasma.",
+      "key_differentiator": "This is the strongest category-creation story, positioning Voltex as a new shelf logic rather than an improved entrant in an old one.",
+      "visual_direction": "Maximal toy-aisle aggression wrapped around real-physics novelty: split compositions showing the charging chamber orb on one side and backyard bolt flight on the other, connected by diagram-like lightning spirals and vortex rings; comic-book energy lines meet authentic photographic plasma footage; typography is oversized, jagged, and kinetic, with short declarative claims like 'IT SHOOTS LIGHTNING' and 'REAL PLASMA' occupying the same hierarchy as the imagery; translucent bright plastic, glowing cartridges, and flared muzzle should dominate foreground silhouettes; the whole piece should feel like a category announcement from an alternate 1997 where advanced field physics escaped the lab and landed in Toys 'R' Us."
+    },
+    {
+      "approach_id": "approach_4",
+      "secondary_archetype": {
+        "archetype_id": "arch_odysseus",
+        "label": "Odysseus",
+        "role": "The Tactical Gap-Finder",
+        "posture": "Cunning, opportunistic, asymmetrical, and advantage-seeking.",
+        "win_condition": "This pitch wins because it identifies a blind spot or back door into the market that incumbents are too rigid or too committed to their own assumptions to see, and gets there first through cunning, non-linear navigation."
+      },
+      "effective_archetype_id": "arch_odysseus",
+      "label": "Camera Can’t",
+      "pitch_angle": "Exploit the one thing the toy aisle almost never has: raw photographic evidence so unbelievable it looks fake until you realize it is documented physics. This wins by turning incumbents' dependence on CGI-style fantasy against them -- Voltex's real competitive weapon is that actual stills and live footage of plasma in flight are more persuasive than any rendered effect.",
+      "key_differentiator": "This is the dedicated 'the camera is not lying' approach, built around non-stylized proof images that weaponize disbelief itself.",
+      "visual_direction": "Evidence-first 90s chaos: disposable-camera flash aesthetics, freeze-frame shutter streaks, grain, bloom, and hard on-camera flash over real backyard action; bolts captured as actual luminous projectiles crossing the frame, cardboard scorched through, dogs and kids reacting in-frame with zero polish; loud neon sticker typography and proof-stamp callouts layered over untouched-looking photos -- 'ACTUAL PHOTO,' 'NO CGI,' 'REAL PLASMA ORB'; composition should feel like confiscated documentation from the greatest backyard toy event ever, with the bright frosted body and glowing chamber always unmistakably practical and physically present, not concept-art glossy."
+    }
+  ]
+}

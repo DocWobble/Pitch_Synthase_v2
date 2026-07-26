@@ -1,0 +1,133 @@
+{
+  "deck_title": "Pitch Deck",
+  "mode": "PAID",
+  "slide_count": 6,
+  "requested_content_slide_count": 5,
+  "deck_storyboard": [
+    {
+      "slide_number": 1,
+      "title": "Kitten Mittons",
+      "purpose": "Hero cover slide establishing the unforgettable product name, the core promise of quieter, less destructive cats, and the product's visual identity in a single memorable frame. Speaker notes should let Charlie's voice carry the opening while the slide stays clean and sellable."
+    },
+    {
+      "slide_number": 2,
+      "title": "The Household Annoyance Is Instantly Legible",
+      "purpose": "Open the argument with the pain, not the joke: noisy paw impacts and clawed furniture. This slide must make the problem feel familiar and retail-urgent for small business investors in seconds."
+    },
+    {
+      "slide_number": 3,
+      "title": "A Visible Fix You Can Understand in One Look",
+      "purpose": "Introduce the product as the oddly sensible answer: elegant, comfortable mittens for cats. The slide should preserve the humor while making the item feel physically real and shelf-ready."
+    },
+    {
+      "slide_number": 4,
+      "title": "Why This Sells at the Counter",
+      "purpose": "Translate the memorable idea into merchant logic: impulse-buy clarity, fast explanation at shelf, and local-origin credibility. This is where the joke becomes reorder logic."
+    },
+    {
+      "slide_number": 5,
+      "title": "What Makes It Investable",
+      "purpose": "Show disciplined upside without pretending scale is already proven: one strong SKU can lead a broader pet-accessory line if demand continues. This slide should reassure investors that the founders understand sequencing."
+    },
+    {
+      "slide_number": 6,
+      "title": "Why This Room Should Believe It",
+      "purpose": "Close with founder voice, disciplined ask posture, and the core investment logic: a real consumer product with local proof-of-concept energy, strong merchandising power, and a straightforward path to test broader retail rollout."
+    }
+  ],
+  "anchor_writer_output": {
+    "user_inputs": {
+      "page_1": {
+        "audience": "small business investors",
+        "conveys": "That Kitten Mittons is a real, sellable consumer pet product solving a genuine problem (cats clawing furniture and stomping noisily), already moving off the shelf at its originating retail location, with room to scale from single-location novelty item to a broader pet-accessory line."
+      },
+      "page_2": {
+        "elevator_pitch": "Hi. I'm Charlie Kelly, local business owner and CAT ENTHUSIAST. Does your cat make too much noise all the time? Always stomping around, driving you crazy? Is your cat always clawin' at your furnitures? Think there's no answer? There is! Kitten Mittons! Finally, there's an elegant, comfortable mitten -- for cats! I didn't hear anything! Is your cat one-legged? Is your cat fat, skinny, or an in between? That doesn't matter, because 1 size fits all! Kitten Mittons -- you'll be smitton! So come on down to Paddy's Pub, we're the home of the original kitten mittons!",
+        "supporting_document_provided": true,
+        "supporting_image": false,
+        "optional_notes": null
+      }
+    },
+    "deck_generation_prompt": "This was the pitch people kept repeating afterward, partly because the product name was impossible to forget and partly because the team understood that memorability was not a gimmick layered onto the business case but the business case itself. The founders operated like natural public persuaders: they knew this room would only move if the idea could be made to feel instantly legible, instantly retailable, and instantly retellable. So they built the entire presentation around a simple conversion path that small business investors could carry in their heads after leaving: household annoyance, visible fix, proven local sell-through, obvious next SKU logic. They did not walk in trying to make Kitten Mittons sound like a moonshot or a category-defining technology company. They walked in making it feel like the rare impulse-buy product that already knows how to earn attention at the shelf and can be disciplined into a real consumer business.\n\nThe founding supergroup looked exactly like the problem would have selected if it could choose its own champions. Charlie Kelly was the irrepressible originator and frontman, a neighborhood operator with the instincts of a born pitchman, the kind of person who notices what annoys ordinary people in ordinary rooms and cannot let go until he has turned the annoyance into a sellable object. He was not presented as a polished corporate founder; he was presented as the reason the idea exists at all, someone whose conviction is so direct that it disarms skepticism before the spreadsheet even appears. His value in the room was not technical jargon but contagious certainty, product theater, and a street-level understanding of what makes someone at a bar, a checkout counter, or a neighborhood gift shop say, fine, give me one. Beside him was the practical retail operator who had run day-to-day merchandising and counter sales in a small-footprint, cash-conscious environment and could talk credibly about what actually moves when inventory space is tight and attention is scarce. That person translated Charlie's showmanship into merchant logic: why a strange-looking product still sells if the problem is familiar enough and the packaging does enough of the explaining.\n\nThe team also included a textile-minded maker who understood fit, fabrication tolerance, and the ugly reality of making soft goods for inconsistent bodies. This was the person who could stand between comedy and product failure. Their role in the pitch was to make the audience feel that the mitten was not just a joke with yarn on it but a physical consumer item someone had thought through in terms of comfort, repeatability, and use by real pet owners. The supergroup's technical credibility came not from overclaiming invention but from having the right person to answer the obvious product question everyone had the moment they saw the red mittens: can this be made consistently enough, simply enough, and cheaply enough to keep the laugh while reducing the friction? There was also a brand-and-growth operator with experience turning one winning item into a family of adjacent consumer products. That founder's presence kept the deck from getting trapped at novelty scale. They framed Kitten Mittons as the front door into a broader pet-accessory line without pretending the expansion had already happened. The point was not to inflate; it was to show that the first product has the kind of distinctiveness that can anchor follow-on accessories once demand patterns are understood.\n\nCrucially, the team included its own graphic designer and marketing lead, the person who designed and produced this presentation by hand. They came from the world of local retail promotions, direct-response advertising, in-store signage, and low-budget visual persuasion where every inch of a page has to earn attention immediately. Their taste defined the entire deck. They understood that for this audience and this product, slick venture-minimalism would have killed the truth of the idea. Instead, they refined the public-access-infomercial energy of the original product demonstration into something deliberate: dramatic before-and-after contrasts, oversized problem headlines, punchy caption boxes, dense but controlled visual rhythm, and a color story built around domestic irritation versus mittened calm. They did not sand off the weirdness; they disciplined it. The deck felt handcrafted by someone who knew exactly how to turn an improbable household object into an object people could imagine seeing on an endcap, beside a register, or in a local TV spot.\n\nThe audience pressure in the room was specific. These were small business investors, not venture tourists looking for software language. They arrived primed to distrust novelty products, especially anything with a comic first impression. They had seen too many one-off gag items with no repeat economics, no merchant discipline, and no credible argument beyond look how crazy this is. The team knew that and structured the argument to neutralize the central fear first: that Kitten Mittons was just a bit. The presentation did not begin with grand market abstraction. It began with the lived irritation in the home: clawed furniture, noisy floors, and the constant, low-grade frustration of pet owners who want a non-destructive fix. The room had to see the product solving a familiar nuisance before it could enjoy the absurdity of the object itself. Once the annoyance was made vivid, the solution became oddly sensible. Only then did the deck lean into the name, the red mittens, the memorability, and the local retail origin story.\n\nThat sequencing made the acceptance of the pitch feel inevitable. The deck sharpened a contrast the investors could understand in seconds: chaos on one side, control on the other; scratched sofa versus protected fabric; hard little stomps on wood versus softened contact; a cat owner feeling resigned versus a cat owner feeling relieved and amused enough to buy. The visual language repeatedly staged this contrast, drawing from the reference materials' low-budget home-demo authenticity while elevating it into something crisp and intentional. The mittened cat on the table, the presenter crouched behind with unapologetic enthusiasm, the cluttered domestic setting, the plainspoken demo energy: all of that was treated as proof of product-world fit rather than an embarrassment to conceal. The deck made clear, without saying it defensively, that this item was born in the exact kind of real-world environment where impulse consumer products often first prove themselves.\n\nThe team was equally careful about what not to say. They did not oversell scale as though a single product had already become a national brand. They did not invent institutional endorsements, veterinary claims, or technical superiority language that would trigger diligence questions the product did not need. They did not pretend that every cat owner is the customer. They stayed disciplined: this is a sellable household accessory aimed at a recognizable complaint, already resonating in its originating retail context, with obvious visual merchandising power and room to extend into a broader pet-accessory line if the first product continues to validate demand. That restraint read as confidence. It told the room the founders understood the difference between a good local product with expansion potential and a fantasy dressed up as consumer packaged goods.\n\nTheir chemistry did enormous work. Charlie carried the room emotionally, but he was never left alone to carry the case. Every time his instinct for slogan and spectacle risked making the product sound too wild, another founder grounded it in merchant behavior, product logic, or brand architecture. Every time the practical operators risked flattening the fun, Charlie restored the thing investors actually need for a consumer product to travel: a story people repeat. That balance became the pitch's signature. The team seemed to know something the audience only gradually recognized: for a product like this, the joke and the utility are not enemies. The joke is what gets the product picked up; the utility is what gets it purchased; the retail proof is what gets it reordered; the broader line logic is what makes it investable.\n\nBy the end, the deck had done something difficult and rare. It made a product with obvious comic surface area feel more credible by leaning into its demonstrability rather than away from it. It made local traction feel like the right beginning, not a limitation. It made the product name work as a strategic asset. And it made the founders seem like the only people who could have pitched it this way: one person to originate the obsession, one to validate the sell-through instinct, one to keep the soft-goods reality honest, one to map the path from one SKU to many, and one to shape all of it into a presentation whose aesthetic was inseparable from the sales argument. The room did not leave thinking they had witnessed a novelty act. They left thinking they had seen an unusually sharp consumer sell from people who understood exactly how a strange product becomes a real one."
+  },
+  "paid_storyboard": [
+    {
+      "slide_number": 1,
+      "title": "Kitten Mittons",
+      "purpose": "Hero cover slide establishing the unforgettable product name, the core promise of quieter, less destructive cats, and the product's visual identity in a single memorable frame. Speaker notes should let Charlie's voice carry the opening while the slide stays clean and sellable.",
+      "style_tags": [
+        "hero cover",
+        "direct-response retail",
+        "consumer product",
+        "memorable name",
+        "problem-solution"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. This is the one and only title cover slide. Use one dominant hero visual: an illustrative mockup based on the provided source scene showing a gray cat mid-stride wearing four bright red knitted paw mittens on a wooden tabletop, with the quirky home-demo energy preserved but composed more cleanly for a pitch cover. Keep the crouched presenter only as a subtle background figure, secondary to the cat. Large dominant product name at upper left: \u201cKITTEN MITTONS\u201d. One short tagline beneath it: \u201cQuiet paws. Safer furniture.\u201d No other argument text, no charts, no diagrams, no multi-panel layout. Leave generous negative space around the title and hero image so the slide feels like a real exported cover slide."
+    },
+    {
+      "slide_number": 2,
+      "title": "The Household Annoyance Is Instantly Legible",
+      "purpose": "Open the argument with the pain, not the joke: noisy paw impacts and clawed furniture. This slide must make the problem feel familiar and retail-urgent for small business investors in seconds.",
+      "style_tags": [
+        "pain point",
+        "before state",
+        "domestic frustration",
+        "split-screen",
+        "investor framing"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Build the slide around a strong left-right contrast. Left half: the problem state, using illustrative stock-style domestic imagery rather than real proof photos\u2014close-up of scratched sofa fabric, stylized claw marks, simple comic sound-caption treatment like 'stomp stomp' near a hardwood floor silhouette, and a frustrated cat-owner context implied through objects not faces. Right half: concise text framing the problem. Large headline across the top: \u201cCATS SCRATCH. CATS STOMP. OWNERS NOTICE.\u201d Below, three short stacked problem callouts: \u201cClawed furniture\u201d, \u201cNoisy floors and tables\u201d, \u201cLow-grade daily irritation\u201d. Add one small source-backed quote box near the lower right using the raw pitch language exactly: \u201cDoes your cat make too much noise all the time? Always stomping around, driving you crazy?\u201d This is a rhetorical slide, not a data slide; do not invent metrics, customer counts, or market size."
+    },
+    {
+      "slide_number": 3,
+      "title": "A Visible Fix You Can Understand in One Look",
+      "purpose": "Introduce the product as the oddly sensible answer: elegant, comfortable mittens for cats. The slide should preserve the humor while making the item feel physically real and shelf-ready.",
+      "style_tags": [
+        "product reveal",
+        "solution framing",
+        "soft goods",
+        "retail packaging",
+        "demonstrability"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Use an asymmetrical layout with one large hero product mockup on the left: proposed packaged four-mitten retail card showing bright red knitted cat mittens/booties with a die-cut window, bold KITTEN MITTONS wordmark, a small badge reading '1 SIZE FITS ALL', and a simple 3-step illustrated use panel. On the right, place a large headline: \u201cFINALLY, THERE\u2019S AN ELEGANT, COMFORTABLE MITTEN \u2014 FOR CATS!\u201d Beneath it, three concise feature callouts grounded in source language and non-technical logic: \u201cSoft knitted paw coverings\u201d, \u201cSimple four-mitten pack\u201d, \u201cDesigned to be instantly understood at the shelf\u201d. Include a small secondary illustrative vignette of the mittened gray cat walking quietly across a tabletop. Add one modest caption ribbon: \u201cProposed retail pack design.\u201d Do not imply laboratory validation, veterinary approval, or proven performance claims."
+    },
+    {
+      "slide_number": 4,
+      "title": "Why This Sells at the Counter",
+      "purpose": "Translate the memorable idea into merchant logic: impulse-buy clarity, fast explanation at shelf, and local-origin credibility. This is where the joke becomes reorder logic.",
+      "style_tags": [
+        "merchant logic",
+        "impulse purchase",
+        "retail sell-through",
+        "counter display",
+        "small business investors"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Layout: top headline band, then three-column content row. Headline: \u201cMEMORABLE NAME. FAMILIAR PROBLEM. EASY IMPULSE BUY.\u201d Column 1 should show a proposed countertop display mockup holding 24 packaged four-mitten packs, labeled as a proposed starter case for small retailers. Column 2 should explain in short bullets why the product can move in a tight retail footprint: \u201cExplains itself visually\u201d, \u201cFunny enough to pick up\u201d, \u201cUseful enough to purchase\u201d, \u201cGiftable and demonstrable\u201d. Column 3 should contain a simple proposed pricing card using the authorized pricing canon only: \u201cProposed retail: $19.99 / 4-mitten pack\u201d, \u201cProposed wholesale: $10.00 / pack\u201d, \u201cProposed starter case: 24 packs / $240 wholesale\u201d. Add a small lower caption citing source-backed location language without inflating claims: \u201cOrigin story: available through Paddy\u2019s Pub, home of the original kitten mittons.\u201d Do not invent sell-through percentages, reorder rates, or revenue figures."
+    },
+    {
+      "slide_number": 5,
+      "title": "What Makes It Investable",
+      "purpose": "Show disciplined upside without pretending scale is already proven: one strong SKU can lead a broader pet-accessory line if demand continues. This slide should reassure investors that the founders understand sequencing.",
+      "style_tags": [
+        "growth logic",
+        "adjacent SKU roadmap",
+        "brand architecture",
+        "measured ambition",
+        "consumer line extension"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Use a left-to-right roadmap composition. Left side: one large box for the current hero SKU, showing the proposed Kitten Mittons four-pack as the entry product. Center and right: three smaller adjacent concept boxes for future pet-accessory extensions, clearly labeled as illustrative line-extension possibilities rather than existing products\u2014examples can include quiet-paw accessories, protective pet soft goods, and humorous giftable pet accessories, all kept generic and not overdesigned. Top headline: \u201cSTART WITH ONE SKU. EXPAND ONLY IF DEMAND HOLDS.\u201d Add a short subhead: \u201cThe first product carries the story; the broader line follows proof.\u201d Include a concise bottom strip with three sequencing principles: \u201cWin attention\u201d, \u201cEarn purchase\u201d, \u201cTest reorder\u201d, \u201cExtend carefully\u201d. Do not invent launch dates, retailer commitments, or expanded product sales."
+    },
+    {
+      "slide_number": 6,
+      "title": "Why This Room Should Believe It",
+      "purpose": "Close with founder voice, disciplined ask posture, and the core investment logic: a real consumer product with local proof-of-concept energy, strong merchandising power, and a straightforward path to test broader retail rollout.",
+      "style_tags": [
+        "closing argument",
+        "founder voice",
+        "investment logic",
+        "retail discipline",
+        "ask framing"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no speaker notes, no page number, no slide count, and no pagination indicator anywhere. Design a strong closing slide with a dominant quote-treatment on the left and a structured investor summary on the right. Left side: oversized quotation text using the raw source voice exactly for the closing emotional hook: \u201cKitten Mittons \u2014 you\u2019ll be smitton!\u201d Beneath it, a smaller line: \u201c\u2014 Charlie Kelly, local business owner and CAT ENTHUSIAST\u201d. Right side should have four stacked boxes labeled: \u201cReal problem\u201d, \u201cVisible fix\u201d, \u201cRetail-ready packaging\u201d, \u201cRoom to scale carefully\u201d. At the bottom, include a restrained closing strip that frames next-step use without inventing a deal already in motion: \u201cInvestment case: fund inventory, packaging, and broader small-retail testing.\u201d Include a small supportive illustrative vignette of the mittened gray cat and packaged product together. Do not include fundraising amount, valuation, endorsements, approvals, or traction numbers unless source-backed; keep the ask qualitative and disciplined."
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+[
+  {
+    "slide_index": 1,
+    "slide_label": "Slide 1",
+    "headline": "BloomOS",
+    "body_points": [],
+    "speaker_note": "Hero cover slide establishing BloomOS as a serious, infrastructure-grade plant intelligence platform. Speaker note focus: do not argue yet; simply set the tone with confidence, restraint, and local-first hardware plus intelligence."
+  },
+  {
+    "slide_index": 2,
+    "slide_label": "Slide 2",
+    "headline": "Redrawing the Category",
+    "body_points": [],
+    "speaker_note": "Open the argument by repositioning BloomOS from plant gadget to integrated hardware-and-intelligence platform. Speaker notes: the category mistake is app-first thinking; BloomOS is infrastructure for living systems."
+  },
+  {
+    "slide_index": 3,
+    "slide_label": "Slide 3",
+    "headline": "The Friction Behind the Green Rush",
+    "body_points": [],
+    "speaker_note": "Define the problem operationally: plant care fails because existing tools do not create dependable care loops. Speaker notes: avoid sentimental framing; highlight inconsistency, drop-off, and poor system design."
+  },
+  {
+    "slide_index": 4,
+    "slide_label": "Slide 4",
+    "headline": "BloomOS: The Closed Loop",
+    "body_points": [],
+    "speaker_note": "Present the solution as a dependable closed loop between sensing, interpretation, and action. Speaker notes: this is the core mental model for the company and should feel simple, precise, and complete."
+  },
+  {
+    "slide_index": 5,
+    "slide_label": "Slide 5",
+    "headline": "BloomHub 8 System Architecture",
+    "body_points": [],
+    "speaker_note": "Explain the hardware architecture concretely and make manufacturability feel grounded. Speaker notes: emphasize deterministic design, wall power, USB-C, and up to eight plant connections."
+  },
+  {
+    "slide_index": 6,
+    "slide_label": "Slide 6",
+    "headline": "Why Local-First Matters",
+    "body_points": [],
+    "speaker_note": "Turn local-first from feature into irreducible reliability principle. Speaker notes: living systems cannot depend on brittle cloud logic; BloomOS survives network failure by design."
+  },
+  {
+    "slide_index": 7,
+    "slide_label": "Slide 7",
+    "headline": "Trusted Edge: Tethers and Intelligent Stakes",
+    "body_points": [],
+    "speaker_note": "Show why BloomOS data quality and actuation quality start at the edge hardware, not in a generic app. Speaker notes: the tether system solves batteries, fragmentation, and trust."
+  },
+  {
+    "slide_index": 8,
+    "slide_label": "Slide 8",
+    "headline": "PAW Extends the System from Monitoring to Optimization",
+    "body_points": [],
+    "speaker_note": "Introduce Plasma-Activated Water as a serious differentiated nutrition layer within the platform, not a gimmick. Speaker notes: be disciplined, mechanistic, and grounded."
+  },
+  {
+    "slide_index": 9,
+    "slide_label": "Slide 9",
+    "headline": "The Real Software Moat Is the Schema Library",
+    "body_points": [],
+    "speaker_note": "Make the central software thesis explicit: BloomOS owns the validated interpretation layer, not any single AI model. Speaker notes: this is where investors should feel compounding defensibility."
+  },
+  {
+    "slide_index": 10,
+    "slide_label": "Slide 10",
+    "headline": "From Telemetry to Species-Aware Action",
+    "body_points": [],
+    "speaker_note": "Demonstrate how BloomOS translates noisy biological data into bounded decisions rather than generic advice. Speaker notes: show process discipline and action boundaries."
+  },
+  {
+    "slide_index": 11,
+    "slide_label": "Slide 11",
+    "headline": "Early Stress Detection Before Visible Decline",
+    "body_points": [],
+    "speaker_note": "Highlight the most compelling intelligence claim with mechanism, not hype. Speaker notes: focus on soil moisture decay dynamics and diurnal transpiration curves."
+  },
+  {
+    "slide_index": 12,
+    "slide_label": "Slide 12",
+    "headline": "Primary User Wedge, Secondary Resilience Market",
+    "body_points": [],
+    "speaker_note": "Show that BloomOS has an attractive consumer entry point and a broader strategic adjacency via local-first resilience. Speaker notes: one core thesis, multiple constituencies."
+  },
+  {
+    "slide_index": 13,
+    "slide_label": "Slide 13",
+    "headline": "Proposed Product and Revenue Model",
+    "body_points": [],
+    "speaker_note": "Provide a concrete commercial structure without overstating what is already launched. Speaker notes: hardware-first purchase, optional software layer, local utility preserved without subscription."
+  },
+  {
+    "slide_index": 14,
+    "slide_label": "Slide 14",
+    "headline": "Pilot Signal and Productization Path",
+    "body_points": [],
+    "speaker_note": "Use the provided pilot data carefully while keeping the slide grounded in manufacturing next steps. Speaker notes: pilot proves demand and outcomes direction; the raise funds productization and scale."
+  },
+  {
+    "slide_index": 15,
+    "slide_label": "Slide 15",
+    "headline": "Why This Wins Against Fragile Alternatives",
+    "body_points": [],
+    "speaker_note": "Sharpen the competitive contrast without inventing named competitors or unsupported claims. Speaker notes: compare architectures, not brands."
+  },
+  {
+    "slide_index": 16,
+    "slide_label": "Slide 16",
+    "headline": "Execution Priorities and Team Requirements",
+    "body_points": [],
+    "speaker_note": "Address team and execution readiness without inventing founder biographies not present in source. Speaker notes: show the capability stack required to win and what seed capital unlocks."
+  },
+  {
+    "slide_index": 17,
+    "slide_label": "Slide 17",
+    "headline": "The Ask",
+    "body_points": [],
+    "speaker_note": "Close with the funding ask, use of proceeds, and the strategic reason to invest now. Speaker notes: BloomOS is not a novelty gadget; it is a hardware-anchored intelligence platform with compounding schema defensibility."
+  }
+]

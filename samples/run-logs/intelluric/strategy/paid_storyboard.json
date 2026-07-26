@@ -1,0 +1,96 @@
+{
+  "visual_grammar": {
+    "background": "full-bleed near-black charcoal field with a subtle blue-black gradient bloom at center, layered with faint paper-grain texture and sparse ghosted technical excerpt fragments at very low opacity near the edges only",
+    "foreground": "warm ivory text and linework with high contrast against the dark field, using restrained metallic-stone highlights for key borders and separators",
+    "accent": "single signal accent in deep oxidized crimson used only for risk marks, arrows, redlines, and critical emphasis strokes",
+    "typography": "editorial high-contrast serif for major headlines, disciplined neo-grotesk sans for body copy, all-caps narrow sans for labels, occasional monospaced micro-annotations for technical notes",
+    "diagram_style": "precise schematic line diagrams with open geometry, thin outlined nodes, dependency arrows, bracketed callouts, and translucent ivory fills; no soft 3D charts",
+    "panel_style": "dark graphite panels with faint internal texture, thin warm-ivory keylines, slightly rounded corners, and selective inset glow on important proof fragments",
+    "grid_system": "12-column grid with wide outer margins, strong left alignment, oversized thesis area in upper left, modular evidence bands below, and asymmetric right-side visual anchor zones",
+    "line_weight": "hairline 1px dividers and 2px diagram strokes, with occasional 3px accent strokes for failure-path emphasis"
+  },
+  "authorized_inferences": {
+    "pricing": "Proposed pricing model: three fixed-scope service tiers priced per engagement, not hourly \u2014 Threshold Review at $4,800 for one core artifact plus one revision round; Diligence Hardening at $12,500 for up to three related artifacts plus two revision rounds; Red-Team Intensive at $28,000 for cross-document technical interrogation, mock reviewer feedback, and three revision rounds. Add-on artifacts priced at $1,500 each. Rush turnaround inside 72 hours adds 25%. Standard turnaround remains 2 to 7 solar days scope dependent. No exclusivity clauses, no IP claims, no billable hours.",
+    "mockup_prototype_design": "Proposed product visual and interaction system: a dark, evidence-forward review workspace branded InTelluric, with an owl-to-wireframe owl split illustration as the primary metaphor, shield-like curved boundary forms, editorial serif thesis headlines, modular review cards, committee-style labels, and a forward-projecting flow from raw concept to hardened record. When shown, it appears as a desktop web interface mockup, not a live product screenshot or validated software."
+  },
+  "storyboard": [
+    {
+      "slide_number": 1,
+      "title": "InTelluric",
+      "purpose": "Hero cover slide. Establish InTelluric as the technical co-author for consequential handoffs. Speaker notes: Early-stage technical founders, research teams, and startup operators approaching a critical development threshold \u2014 seeking investment, regulatory approval, grants, or patent protection. InTelluric is the technical co-author who catches the silent fault before it becomes the fatal flaw \u2014 making your vision structurally unambiguous and defensible to every reader who will never hear you explain it in person.",
+      "style_tags": [
+        "hero",
+        "institutional",
+        "evidentiary",
+        "dark-editorial",
+        "defensible-vision"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. This is the one and only title cover slide. Use a minimal composition with generous negative space. Large dominant wordmark-style title 'InTelluric' in the upper left quadrant, with one short tagline beneath it: 'Technical co-author for consequential handoffs.' On the right half, place one strong hero visual: a conceptual split owl illustration where one side is naturalistic and the other side is schematic wireframe/mechanical blueprint, framed by a shield-like curved boundary that implies protected core and projected proof. Add a single thin horizontal divider near the bottom and a small all-caps audience line in microtype: 'FOR TECHNICAL FOUNDERS, RESEARCH TEAMS, AND OPERATORS AT CRITICAL THRESHOLDS'. No charts, no multi-panel layout, no metrics, no extra arguments, no people, no page numbers."
+    },
+    {
+      "slide_number": 2,
+      "title": "The next handoff is the most dangerous threshold",
+      "purpose": "Define the problem with force and precision: projects often fail not at conception, but when meaning must survive outside the founder's presence. This slide should make the vulnerability feel operational, not abstract.",
+      "style_tags": [
+        "problem",
+        "thesis",
+        "risk-framing",
+        "technical-communication",
+        "poster-like"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. Design a severe thesis slide with a dominant left-aligned headline: 'The next handoff decides whether the project survives.' Below it, a short supporting paragraph explaining that hidden failure points, untested assumptions, outdated design elements, and even the wrong typo can become fatal once committed to documentation that future readers must interpret without the founder present. On the right side, show a vertical cascade diagram of four stacked failure fragments connected by downward accent arrows: 'scientific oversight', 'untested assumption', 'documentation lock-in', 'silent rejection / physical failure'. Surround the cascade with small proof-like annotation snippets, redline marks, and committee-style excerpt boxes, all clearly conceptual and not presented as real evidence. Add a narrow footer band listing threshold contexts in small panels: investment, grant review, regulatory review, patent dispute, feasibility decision. No people, no invented traction, no page numbers."
+    },
+    {
+      "slide_number": 3,
+      "title": "Ideas become vulnerable when they must defend themselves",
+      "purpose": "Translate the founder narrative into a structural insight: a concept can be brilliant in conversation and still fail in independent reading. Make the contrast between founder narration and defensible record visually obvious.",
+      "style_tags": [
+        "mechanism",
+        "contrast",
+        "concept-to-record",
+        "diagrammatic",
+        "analytical"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. Use a two-zone layout. Left zone: label 'INSIDE THE FOUNDER'S HEAD' with a dense but elegant cluster of interconnected concept nodes such as mechanism, assumptions, dependencies, risk surface, open questions, boundary conditions. Right zone: label 'OUTSIDE THE ROOM' with a cleaner but more rigid stack of artifact panels labeled pitch deck, IRB proposal, grant application, due diligence memo, patent litigation brief, feasibility assessment, technical basis report. Between the two zones, a narrowing transfer channel with several accent-marked fracture points where ambiguity can collapse meaning. Add one central statement in serif type across the middle: 'If the record cannot survive absentia, the idea has not crossed the threshold.' Include fine schematic arrows showing the transformation from implicit understanding to explicit defensible articulation. This is conceptual only; do not depict actual documents from real institutions. No people, no page numbers."
+    },
+    {
+      "slide_number": 4,
+      "title": "What InTelluric does",
+      "purpose": "Present the service clearly as technical co-authorship and structural interrogation, not polish. Show the concrete artifact types and what gets improved in each engagement.",
+      "style_tags": [
+        "solution",
+        "service-map",
+        "artifact-types",
+        "institutional",
+        "clear-offer"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. Use a strong top-left headline: 'We interrogate technical communication until the vision can survive hostile reading.' Under the headline, place a concise three-part process strip with arrows: 'surface the mechanism' -> 'trace assumptions and dependencies' -> 'harden the record for independent readers'. Below, create a modular grid of dark panels representing supported outputs, with concise labels only: Pitch Decks, IRB Proposals, Grant Applications, Patent Litigation, Feasibility Assessments, Mock Committee Feedback, Independent Technical Review, Red Team Audits, Due Diligence, Technical Basis Reports. Each panel includes one short line of value framing such as clarity, defensibility, reviewer anticipation, risk exposure, or mechanism articulation. On the right margin, include a slim callout stack stating source-backed operating terms: '2\u20137 solar days', 'scoped by deliverables', 'no billable hours', 'no IP claims'. Do not claim results or customers. No page numbers."
+    },
+    {
+      "slide_number": 5,
+      "title": "Business model and go-to-threshold plan",
+      "purpose": "Supply the missing investor-facing commercial structure: who buys, when they buy, how pricing works, and why this wedges into critical moments. Present inferred pricing as proposed, not validated.",
+      "style_tags": [
+        "business-model",
+        "pricing",
+        "go-to-market",
+        "commercial",
+        "athena"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. Use a split layout. Left two-thirds: a threshold-trigger buyer map with three buyer columns labeled Technical Founders, Research Teams, Startup Operators. Under each, show trigger moments such as fundraising prep, grant submission, regulatory packet prep, patent challenge, diligence request, internal handoff. Use arrows converging into one central box labeled 'bring in InTelluric before the record hardens'. Right one-third: a pricing architecture panel explicitly labeled 'PROPOSED ENGAGEMENT MODEL'. Show three stacked tier cards with these exact names and prices: 'Threshold Review \u2014 $4,800', 'Diligence Hardening \u2014 $12,500', 'Red-Team Intensive \u2014 $28,000'. Under each card, add short scope text consistent with the authorized pricing model: one core artifact plus one revision round; up to three related artifacts plus two revision rounds; cross-document interrogation with mock reviewer feedback plus three revision rounds. Add a small footer note: 'Add-on artifacts $1,500 each. Rush inside 72 hours +25%. Fixed-scope, not hourly.' Make it clear this is a proposed pricing structure, not historical revenue or validated sales data. No page numbers."
+    },
+    {
+      "slide_number": 6,
+      "title": "Why this wins now",
+      "purpose": "Close with inevitability, positioning, and the ask. Frame InTelluric as the discipline serious builders adopt as scrutiny increases. Include a practical capital/use-of-proceeds ask because the deck must be complete.",
+      "style_tags": [
+        "closing",
+        "positioning",
+        "ask",
+        "future-state",
+        "defensible-category"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software chrome and no pagination of any kind anywhere. Build a persuasive closing slide with three horizontal evidence bands. Top band: large serif statement 'Serious builders will be judged by whether their ideas can survive independent scrutiny.' Middle band: three concise positioning cards labeled 'Not storytelling polish', 'Not a substitute for subject-matter expertise', 'Preemptive structural defense at critical thresholds'. Bottom band: two-column close. Left column shows a simple category positioning matrix with horizontal axis 'surface persuasion -> technical defensibility' and vertical axis 'generic support -> threshold-critical intervention'; place one marked point for InTelluric in the upper-right quadrant and leave other quadrants generically labeled without naming competitors. Right column shows an ask panel labeled 'PROPOSED RAISE / USE OF PROCEEDS' with a concise inferred early-stage structure: '$750K pre-seed to expand reviewer bench, productize the review workflow, build repeatable red-team infrastructure, and accelerate threshold-based acquisition.' Present this as a proposal, not as an existing round. End with the line 'You have a vision \u2014 we draw the rest of it.' No page numbers, no endorsements, no invented traction."
+    }
+  ]
+}

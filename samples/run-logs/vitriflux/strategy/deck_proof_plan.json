@@ -1,0 +1,264 @@
+{
+  "deck_title": "Pitch Deck",
+  "mode": "PAID",
+  "slide_count": 14,
+  "requested_content_slide_count": 13,
+  "deck_storyboard": [
+    {
+      "slide_number": 1,
+      "title": "Vitriflux",
+      "purpose": "Title / hero cover. Establish the company and product category with a single dominant object and a short tagline. No argument yet. Speaker notes should frame Vitriflux as a software-defined thermal backplane for AI hardware and signal that the category shift is from passive cooling geometry to addressable thermal routing."
+    },
+    {
+      "slide_number": 2,
+      "title": "Cooling is still built for a static map. AI heat is not.",
+      "purpose": "Open the argument with the core mismatch. Present today\u2019s cooling assumption versus actual workload-shaped heat behavior. This slide should make the audience feel the category error before introducing Vitriflux as the solution."
+    },
+    {
+      "slide_number": 3,
+      "title": "Static cooling wastes capacity to protect against moving hotspots.",
+      "purpose": "Translate the mismatch into operational pain. Show why fixed plumbing forces oversized pumps, aggressive coolant temperatures, redundant manifolds, and unused cooling headroom. This is the bridge from technical problem to economic importance."
+    },
+    {
+      "slide_number": 4,
+      "title": "Vitriflux adds an addressable thermal-routing layer.",
+      "purpose": "Introduce the invention clearly and precisely. Present the plate as a backplane or switch fabric between variable heat sources and existing cooling interfaces. This is the mental-model slide."
+    },
+    {
+      "slide_number": 5,
+      "title": "What the system does \u2014 and what it does not do",
+      "purpose": "Build trust through boundary discipline. Explicitly separate redistribution from removal and list the product boundary from the source document. This slide defuses skepticism."
+    },
+    {
+      "slide_number": 6,
+      "title": "How thermal routing could work at the cell level",
+      "purpose": "Present the proposed operating principle without overstating certainty. Show the cell anatomy and note that the exact physics has not yet been selected. This is where scientific seriousness becomes visible."
+    },
+    {
+      "slide_number": 7,
+      "title": "System architecture",
+      "purpose": "Translate the concept into a complete stack that engineers and partners can diligence. Show the components and control loop from sensor input to routing state to coolant interfaces."
+    },
+    {
+      "slide_number": 8,
+      "title": "First product: designed to fit existing liquid-cooled AI hardware",
+      "purpose": "Make the entry wedge credible. Show integration location, first-product envelope, and serviceability. This is the slide that converts hardware skeptics."
+    },
+    {
+      "slide_number": 9,
+      "title": "Why this matters economically",
+      "purpose": "Tie technical performance to infrastructure value without inventing outcomes. Show the economic logic buyers care about: density, throttling, overprovisioning, and cooling-power efficiency."
+    },
+    {
+      "slide_number": 10,
+      "title": "Commercialization: start where pain is sharp and integration is lowest-friction",
+      "purpose": "Provide the required commercialization strategy. Show who buys, who uses, the adoption wedge, partner path, revenue mechanism, and how the company scales without inventing traction or pricing."
+    },
+    {
+      "slide_number": 11,
+      "title": "Development program and evidence gates",
+      "purpose": "Show that uncertainty is decomposed into a disciplined program. This slide should turn scientific and engineering risk into diligence structure."
+    },
+    {
+      "slide_number": 12,
+      "title": "Principal uncertainties the company is already designed to answer",
+      "purpose": "Address the obvious diligence questions directly. This slide should project seriousness by naming the risks rather than hiding them."
+    },
+    {
+      "slide_number": 13,
+      "title": "Why AI infrastructure first \u2014 and where the platform can extend",
+      "purpose": "Earn the platform story by showing that AI is the urgent wedge and adjacent markets are a consequence of the architecture, not current business sprawl."
+    },
+    {
+      "slide_number": 14,
+      "title": "The thermal control plane for dense compute",
+      "purpose": "Close with the category claim, the narrow initial product, and the invitation to engage in diligence or partnership. This final slide should feel inevitable, not inflated."
+    }
+  ],
+  "anchor_writer_output": {
+    "user_inputs": {
+      "page_1": {
+        "audience": "Deep-tech and infrastructure investors, AI hardware companies, data-center operators, and strategic thermal-management partners.",
+        "conveys": "1. This is a category change: thermal management becomes addressable and controllable rather than passive plumbing.\n2. This has a credible entry point: the first product integrates with existing liquid-cooled AI hardware instead of requiring a new data center.\n3. This can become a platform: the ceramic cell architecture creates defensible hardware, control data, and applications beyond AI racks."
+      },
+      "page_2": {
+        "elevator_pitch": "Vitriflux\n\nA software-defined thermal backplane for AI hardware.\n\nAI accelerators do not produce heat uniformly. Hotspots move across chips, boards, and racks as workloads change, but today\u2019s cooling systems are fixed plumbing designed around a worst-case thermal map. Operators compensate with oversized pumps, aggressive coolant temperatures, redundant manifolds, and unused cooling capacity.\n\nVitriflux is developing a field-addressable ceramic plate that routes heat through hardware the way a network switch routes data. A grid of controllable thermal cells changes the preferred direction of heat flow in response to live temperature data, moving energy away from transient hotspots and toward whichever cooling interface has available capacity.\n\nThe initial product sits between accelerator modules and an existing liquid-cooling loop. It does not replace the facility cooling system or require changes to the processors. It adds an adaptive thermal-routing layer intended to increase rack density, reduce hotspot throttling, and let operators use installed cooling capacity more effectively.\n\nVitriflux begins with AI infrastructure, where every recovered watt and square centimeter has immediate value. The underlying platform could later extend to power electronics, battery systems, aerospace electronics, and industrial equipment with irregular thermal loads.\n\nProblem solved: Static cooling architectures waste capacity and constrain compute density because they cannot respond spatially to changing heat loads.",
+        "supporting_document_provided": true,
+        "supporting_image": true,
+        "optional_notes": null
+      }
+    },
+    "deck_generation_prompt": "This was the pitch people kept referring to afterward as the moment a familiar infrastructure problem suddenly looked like an unclaimed control layer. The founding team came across not as a startup trying to decorate a cooling component with software language, but as the rare synthesis group that could see the blind spot between materials science, thermal engineering, control systems, and AI infrastructure economics all at once. Their chemistry made the core claim feel less like a speculative analogy and more like an engineering inevitability waiting for the right people to articulate it: if compute has become dynamic, dense, and workload-shaped, then heat management cannot remain static, overprovisioned plumbing forever.\n\nThe team had the unmistakable profile of a problem-selected supergroup. The CEO had spent years close to advanced compute systems and knew how quickly thermal constraints become capital constraints once accelerators are packed at the edge of tolerable power density; this person spoke with the discipline of someone who had seen infrastructure buyers punish hand-waving and reward precise system-boundary thinking. The chief scientist was a field-crossing materials researcher whose reputation came from working at the edge of ceramic, ferroic, or interfacial transport phenomena and who was visibly more interested in first principles than hype; when this person described the cell-level hypothesis, the room understood that the mechanism was still under comparative evaluation, but also that the scientific reasoning was serious. The systems architect had previously built or operated high-reliability thermal, power, or hardware-control systems at scale and gave the company its practical spine: integration envelopes, control intervals, serviceability, connectors, manifold realities, fault behavior, deployment friction. The commercial operator had sold into hard technical organizations before and understood exactly how server OEMs, cooling providers, and infrastructure operators each read risk differently. And the team\u2019s graphic designer and marketing lead was not an external polish layer but one of the essential translators of the company itself: someone with a background in technical brand systems for semiconductor, robotics, or industrial product launches, who understood how to make complex physical systems legible without softening them. This presentation was designed and produced by that person by hand, and every page carried their specific taste: graphite fields, ceramic blacks, copper pathing, thermal-vector overlays, terse engineering typography, and visual compositions that made the product feel simultaneously material and computational.\n\nThey were presenting into a room full of people who were unusually difficult to impress for different reasons. Deep-tech investors were alert to scientific overreach. AI hardware companies were prepared to dismiss anything that implied processor redesign or impossible packaging concessions. Data-center operators were primed to reject any idea that sounded like a facilities retrofit fantasy. Strategic thermal-management partners were listening for whether Vitriflux was a partner layer, a component threat, or a research project disguised as a product. The room had heard too many pitches where a founder claimed to revolutionize cooling by pretending thermodynamics itself was optional. Vitriflux won because the team never made that mistake. They did not claim to make heat disappear. They did not imply they were replacing pumps, facility rejection, semiconductor package design, or all thermal interface materials. They did not turn an undeveloped cell mechanism into a false product certainty. They were exact about what the system does: it redistributes heat spatially before existing infrastructure removes it.\n\nThat precision determined the deck\u2019s entire argumentative order. It did not open with TAM inflation or generic AI demand curves. It opened by recasting the technical category in a way the audience could not unsee: present-day cooling stacks are designed around static worst-case maps, while actual accelerator heat is uneven, mobile, and workload-dependent. From there, the presentation sharpened a contrast that became the deck\u2019s central mental model: networking long ago stopped treating traffic as fixed and instead built switching, routing, telemetry, and control planes; thermal infrastructure at the board and tray level is still mostly provisioned as though load is geographically constant. The deck made that contrast feel embarrassingly overdue rather than merely clever.\n\nThe visual language reinforced this relentlessly. Heat was shown not as a red cloud but as a traffic field with preferred paths, congestion, headroom, and rerouting. The plate was framed as a backplane, a fabric, an addressable layer sitting between variable heat sources and finite cooling interfaces. The reference image information fed directly into the audience\u2019s trust: the black ceramic slab, subtle cell lattice, copper-toned traces, industrial connectors, cutaway material section, and monitor-like thermal display all made the object feel as if it belonged naturally beside accelerator modules rather than in a speculative lab poster. The best pages in the deck had the feeling of a semiconductor launch crossed with a systems-control console: centered product views, fine annotation lines, cyan-to-orange directional vectors, and disciplined use of negative space so the core insight landed before any paragraph had to explain it.\n\nBecause the team\u2019s stance was synthesis-oriented rather than combative, they did not posture as outsiders mocking the incumbents. They spoke as people who understood exactly why cooling evolved into fixed geometry and exactly why AI workload behavior now exposes the cost of that assumption. That distinction mattered. Instead of insulting current infrastructure, the deck honored it and then inserted Vitriflux into it. The argument was: existing liquid cooling is not wrong, it is incomplete. The first product therefore felt credible because it entered the system where the pain is sharpest and adoption friction is lowest: between accelerator modules and an existing liquid-cooling loop, without requiring a new data center and without requiring changes to the processors. In the room, that move converted skeptics. It signaled that the company understood how platform shifts actually happen in infrastructure: not through total replacement, but by attaching a new control layer to hardware budgets and installation practices that already exist.\n\nThe founders\u2019 speaking style matched that same logic. They were calm, exact, and a little ahead of the audience\u2019s vocabulary. They treated the central idea as something that becomes obvious once the system is seen at the right resolution. They did not oversell certainty where uncertainty was real; instead, they used uncertainty as proof of seriousness. The materials scientist made clear that the exact cell physics had not yet been selected and that candidate mechanisms required comparative testing. The systems architect translated that into a development program the room could respect: cell validation, array demonstration, accelerator-emulator integration, then OEM pilot. The commercial operator framed buyer pathways without pretending every constituency was the same. Investors heard how technical risk decomposes. OEMs heard a joint-development path. Operators heard serviceability and compatibility. Strategic partners heard an invitation to participate in category formation rather than a declaration of war.\n\nThe room pressure was highest around the obvious questions: Is this real physics or metaphor? Is the insertion loss worth it? Does control power erase the gain? Will manufacturing yield collapse at multilayer plate scale? Will OEMs prefer direct integration over retrofit? The deck did not try to smother those questions with optimism. It preempted them by showing that the company already understood the principal uncertainties, the product boundary, and the difference between a development target and a validated specification. That restraint was one of the reasons the pitch felt unforgettable: it had the confidence to make a radical category claim while remaining disciplined about what had and had not yet been proven.\n\nWhat the presentation made undeniable was not that every technical risk had vanished, but that a new layer of system design had been named correctly and framed with enough clarity that serious people could now evaluate it. By the end of the pitch, the audience was no longer debating whether cooling was a solved background utility. They were debating who would own the first meaningful thermal control plane in AI infrastructure, who would get the data generated by it, and how large the downstream platform could become if addressable thermal cells worked as intended. That is why the deck landed so hard with both investors and strategics: it made the initial product feel narrow enough to test, the category shift large enough to matter, and the team uniquely built to bridge the gap between a ceramic switching hypothesis and an infrastructure product buyers could actually adopt.\n\nThe founders knew exactly what not to say. They did not claim magic efficiency gains. They did not promise universal applicability on day one. They did not pretend the long-range platform in power electronics, batteries, aerospace, and industrial systems was the current business instead of the strategic horizon. They let the AI infrastructure use case carry the urgency because it is the place where every recovered watt and square centimeter has immediate economic meaning. That discipline gave the future-state slides unusual force: when the deck expanded outward from the initial application, it felt earned rather than indulgent. The platform story emerged as a consequence of architecture, not ambition alone.\n\nBy the time discussion turned to partnership and financing, acceptance had become the path of least resistance. Investors had a credible frame for technical diligence. Hardware companies could see a realistic integration surface. Operators could picture the system in an existing liquid-cooled environment. Thermal-management strategics could recognize a new orchestration layer that might amplify, not erase, the value of established cooling hardware. The deck made the proposal memorable because it converted a hidden systems mismatch into a crisp product category, and it made the team memorable because every person in front of the room seemed selected by that category change itself: the first-principles scientist, the infrastructure realist, the scale operator, the technical commercial translator, and the in-house designer who rendered the whole argument with enough exactitude that the audience felt they were looking at a finished piece of thinking, not a rough idea dressed up for a meeting."
+  },
+  "paid_storyboard": [
+    {
+      "slide_number": 1,
+      "title": "Vitriflux",
+      "purpose": "Title / hero cover. Establish the company and product category with a single dominant object and a short tagline. No argument yet. Speaker notes should frame Vitriflux as a software-defined thermal backplane for AI hardware and signal that the category shift is from passive cooling geometry to addressable thermal routing.",
+      "style_tags": [
+        "hero-cover",
+        "product-render",
+        "deep-tech",
+        "semiconductor-launch",
+        "minimal"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no software UI, no browser chrome, no presenter view, no speaker notes visible, no page number, no slide count, and no pagination indicator anywhere. This is the one and only title cover slide. Use a dominant centered hero composition based on the user-provided concept representation: a thin black rectangular ceramic thermal-routing plate with a subtle hexagonal cell lattice, copper-toned traces near one edge, and industrial fluid connectors, rendered as a polished concept product image rather than a photographed prototype. Place the product large and slightly angled on a dark field with generous negative space. Add the company name 'Vitriflux' prominently and one short tagline beneath it: 'A software-defined thermal backplane for AI hardware.' Include no diagrams, no charts, no multi-panel layout, and no dense text. Optionally include a faint distant monitor-like thermal map glow in the background to imply thermal routing, but keep the plate as the clear focal object."
+    },
+    {
+      "slide_number": 2,
+      "title": "Cooling is still built for a static map. AI heat is not.",
+      "purpose": "Open the argument with the core mismatch. Present today\u2019s cooling assumption versus actual workload-shaped heat behavior. This slide should make the audience feel the category error before introducing Vitriflux as the solution.",
+      "style_tags": [
+        "problem-framing",
+        "contrast",
+        "thermal-map",
+        "systems-thinking"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no application chrome or UI, no page number, slide count, or pagination indicator anywhere. Build a two-panel contrast layout. Left side: a simplified board or tray graphic under the heading 'Static cooling assumption' showing a fixed worst-case thermal map with uniform local cooling zones, rigid plumbing lines, and overprovisioned capacity illustrated as broad passive channels. Right side: a dynamic thermal field under the heading 'Actual AI heat behavior' showing moving hotspots across chips, boards, and rack-level paths with several different hotspot positions and directional movement overlays. Use minimal text blocks with short phrases only, such as 'designed around local worst case' on the left and 'hotspots move with workload placement' on the right. The visual should frame heat like traffic, with congestion, rerouting, and finite sink capacity, not as a generic red cloud. Keep the slide argument-led, not product-led."
+    },
+    {
+      "slide_number": 3,
+      "title": "Static cooling wastes capacity to protect against moving hotspots.",
+      "purpose": "Translate the mismatch into operational pain. Show why fixed plumbing forces oversized pumps, aggressive coolant temperatures, redundant manifolds, and unused cooling headroom. This is the bridge from technical problem to economic importance.",
+      "style_tags": [
+        "pain-points",
+        "infrastructure-economics",
+        "operator-view",
+        "callouts"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, no software interface elements, no page number, no slide count, no pagination indicator. Use a left-right layout. On the left, show a stylized liquid-cooled accelerator tray or rack thermal diagram with several chips or modules producing uneven heat while fixed coolant paths remain unchanged. Overlay zones of stranded capacity and localized thermal congestion. On the right, stack four concise callout cards with iconography and short labels derived from the source material: 'Oversized pumps', 'Aggressive coolant temperatures', 'Redundant manifolds', and 'Unused cooling capacity'. Add one small concluding statement at the bottom right: 'Static worst-case design trades efficiency for insurance.' Keep all visuals conceptual and schematic; do not imply measured results or real deployments."
+    },
+    {
+      "slide_number": 4,
+      "title": "Vitriflux adds an addressable thermal-routing layer.",
+      "purpose": "Introduce the invention clearly and precisely. Present the plate as a backplane or switch fabric between variable heat sources and existing cooling interfaces. This is the mental-model slide.",
+      "style_tags": [
+        "category-creation",
+        "product-intro",
+        "switch-fabric",
+        "hero-diagram"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, edge-to-edge, no UI, no page number, no pagination. Use a centered layered system diagram. Top layer: several accelerator modules or heat sources. Middle layer: a large Vitriflux plate rendered as a black ceramic slab with a subtle hexagonal cell grid and copper trace accents, labeled 'Field-addressable ceramic thermal-routing plate'. Bottom or side layer: two to four coolant interfaces feeding into an existing liquid loop. Overlay directional thermal paths moving from hotspots through the plate toward whichever cooling interface has capacity. Include a concise side annotation that says, in substance, 'Routes heat through hardware the way a network switch routes data.' The slide should visually establish the plate as an addressable layer, not as a pump, chiller, or facility replacement."
+    },
+    {
+      "slide_number": 5,
+      "title": "What the system does \u2014 and what it does not do",
+      "purpose": "Build trust through boundary discipline. Explicitly separate redistribution from removal and list the product boundary from the source document. This slide defuses skepticism.",
+      "style_tags": [
+        "product-boundary",
+        "trust-building",
+        "precision",
+        "scope-control"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide with no application UI and absolutely no page number or pagination marker. Use a strong two-column layout with a vertical divider. Left column heading: 'Does'. Present five concise bullets from the source intent: redistributes heat across high-power assemblies before transfer into liquid cooling; senses spatial temperature field; routes heat toward available cooling interfaces; balances load between coolant interfaces; intended to reduce transient peaks and throttling. Right column heading: 'Does not'. Present the product-boundary items from the source: refrigerate the coolant; eliminate pumps or facility heat rejection; change semiconductor junction design; replace all local thermal-interface materials; guarantee improved performance before cell-level switching is validated. Add a small bottom note: 'The product redistributes heat; existing infrastructure still removes it.' Keep the slide clean, precise, and non-defensive."
+    },
+    {
+      "slide_number": 6,
+      "title": "How thermal routing could work at the cell level",
+      "purpose": "Present the proposed operating principle without overstating certainty. Show the cell anatomy and note that the exact physics has not yet been selected. This is where scientific seriousness becomes visible.",
+      "style_tags": [
+        "mechanism",
+        "cell-architecture",
+        "first-principles",
+        "scientific-restraint"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single slide, no software chrome, no page number, no slide count, no pagination indicator. Use a large cutaway technical illustration of one or several thermal-routing cells inside the plate. Label the source-backed components: high-conductivity ceramic body, addressable electrode structure, anisotropic thermal path, local temperature sensing, and electrical/thermal connection to adjacent cells. Include a surrounding mini-grid to show how coordinated cells create preferential paths. Add a clearly separated note box titled 'Working hypothesis' that states, in concise source-faithful language, that an applied field may alter the cell\u2019s effective thermal-conductivity tensor through ferroic domain control, interfacial switching, or another field-responsive solid-state mechanism. Add a small caution line: 'Exact cell physics not yet selected; candidate mechanisms require comparative testing.' The slide must feel rigorous and exploratory, not validated."
+    },
+    {
+      "slide_number": 7,
+      "title": "System architecture",
+      "purpose": "Translate the concept into a complete stack that engineers and partners can diligence. Show the components and control loop from sensor input to routing state to coolant interfaces.",
+      "style_tags": [
+        "architecture",
+        "control-loop",
+        "stack-diagram",
+        "integration"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, no app UI, no page number or pagination. Build a horizontal architecture diagram with six clearly labeled blocks from the source document: Ceramic routing plate, Thermal-cell array, Sensor layer, Edge controller, Host interface, Control software, and include Coolant interfaces as the heat transfer endpoint in the system. Show arrows for both thermal flow and control/data flow, visually distinguished. Include a small note beneath Host interface: 'accepts workload or board telemetry when available.' Include another note beneath the controller path: 'first control system does not require predictive workload scheduling.' This should read like an infrastructure control-plane diagram, not a consumer infographic."
+    },
+    {
+      "slide_number": 8,
+      "title": "First product: designed to fit existing liquid-cooled AI hardware",
+      "purpose": "Make the entry wedge credible. Show integration location, first-product envelope, and serviceability. This is the slide that converts hardware skeptics.",
+      "style_tags": [
+        "integration",
+        "entry-wedge",
+        "first-product",
+        "hardware-envelope"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single slide with no software chrome and no page number, slide count, or pagination indicator. Use a large exploded integration view of an accelerator assembly: accelerator modules above, Vitriflux plate in the middle, and existing liquid-cooling loop / manifold interfaces below or to the side. The plate should mount between the accelerator assembly and two or more coolant manifolds. Add a disciplined specifications panel using source-backed development targets labeled clearly as 'Development targets, not validated specifications'. Include: plate footprint approximately 500 \u00d7 350 mm; plate thickness less than 12 mm; thermal zones 256\u20131,024 addressable cells; coolant interfaces 2\u20134; control interval below 100 ms; added electrical load below 2% of managed thermal load; integration with existing accelerator tray and coolant loop; serviceability replaceable field module; design life five years continuous operation. Present these as crisp engineering targets, not proven specs."
+    },
+    {
+      "slide_number": 9,
+      "title": "Why this matters economically",
+      "purpose": "Tie technical performance to infrastructure value without inventing outcomes. Show the economic logic buyers care about: density, throttling, overprovisioning, and cooling-power efficiency.",
+      "style_tags": [
+        "value-proposition",
+        "economic-logic",
+        "buyer-relevance",
+        "operator-metrics"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, full-bleed, no UI, no page number, no pagination. Use a left column with a simple cause-and-effect chain diagram starting from 'Dynamic thermal field' to 'Static cooling overprovisions locally' to 'Capital and power inefficiency'. On the right, create four larger value cards derived from the source value proposition: 'More compute per rack', 'Fewer throttling events', 'Less worst-case overprovisioning', and 'Improved use of redundant cooling paths'. Add a fifth smaller card or footer statement: 'Greater tolerance for uneven hardware loads'. Keep wording prospective and qualitative; do not include numerical ROI claims or performance figures."
+    },
+    {
+      "slide_number": 10,
+      "title": "Commercialization: start where pain is sharp and integration is lowest-friction",
+      "purpose": "Provide the required commercialization strategy. Show who buys, who uses, the adoption wedge, partner path, revenue mechanism, and how the company scales without inventing traction or pricing.",
+      "style_tags": [
+        "commercialization",
+        "go-to-market",
+        "OEM-strategy",
+        "business-model"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide with no application chrome and no page number or pagination indicator anywhere. Use a structured 2x2 layout plus a bottom strip. Top left quadrant: 'Who buys / who uses' with two rows: Primary user \u2014 Data-center thermal or hardware operations team; Economic buyer \u2014 AI infrastructure operator or accelerator-system manufacturer. Top right quadrant: 'Adoption wedge' showing initial application in a liquid-cooled AI accelerator assembly containing multiple high-power processors with workload-varying thermal loads, and a first insertion point between accelerator assembly and existing liquid loop. Bottom left quadrant: 'Integration path' listing Server OEM, cold-plate manufacturer, or liquid-cooling provider as integration partners, visualized as a staged path from evaluation to joint development to OEM pilot to production integration. Bottom right quadrant: 'Revenue mechanism' using only source-backed structure: initial revenue would come from paid evaluation units and joint-development programs; production revenue could use per-plate hardware sales, control-software licensing, OEM integration agreements, and performance monitoring / fleet optimization. Bottom full-width strip: 'Scale logic' showing that the company should avoid overcommitting to recurring software revenue until the hardware creates a persistent operational dataset customers will pay to use. Keep the slide explicit, credible, and free of invented customers or prices."
+    },
+    {
+      "slide_number": 11,
+      "title": "Development program and evidence gates",
+      "purpose": "Show that uncertainty is decomposed into a disciplined program. This slide should turn scientific and engineering risk into diligence structure.",
+      "style_tags": [
+        "roadmap",
+        "phase-gates",
+        "evidence-plan",
+        "technical-diligence"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, no software UI, no page number, no pagination. Build a four-phase horizontal roadmap with compact technical icons and clear pass conditions. Phase 1 \u2014 Cell validation: fabricate small ceramic coupons and measure whether candidate field-responsive structures produce a repeatable change in magnitude or direction of thermal transport; pass condition: reversible, measurable modulation large enough to affect a modeled multi-source thermal field. Phase 2 \u2014 Array demonstrator: construct a small addressable grid beneath several independently controlled heaters; pass condition: lower peak temperature than an equivalent passive plate under the same total heat load and sink capacity. Phase 3 \u2014 Accelerator emulator: integrate a full plate with a liquid loop and a programmable multi-zone heater representing an AI board; pass condition: demonstrate hotspot redistribution, reduced throttling-equivalent exposure, and acceptable control power. Phase 4 \u2014 OEM pilot: package the plate for an existing accelerator tray and evaluate it with a cooling or server partner. Make all evidence formats schematic, not actual results."
+    },
+    {
+      "slide_number": 12,
+      "title": "Principal uncertainties the company is already designed to answer",
+      "purpose": "Address the obvious diligence questions directly. This slide should project seriousness by naming the risks rather than hiding them.",
+      "style_tags": [
+        "risk",
+        "diligence",
+        "uncertainty",
+        "credibility"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single slide with no UI and no page number, slide count, or pagination indicator. Use a matrix or stacked-card layout titled 'Principal uncertainties'. Include the exact source-backed themes as concise risk cards: whether field-responsive ceramic structures provide sufficient thermal modulation; switching speed at useful plate thickness; thermal resistance introduced by electrodes and interfaces; manufacturing yield across a large multilayer plate; failure behavior under continuous thermal cycling; whether performance gain exceeds integration cost; whether server OEMs prefer direct integration over a retrofit module. Add a narrow right-side column titled 'What evaluation must show' with abstract check marks for physics viability, integration viability, and economic viability. Do not imply these have been satisfied."
+    },
+    {
+      "slide_number": 13,
+      "title": "Why AI infrastructure first \u2014 and where the platform can extend",
+      "purpose": "Earn the platform story by showing that AI is the urgent wedge and adjacent markets are a consequence of the architecture, not current business sprawl.",
+      "style_tags": [
+        "platform",
+        "market-sequencing",
+        "adjacencies",
+        "strategic-horizon"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, no application chrome, no page number or pagination indicator. Use a left-to-right expansion graphic. Left side: a large primary tile labeled 'AI infrastructure' with supporting phrases like 'immediate value for every recovered watt and square centimeter' and 'liquid-cooled accelerator assemblies'. To the right, show four smaller adjacent opportunity tiles connected by a controlled expansion line: power electronics, battery systems, aerospace electronics, and industrial equipment with irregular thermal loads. Include a small framing note: 'Strategic horizon after initial product validation.' Make the slide visually clear that AI infrastructure is first and current, while adjacencies are later platform applications."
+    },
+    {
+      "slide_number": 14,
+      "title": "The thermal control plane for dense compute",
+      "purpose": "Close with the category claim, the narrow initial product, and the invitation to engage in diligence or partnership. This final slide should feel inevitable, not inflated.",
+      "style_tags": [
+        "closing",
+        "category-claim",
+        "partnership",
+        "investor-close"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide with no software UI and no page number, slide count, or pagination anywhere. Use a strong closing composition with the Vitriflux plate centered or slightly offset, overlaid by a simplified thermal-routing network map connecting moving hotspots to multiple cooling interfaces. On the left or top, place a concise three-line close: 'Addressable thermal management, not passive plumbing.' 'A credible first product for existing liquid-cooled AI hardware.' 'A platform architecture spanning hardware, control, and data.' On the opposite side, add a restrained callout block titled 'Engagement path' with short lines such as 'technical diligence', 'joint development', and 'OEM / cooling-partner evaluation' without implying any existing commitments. The overall impression should be that a new system layer has been named clearly and can now be evaluated seriously."
+    }
+  ]
+}

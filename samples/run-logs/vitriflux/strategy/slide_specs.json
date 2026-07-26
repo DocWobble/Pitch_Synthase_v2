@@ -1,0 +1,100 @@
+[
+  {
+    "slide_index": 1,
+    "slide_label": "Slide 1",
+    "headline": "Vitriflux",
+    "body_points": [],
+    "speaker_note": "Title / hero cover. Establish the company and product category with a single dominant object and a short tagline. No argument yet. Speaker notes should frame Vitriflux as a software-defined thermal backplane for AI hardware and signal that the category shift is from passive cooling geometry to addressable thermal routing."
+  },
+  {
+    "slide_index": 2,
+    "slide_label": "Slide 2",
+    "headline": "Cooling is still built for a static map. AI heat is not.",
+    "body_points": [],
+    "speaker_note": "Open the argument with the core mismatch. Present today\u2019s cooling assumption versus actual workload-shaped heat behavior. This slide should make the audience feel the category error before introducing Vitriflux as the solution."
+  },
+  {
+    "slide_index": 3,
+    "slide_label": "Slide 3",
+    "headline": "Static cooling wastes capacity to protect against moving hotspots.",
+    "body_points": [],
+    "speaker_note": "Translate the mismatch into operational pain. Show why fixed plumbing forces oversized pumps, aggressive coolant temperatures, redundant manifolds, and unused cooling headroom. This is the bridge from technical problem to economic importance."
+  },
+  {
+    "slide_index": 4,
+    "slide_label": "Slide 4",
+    "headline": "Vitriflux adds an addressable thermal-routing layer.",
+    "body_points": [],
+    "speaker_note": "Introduce the invention clearly and precisely. Present the plate as a backplane or switch fabric between variable heat sources and existing cooling interfaces. This is the mental-model slide."
+  },
+  {
+    "slide_index": 5,
+    "slide_label": "Slide 5",
+    "headline": "What the system does \u2014 and what it does not do",
+    "body_points": [],
+    "speaker_note": "Build trust through boundary discipline. Explicitly separate redistribution from removal and list the product boundary from the source document. This slide defuses skepticism."
+  },
+  {
+    "slide_index": 6,
+    "slide_label": "Slide 6",
+    "headline": "How thermal routing could work at the cell level",
+    "body_points": [],
+    "speaker_note": "Present the proposed operating principle without overstating certainty. Show the cell anatomy and note that the exact physics has not yet been selected. This is where scientific seriousness becomes visible."
+  },
+  {
+    "slide_index": 7,
+    "slide_label": "Slide 7",
+    "headline": "System architecture",
+    "body_points": [],
+    "speaker_note": "Translate the concept into a complete stack that engineers and partners can diligence. Show the components and control loop from sensor input to routing state to coolant interfaces."
+  },
+  {
+    "slide_index": 8,
+    "slide_label": "Slide 8",
+    "headline": "First product: designed to fit existing liquid-cooled AI hardware",
+    "body_points": [],
+    "speaker_note": "Make the entry wedge credible. Show integration location, first-product envelope, and serviceability. This is the slide that converts hardware skeptics."
+  },
+  {
+    "slide_index": 9,
+    "slide_label": "Slide 9",
+    "headline": "Why this matters economically",
+    "body_points": [],
+    "speaker_note": "Tie technical performance to infrastructure value without inventing outcomes. Show the economic logic buyers care about: density, throttling, overprovisioning, and cooling-power efficiency."
+  },
+  {
+    "slide_index": 10,
+    "slide_label": "Slide 10",
+    "headline": "Commercialization: start where pain is sharp and integration is lowest-friction",
+    "body_points": [],
+    "speaker_note": "Provide the required commercialization strategy. Show who buys, who uses, the adoption wedge, partner path, revenue mechanism, and how the company scales without inventing traction or pricing."
+  },
+  {
+    "slide_index": 11,
+    "slide_label": "Slide 11",
+    "headline": "Development program and evidence gates",
+    "body_points": [],
+    "speaker_note": "Show that uncertainty is decomposed into a disciplined program. This slide should turn scientific and engineering risk into diligence structure."
+  },
+  {
+    "slide_index": 12,
+    "slide_label": "Slide 12",
+    "headline": "Principal uncertainties the company is already designed to answer",
+    "body_points": [],
+    "speaker_note": "Address the obvious diligence questions directly. This slide should project seriousness by naming the risks rather than hiding them."
+  },
+  {
+    "slide_index": 13,
+    "slide_label": "Slide 13",
+    "headline": "Why AI infrastructure first \u2014 and where the platform can extend",
+    "body_points": [],
+    "speaker_note": "Earn the platform story by showing that AI is the urgent wedge and adjacent markets are a consequence of the architecture, not current business sprawl."
+  },
+  {
+    "slide_index": 14,
+    "slide_label": "Slide 14",
+    "headline": "The thermal control plane for dense compute",
+    "body_points": [],
+    "speaker_note": "Close with the category claim, the narrow initial product, and the invitation to engage in diligence or partnership. This final slide should feel inevitable, not inflated."
+  }
+]

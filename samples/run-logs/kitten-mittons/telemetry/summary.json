@@ -1,0 +1,35 @@
+{
+  "event_count": 25,
+  "events_path": "telemetry/events.jsonl",
+  "job_id": "pd_204f60d4f766401e",
+  "model_call_count": 17,
+  "model_calls_by_model": {
+    "gpt-5.4": 17
+  },
+  "model_calls_by_stage": {
+    "approach_drafter_1": 1,
+    "paid_anchor_writer": 1,
+    "paid_slide_1": 1,
+    "paid_slide_2": 1,
+    "paid_slide_3": 1,
+    "paid_slide_4": 1,
+    "paid_slide_5": 1,
+    "paid_slide_6": 1,
+    "paid_storyboard": 1,
+    "single_slide_draft_approach_1": 1,
+    "single_slide_draft_approach_2": 1,
+    "single_slide_draft_approach_3": 1,
+    "single_slide_draft_approach_4": 1,
+    "single_slide_image_approach_1": 1,
+    "single_slide_image_approach_2": 1,
+    "single_slide_image_approach_3": 1,
+    "single_slide_image_approach_4": 1
+  },
+  "updated_at_utc": "2026-07-25T14:19:59.031050+00:00",
+  "usage_totals": {
+    "input_tokens": 89584,
+    "output_tokens": 15499,
+    "total_tokens": 105083
+  },
+  "workflow_event_count": 8
+}

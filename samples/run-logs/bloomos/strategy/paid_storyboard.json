@@ -1,0 +1,222 @@
+{
+  "visual_grammar": {
+    "background": "full-bleed matte near-black charcoal with a subtle deep-evergreen vertical gradient bloom from upper left to lower right, faint fine-grain paper texture, and occasional soft radial amber glow behind key diagrams only",
+    "foreground": "warm bone text and cool pale-sage secondary text, with high-contrast white used only for key numeric callouts and device labels",
+    "accent": "restrained oxidized amber used consistently for signal paths, highlights, key metrics, active nodes, and emphasis rules",
+    "typography": "crisp neo-grotesk sans serif; bold large sentence-case headers, medium-weight body copy, tight all-caps micro-labels, and sparse monospaced code snippets or schema fragments for proof objects",
+    "diagram_style": "precise systems-architecture graphics with thin strokes, rounded-corner modules, minimal fills, amber signal lines, pale node labels, small iconography, and disciplined use of arrows, brackets, and decision branches",
+    "panel_style": "dark evergreen-black translucent panels with soft inner shadow, subtle 1px bone or desaturated green keylines, rounded 12px corners, and generous padding; no heavy drop shadows",
+    "grid_system": "12-column grid with wide outer margins, left-aligned headers, consistent top title band, modular card zones, and asymmetrical two-column compositions that prioritize one dominant artifact plus one supporting text/metric column",
+    "line_weight": "1px hairlines for dividers and frames, 2px for primary diagram connectors, 3px maximum for emphasis bars and key metric underlines"
+  },
+  "authorized_inferences": {
+    "pricing": "Proposed pricing structure for deck consistency only: BloomHub 8 Standard hardware at $299 one-time, BloomHub 8 Pro with PAW at $449 one-time, optional 4-pack additional intelligent stakes at $59, and BloomOS+ software at $8/month or $79/year for remote dashboards, advanced schema packs, historical analytics, and BYO-AI orchestration tools; hardware remains fully functional locally without subscription.",
+    "mockup_prototype_design": "Proposed product visual system for deck consistency only: a compact rounded-rectangle matte charcoal BloomHub with soft-corner geometry, a top reservoir hatch, a thin horizontal amber status light, eight numbered tether ports along the lower edge, clear silicone water tubes paired with flat dark ribbon power/data leads, and slim white ASA plant stakes with one integrated drip tip and minimal sensor windows; companion mobile interface shows dark-mode telemetry cards, moisture curves, watering schedules, and schema-based recommendations."
+  },
+  "storyboard": [
+    {
+      "slide_number": 1,
+      "title": "BloomOS",
+      "purpose": "Hero cover slide establishing BloomOS as a serious, infrastructure-grade plant intelligence platform. Speaker note focus: do not argue yet; simply set the tone with confidence, restraint, and local-first hardware plus intelligence.",
+      "style_tags": [
+        "hero",
+        "cover",
+        "hardware-platform",
+        "premium-minimal"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. This is the one and only cover slide. Use generous negative space. Dominant centered-left wordmark text: 'BloomOS'. Beneath it, one short tagline only: 'Dependable plant care, closed loop.' On the right half, show one strong hero visual: a refined conceptual product render mockup of the BloomHub 8 on a dark surface with several tether lines extending gracefully toward out-of-focus indoor potted plants, emphasizing a calm systems object rather than a gadget. No charts, no diagrams, no bullets, no data, no extra labels beyond the company name and tagline. The slide should feel premium, architectural, calm, and inevitable."
+    },
+    {
+      "slide_number": 2,
+      "title": "Redrawing the Category",
+      "purpose": "Open the argument by repositioning BloomOS from plant gadget to integrated hardware-and-intelligence platform. Speaker notes: the category mistake is app-first thinking; BloomOS is infrastructure for living systems.",
+      "style_tags": [
+        "category-framing",
+        "thesis",
+        "contrast",
+        "platform"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: large title top left, then a two-column comparison with a narrow left column labeled 'What plant tech usually is' and a wide right column labeled 'What BloomOS is'. Left column contains three stacked muted cards with simple icon sketches and short phrases: 'app-first advice', 'single-metric sensors', 'cloud-dependent accessories'. Right column contains one dominant architecture panel with the phrase 'Integrated local-first plant intelligence platform' and three linked modules beneath: 'trusted sensing + actuation', 'schema-bound interpretation', 'dependable execution online or offline'. Add a concise bottom strip with four short proof statements sourced from the pitch: 'wall-powered', 'connects up to 8 plants', 'local control', 'PAW nutrition option'. No unsupported claims. Make the composition feel like a strategic reframing, not marketing."
+    },
+    {
+      "slide_number": 3,
+      "title": "The Friction Behind the Green Rush",
+      "purpose": "Define the problem operationally: plant care fails because existing tools do not create dependable care loops. Speaker notes: avoid sentimental framing; highlight inconsistency, drop-off, and poor system design.",
+      "style_tags": [
+        "problem",
+        "market-friction",
+        "operational-failure",
+        "consumer-behavior"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: title top left; left side contains a concise paragraph block summarizing the source problem in structured prose: indoor plant ownership is growing, but the honeymoon phase ends when plants wilt and die; consumers lack the tools, time, and data for resilient plant care. Right side shows a visual failure-chain diagram with four stacked stages connected by arrows: 'new plant enthusiasm' -> 'generic advice and cheap sensors' -> 'inconsistent care and silent stress' -> 'plant death, frustration, drop-off'. Along the bottom, a thin band with three concise issue cards: 'advice is non-executable', 'battery sensors are scattered architecture', 'cloud dependence is fragile for living systems'. Use no made-up statistics on this slide."
+    },
+    {
+      "slide_number": 4,
+      "title": "BloomOS: The Closed Loop",
+      "purpose": "Present the solution as a dependable closed loop between sensing, interpretation, and action. Speaker notes: this is the core mental model for the company and should feel simple, precise, and complete.",
+      "style_tags": [
+        "solution",
+        "closed-loop",
+        "systems-architecture",
+        "local-first"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: dominant central architecture diagram occupying most of the slide. Show four main nodes in a circular or left-to-right loop: 'Plant + environment signals', 'BloomHub sensing + local state machine', 'Schema interpretation layer', 'Water / light / nutrient actions'. Include a secondary optional node above the loop labeled 'Remote access / BYO-AI optional' connected with dotted lines only, making clear it is not required for local survival. Add three short support captions around the loop using exact pitch concepts: '100% local watering logic', 'last known optimized schedules persist if internet fails', and 'data-driven care and automated optimization'. On the far right margin, a small explanatory text block describing BloomOS as an integrated local-first plant intelligence and nutrition ecosystem for the modern home."
+    },
+    {
+      "slide_number": 5,
+      "title": "BloomHub 8 System Architecture",
+      "purpose": "Explain the hardware architecture concretely and make manufacturability feel grounded. Speaker notes: emphasize deterministic design, wall power, USB-C, and up to eight plant connections.",
+      "style_tags": [
+        "hardware",
+        "architecture",
+        "manufacturable",
+        "deterministic"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: left two-thirds shows a clean exploded conceptual render mockup of the BloomHub 8 with callout leaders to labeled components: 'central reservoir', 'ESP32 control board', 'USB-C power', 'Bluetooth setup + fallback', 'WiFi optional remote access', '8 tether ports'. Right one-third contains a structured specification panel with short rows: 'Wall-powered central station', 'Connects up to eight plants', 'Deterministic state machine', 'Moisture decay curves', 'Light schedules', 'Watering logic 100% local'. At bottom, include a thin architecture strip showing eight tether endpoints branching from one hub to eight plant icons. Keep all visuals explicitly conceptual mockups, not real photos."
+    },
+    {
+      "slide_number": 6,
+      "title": "Why Local-First Matters",
+      "purpose": "Turn local-first from feature into irreducible reliability principle. Speaker notes: living systems cannot depend on brittle cloud logic; BloomOS survives network failure by design.",
+      "style_tags": [
+        "reliability",
+        "local-first",
+        "risk-mitigation",
+        "smart-home"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: split screen. Left panel titled 'Cloud-first accessory model' shows a simplified dependency chain diagram: plant -> sensor -> app -> cloud -> command -> action, with a red crossed-out outage marker over the cloud and a dimmed final action box labeled 'care interrupted'. Right panel titled 'BloomOS local-first control' shows plant -> stake -> BloomHub local state machine -> action, with a dashed optional branch to remote access. A highlighted amber box states: 'If internet fails, plants survive on last known optimized schedules.' Bottom row contains three small benefit cards: 'reliability', 'privacy and data sovereignty', 'long-term utility'. No unsupported references to certifications or deployments."
+    },
+    {
+      "slide_number": 7,
+      "title": "Trusted Edge: Tethers and Intelligent Stakes",
+      "purpose": "Show why BloomOS data quality and actuation quality start at the edge hardware, not in a generic app. Speaker notes: the tether system solves batteries, fragmentation, and trust.",
+      "style_tags": [
+        "edge-hardware",
+        "sensor-stack",
+        "actuation",
+        "industrial-design"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: center stage detailed conceptual mockup of one hybrid umbilical and one intelligent stake, large and crisp. Call out the dual-channel assembly: 'clear silicone tube for water' and '3-wire ribbon for power/data'. Show the white ASA stake vertically with callouts to 'capacitive moisture', 'conductive pH/EC on Pro only', 'ambient photodiode', and 'integrated drip irrigation nozzle'. On the left, a short text block explains that the unified tether eliminates messy, battery-dependent wireless sensors. On the right, a minimalist comparison stack contrasts 'separate sensor + separate watering tool + battery maintenance' versus 'single unified sensing-and-delivery endpoint'."
+    },
+    {
+      "slide_number": 8,
+      "title": "PAW Extends the System from Monitoring to Optimization",
+      "purpose": "Introduce Plasma-Activated Water as a serious differentiated nutrition layer within the platform, not a gimmick. Speaker notes: be disciplined, mechanistic, and grounded.",
+      "style_tags": [
+        "PAW",
+        "nutrition-layer",
+        "differentiation",
+        "mechanism"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: large left-side mechanistic diagram of the Pro Hub option. Show a conceptual cross-section of the BloomHub reservoir with a labeled 'Cold Corona Discharge plasma' module above water, atmospheric 'N2' entering, and resulting 'NO3-' dissolved in water. Use arrows to show transformation into 'bioavailable liquid nitrates' and a note that tap water pH is naturally balanced into an optimal range, as stated in the source. Right side has three restrained benefit cards: 'on-demand nutrient generation', 'sustainable decentralized nitrate source', 'managed by dedicated PAW execution circuit'. Add a small footer disclaimer style note that this is a conceptual mechanism diagram, not lab evidence. Do not invent measurements beyond the source."
+    },
+    {
+      "slide_number": 9,
+      "title": "The Real Software Moat Is the Schema Library",
+      "purpose": "Make the central software thesis explicit: BloomOS owns the validated interpretation layer, not any single AI model. Speaker notes: this is where investors should feel compounding defensibility.",
+      "style_tags": [
+        "software-moat",
+        "schema",
+        "BYO-AI",
+        "defensibility"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: top title and one short subhead: 'Generic models can answer; BloomOS schemas can execute.' Main body has three horizontal stages connected by amber lines: 'raw telemetry' -> 'validated domain-specific JSON schemas' -> 'executable control parameters'. In the left stage, include small labeled inputs such as moisture, pH/EC, light, schedule state, species profile. In the middle stage, show a monospaced JSON fragment as a proof object, for example fields like species_id, moisture_floor, watering_window, nutrient_mode, anomaly_flag, confidence; keep it abstract and non-proprietary. In the right stage, show output actions such as watering amount, light timing adjustment, nutrient logic, alert thresholds. Add a small right-side callout: 'BYO-AI endpoints supported: cloud or local models; schema ownership remains with BloomOS.'"
+    },
+    {
+      "slide_number": 10,
+      "title": "From Telemetry to Species-Aware Action",
+      "purpose": "Demonstrate how BloomOS translates noisy biological data into bounded decisions rather than generic advice. Speaker notes: show process discipline and action boundaries.",
+      "style_tags": [
+        "decision-engine",
+        "telemetry",
+        "species-aware",
+        "executable-logic"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: a large decision-tree or rules-engine diagram on the left two-thirds. Start with incoming signals at top: moisture decay curve, daytime vs nighttime drawdown, pH/EC if Pro, ambient leaf-level light, schedule history. Route these through decision nodes labeled with interpretation questions such as 'pattern within species range?', 'stress anomaly emerging?', 'watering event appropriate now?', 'nutrient adjustment permitted?'. End in bounded outputs at bottom: 'water now', 'delay watering', 'flag root-rot risk', 'adjust light timing', 'use PAW mode'. On the right one-third, a compact text panel explains that the value lies in validated schemas that convert complex multi-variable telemetry into precise executable control parameters tailored to species metabolic profiles. Keep terminology from the source and avoid new claims."
+    },
+    {
+      "slide_number": 11,
+      "title": "Early Stress Detection Before Visible Decline",
+      "purpose": "Highlight the most compelling intelligence claim with mechanism, not hype. Speaker notes: focus on soil moisture decay dynamics and diurnal transpiration curves.",
+      "style_tags": [
+        "early-detection",
+        "analytics",
+        "plant-health",
+        "mechanistic-proof"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: left side contains a minimalist chart illustration, not real measured data, showing two moisture decay curves over time with day and night shading bands; one curve is labeled 'healthy transpiration pattern' and the other 'anomalous pattern'. Add small annotation lines noting 'compare daytime vs nighttime drawdowns' and 'detect deviations weeks before physical symptoms'. Right side contains three concise interpretation cards: 'root rot risk', 'nutrient lockout', 'stress anomaly'. Include a footer note in small text: 'Conceptual visualization of Soil Moisture Decay Dynamics from source pitch; not a reported experimental chart.' This slide must not imply actual unpublished dataset visuals."
+    },
+    {
+      "slide_number": 12,
+      "title": "Primary User Wedge, Secondary Resilience Market",
+      "purpose": "Show that BloomOS has an attractive consumer entry point and a broader strategic adjacency via local-first resilience. Speaker notes: one core thesis, multiple constituencies.",
+      "style_tags": [
+        "market",
+        "segmentation",
+        "resilience",
+        "strategic-expansion"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: two large audience panels. Left panel titled 'Initial wedge: Aspirational Gardener' includes an elegant representative illustration or mockup scene of a design-conscious urban apartment with several indoor plants and the BloomHub integrated into the environment; supporting bullets: 'urban professionals 25\u201345', 'design + wellness orientation', 'wants thriving plants without constant manual care'. Right panel titled 'Strategic extension: Self-sufficiency / off-grid' shows a more utilitarian interior or cabin-style representative scene with the same system; supporting bullets: 'local utility without cloud dependency', 'privacy and data sovereignty', 'resilient indoor growing support'. Across the bottom, include one unifying statement band: 'Same architecture, different purchase motivations.'"
+    },
+    {
+      "slide_number": 13,
+      "title": "Proposed Product and Revenue Model",
+      "purpose": "Provide a concrete commercial structure without overstating what is already launched. Speaker notes: hardware-first purchase, optional software layer, local utility preserved without subscription.",
+      "style_tags": [
+        "pricing",
+        "business-model",
+        "unit-economics",
+        "commercialization"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: three-column pricing architecture table presented clearly as a proposal, not an existing live price list. Column 1: 'BloomHub 8 Standard' with price '$299 one-time' and included items 'hub, reservoir, local control, up to 8 plant support'. Column 2: 'BloomHub 8 Pro' with price '$449 one-time' and included items 'all Standard features + PAW nutrition layer + pH/EC capable stakes'. Column 3: 'BloomOS+' with price '$8/month or $79/year' and included items 'remote dashboards, advanced schema packs, historical analytics, BYO-AI orchestration tools'. Add a lower strip with accessory item 'Additional intelligent stakes, 4-pack: $59'. Include a highlighted note: 'Hardware remains fully functional locally without subscription.' Make sure the slide frames this as proposed pricing structure."
+    },
+    {
+      "slide_number": 14,
+      "title": "Pilot Signal and Productization Path",
+      "purpose": "Use the provided pilot data carefully while keeping the slide grounded in manufacturing next steps. Speaker notes: pilot proves demand and outcomes direction; the raise funds productization and scale.",
+      "style_tags": [
+        "pilot",
+        "traction",
+        "manufacturing",
+        "execution"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: left side features three large metric cards sourced directly from the pitch: '100 beta testers', '92% reduction in plant mortality', 'up to 2x accelerated growth rates in PAW-enabled cohort'. Present them as pilot results from the source, with no added numbers. Right side shows a staged productization roadmap in four steps: 'manufacture BloomHub 8 Standard and PAW Editions', 'finalize specialized plant schema library', 'prepare direct-to-consumer launch', 'Q4 launch target'. Along the bottom add a slim operational checklist ribbon with non-quantified execution items such as tooling, BOM discipline, QA, fulfillment planning. Do not fabricate production volumes, revenue, or partnerships."
+    },
+    {
+      "slide_number": 15,
+      "title": "Why This Wins Against Fragile Alternatives",
+      "purpose": "Sharpen the competitive contrast without inventing named competitors or unsupported claims. Speaker notes: compare architectures, not brands.",
+      "style_tags": [
+        "competition",
+        "comparison",
+        "positioning",
+        "strategic-contrast"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: a comparison matrix with rows 'reliability offline', 'integrated sensing + actuation', 'species-aware interpretation', 'nutrition optimization', 'battery maintenance burden', 'privacy / data sovereignty', 'path to software defensibility'. Columns are generic categories only: 'App-first plant care', 'Single-metric sensor products', 'Cloud-dependent smart accessories', 'BloomOS'. Use simple check, partial, or dash symbols rather than aggressive marketing graphics. Above the matrix place a short framing line: 'The category breaks when living systems depend on weak links.' Make BloomOS clearly strongest but keep the slide analytical and credible."
+    },
+    {
+      "slide_number": 16,
+      "title": "Execution Priorities and Team Requirements",
+      "purpose": "Address team and execution readiness without inventing founder biographies not present in source. Speaker notes: show the capability stack required to win and what seed capital unlocks.",
+      "style_tags": [
+        "team",
+        "capabilities",
+        "execution-plan",
+        "diligence-friendly"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: title top left. Since no real team specifics are source-backed, present this as a capability map rather than named individuals. Use five structured panels labeled: 'Embedded systems + low-power control', 'Plant physiology + controlled-environment sensing', 'Consumer hardware operations + supply chain', 'Software infrastructure + schema orchestration', 'Design systems + go-to-market storytelling'. In the center, place a hub labeled 'BloomOS execution stack' connecting to all five. Bottom right contains a concise diligence-style checklist of near-term priorities: hardware reliability, manufacturability, schema validation, QA, and launch sequencing. The slide should imply seriousness and completeness without using personal names or invented resumes."
+    },
+    {
+      "slide_number": 17,
+      "title": "The Ask",
+      "purpose": "Close with the funding ask, use of proceeds, and the strategic reason to invest now. Speaker notes: BloomOS is not a novelty gadget; it is a hardware-anchored intelligence platform with compounding schema defensibility.",
+      "style_tags": [
+        "ask",
+        "closing",
+        "funding",
+        "platform-thesis"
+      ],
+      "image_prompt": "Create a clean full-bleed digital screenshot of a single presentation slide, exported edge-to-edge with no software chrome and no page number or pagination indicator anywhere. Layout: bold title top left 'Raising $1.5M Seed'. Beneath it, a concise one-sentence thesis: 'Build the dependable closed loop for intelligent plant care.' Main body uses a left-right composition. Left side contains a large circular or horizontal allocation diagram with four use-of-proceeds buckets phrased from source and adjacent execution needs: 'manufacture BloomHub 8', 'finalize plant schema library', 'direct-to-consumer launch by Q4', 'product reliability and launch operations'. No fabricated percentages. Right side contains three investor reasons in stacked cards: 'local-first reliability', 'PAW differentiation', 'schema moat compounds over time'. Add a closing line at bottom: 'Invest in the backbone for modern biophilic living.' Keep the tone poised, crisp, and final."
+    }
+  ]
+}

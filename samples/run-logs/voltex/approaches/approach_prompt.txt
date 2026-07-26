@@ -1,0 +1,211 @@
+SOURCE PRECEDENCE:
+The user's narrative, specification, documents, images, and edits are the
+primary factual authority. Include relevant source-backed commercial and
+economic content whether or not any narrower inference control is enabled.
+When source material states a value or conflicts with a reconstructed
+detail, the source material always wins.
+
+PRICING INFERENCE IS NOT AUTHORIZED:
+Do not invent or explicitly state a retail price, purchase price,
+subscription fee, licensing fee, per-unit charge, pricing tier/package,
+contract price, or other amount that this pitch company would charge for
+its own product or service unless that amount is stated in the source
+material. This is the ONLY restriction created by the unchecked pricing
+control. By itself it does not suppress or prohibit commercialization,
+business-model, market, buyer, supply-chain, go-to-market,
+revenue-mechanism, licensing, OEM, partnership, paid-evaluation,
+industry-economics, cost-driver, ROI-logic, capacity-value, or monetization
+content. When otherwise permitted, use relevant source-backed material and
+freely explain qualitative industry economics and standard economic
+relationships. This pricing rule neither authorizes nor prohibits company
+proof or non-pricing numerical facts; when a Pitch Aspect Worker Briefing
+is present, those topics follow its mode, otherwise the default source-only
+restrictions apply.
+
+        You are drafting four competing strategic pitch approaches for the same real
+        invention and audience. Each approach is the interference sum of the shared
+        primary archetype with a different secondary archetype.
+
+        This is a prompt-response experiment, not a full deck build. Nothing here
+        generates images. Ground every approach in the real mechanism and claims the
+        elevator pitch describes. Do not invent a different mechanism, EXCEPT for any
+        element named in the authorized inference exception above.
+
+        Archetype selection
+        -------------------
+        The PRIMARY archetype is fixed by the user. Use exactly this one as primary in every approach -- do not substitute it:
+{
+  "archetype_id": "arch_newton",
+  "label": "Newton",
+  "role": "The Efficiency Optimizer",
+  "posture": "Precise, data-backed, optimized, and corrective.",
+  "win_condition": "This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws."
+}
+
+For each of the four approaches you will pair it with a DIFFERENT secondary archetype chosen from the catalog below. The four secondaries must all be distinct from each other and from the primary.
+
+Archetype catalog:
+- Odysseus, The Tactical Gap-Finder [arch_odysseus]: This pitch wins because it identifies a blind spot or back door into the market that incumbents are too rigid or too committed to their own assumptions to see, and gets there first through cunning, non-linear navigation.
+
+- Caesar, The Scale Architect [arch_caesar]: This pitch wins because operational dominance -- superior execution, rapid expansion, and the ability to organize chaos into a machine -- outproduces every less disciplined competitor.
+
+- Da Vinci, The Paradigm Shifter [arch_davinci]: This pitch wins because interdisciplinary synthesis -- combining two previously unrelated fields or disciplines -- creates an entirely new category rather than competing within an old one.
+
+- Athena, The Strategic Rationalist [arch_athena]: This pitch wins because structural superiority -- calculated risk, rigorous logic, and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone.
+
+- Newton, The Efficiency Optimizer [arch_newton]: This pitch wins because it takes an existing process and makes it an order of magnitude faster or cheaper through a fundamental, provable understanding of the system's governing laws.
+
+- Cicero, The Market Evangelist [arch_cicero]: This pitch wins because narrative and social leverage -- capturing the market's mindshare and building a movement -- make the product feel inevitable before the competition can out-argue it.
+
+- Copernicus, The Contrarian Pivot [arch_copernicus]: This pitch wins because it proves the industry's core assumption is fundamentally wrong and relocates the center of the value proposition around that inversion.
+
+- Gutenberg, The Democratizer [arch_gutenberg]: This pitch wins because it takes a high-value service reserved for a privileged few and makes it radically accessible to the masses through a technological lever.
+
+- Alexander, The Aggressive Captor [arch_alexander]: This pitch wins because sheer velocity and aggression -- a land-grab, blitzscaling posture -- achieve market dominance before competitors or incumbents can react.
+
+- Michelangelo, The Product Perfectionist [arch_michelangelo]: This pitch wins because the product is so qualitatively superior -- best-in-class craft and experience -- that users switch on the strength of the product alone.
+
+        Interference rule
+        -----------------
+        Each approach is the waveform interference sum of its two archetypes. For every
+        dimension of the pitch (which claim leads, evidence posture, rhetorical
+        temperature, visual doctrine, emotional register):
+
+        - Where the two archetypes CONFLICT: that dimension flattens -- avoid it or
+          treat it neutrally; do not force either extreme.
+        - Where the two archetypes SYNERGIZE: that dimension amplifies -- express it
+          with higher confidence, more direct language, and willingness to take the
+          riskier or bolder form of that claim.
+
+        If the same archetype is chosen as both primary and secondary (allowed), every
+        dimension is constructive interference: the win condition is pushed to its
+        functional extreme, rhetorical temperature is at its highest natural setting,
+        evidence posture is at its most committed form. This is higher amplitude, not
+        repetition.
+
+        Pitch context
+        -------------
+        Audience:
+        Suburban kids aged 8 to 14 who have exhausted every Nerf blaster in the house, and the parents who will buy this anyway
+
+        Elevator pitch (the real invention -- ground every approach in this):
+        *[OPEN ON: Slow motion. A plasma bolt — vivid argon purple — crosses the frame left to right. The air around it shimmers. A dog watches it go by. The dog is losing its mind.]*
+
+*[SMASH CUT TO: Three kids in a backyard. One raises Voltex. Pulls the trigger.]*
+
+**KID 1:** WHOOOOOA—
+
+*[The bolt hits a cardboard castle. It scorches a perfect circle. The castle tips over.]*
+
+*[SMASH CUT TO: Product rotating in void. Blue-white arc crawling along the translucent barrel.]*
+
+**ANNOUNCER:** VOLTEX.
+
+*[Beat.]*
+
+**ANNOUNCER:** It shoots. **Lightning.**
+
+*[SMASH CUT TO: Kid running in slow motion, firing over shoulder. Three bolts in the air simultaneously. His face is a religious experience.]*
+
+**KID 2:** It's actually REAL—
+
+**KID 3:** I KNOW—
+
+*[SMASH CUT TO: Product close-up. The piezo igniter clicks. The field goes live. Noble gas blooms purple inside the translucent frosted chamber — you can see it glow through the housing. The muzzle is wide and flared, tapered back to a chunky grip. It looks nothing like a firearm. It looks like a plasma globe you can point at things.]*
+
+**ANNOUNCER:** Real plasma vortex projectile. Self-stabilizing. Color changing. Fires up to THIRTY FEET.
+
+*[SMASH CUT TO: Chromatic cartridge swap. Orange cartridge clicks into the visible bay window — the whole housing shifts color through the frosted plastic. Orange neon bolt arcs across frame.]*
+
+**ANNOUNCER:** Choose your color. **Choose your power.**
+
+*[Three kids vs. three kids across a yard. Bolts crossing in midair. Slow motion chaos. Someone's lawn chair is on fire in the background. No one has noticed.]*
+
+**KID 1:** *(screaming into camera)* IT'S BETTER THAN EVERYTHING.
+
+*[SMASH CUT TO: Mom in doorway. She watches a purple bolt sail past. She does not look alarmed. She looks vaguely impressed. This is the entire parent beat. Three seconds.]*
+
+*[SMASH CUT TO: Product on black. Translucent body, wide flared muzzle, frosted purple housing lit from inside — six color variants racked behind it, each one a different glow.]*
+
+**ANNOUNCER:** Voltex. Chromatic edition. Collect all six colors.
+
+*[Logo hits with a crack of actual electricity.]*
+
+**ANNOUNCER:** Ask your parents.
+
+*[Fine print scrolls at genuinely illegal speed: "Adult supervision recommended. Not for indoor use. Allow 90 seconds between power block activation and firing. Do not fire at face. Do not fire at pets. Lawn chair incident not representative of typical use. Noble gas cartridges sold separately. Krypton Green available Q4."]*
+
+**ANNOUNCER:** VOLTEX.
+
+*[The dog from the opening runs through frame chasing a bolt.]*
+
+*[Cut to black.]*
+
+        What the user wants this pitch to convey:
+        A toy so viscerally real and dangerous-feeling that kids cannot stop screaming about it on camera, and parents rationalize the risk as memorable play. The visual register must be hypercolor 90s radical toy ad: oversaturated neon palette (hot pinks, electric blues, screaming yellows), diegetic action poses where the kids are caught mid-chaos like Super Soaker box photography, scorched-earth 'THIS IS THE MOST RADICAL THING' energy. The counterintuitive challenge: market a genuinely high-tech plasma emitter entirely in the register of a coke-fueled 90s children's toy campaign — no tech-lab aesthetics, no adult credibility signaling, pure dangerous-fun toy aisle aggression. One approach must emphasize that the product is so unbelievable you can barely register photos of it as real — not stylized, not CGI, not illustrated: actual photographic documentation of physics working, raw footage credibility, the kind of image where you think the camera is lying but it isn't. The toy design is translucent frosted bright-colored plastic (never black or silver), wide flared muzzle, visible glowing cartridge bay, clearly and aggressively non-threatening silhouette — closer to a handheld plasma globe than any firearm.
+
+
+Supporting document (uploaded by the user):
+VOLTEX — TECHNICAL ADDENDUM TO PITCH MATERIAL
+Mechanism brief for generation purposes. Appended to elevator pitch as source material.
+
+WHAT IT ACTUALLY IS
+
+Voltex is a modified Tesla coil coupled to an integrated magnetic accelerator, purpose-built to ignite and launch self-stabilizing ball lightning. The projectile is real plasma — not a laser, not an arc, not a beam — trapped in a rotating magnetic vortex and accelerated down the barrel like a coilgun round.
+
+The key physics is rotating magnetic fields: not mechanical rotation, but a phase envelope — an m=1 surface wave forced to propagate around a looped surface (a spherical cap geometry), cycling fast enough to create a sealed pocket in space. This is the same principle as whispering gallery mode resonators — RF energy confined to a surface physically smaller than its own wavelength, which forces evanescence rather than radiation. The result is a toroidal maelstrom of short-range, high-intensity magnetic field that can hold plasma suspended in midair without direct contact.
+
+THE MECHANISM SEQUENCE
+
+The barrel contains a birdcage resonator — an impeller coil that traces the full length of the barrel in a tight helix, exactly like rifling. When the circuit is activated, the resonator generates the rotating confinement field at the center of the chamber. This is visually spectacular before the shot is even fired: a visible plasma orb forms inside the translucent center globe, held suspended in the middle of the housing.
+
+The offhand operates a piezo striker mounted like a shotgun pump. Pressing it ignites the air in the chamber into breakdown — the noble gas cartridge determines the color. The rotating field holds the plasma ball in an excited, coherent state while it charges.
+
+Pulling the trigger changes the circuit state: the chamber confinement drops and a discharge pulse propagates through the impeller coils in sequence, creating a collimated rotating vortex down the barrel that accelerates the plasma slug like a coilgun round. The plasma exits the muzzle still spinning, still self-confined by its own magnetic curl. It begins decohering immediately — like eddy currents dissipating, or a firework losing coherence — traveling a variable distance before the vortex unravels and it dissipates.
+
+HONEST LIMITATIONS (WHICH ARE ALSO THE SAFETY CASE)
+
+The plasma slug has too little mass to carry meaningful thermal energy. It cannot ignite a fuse, cannot start a fire, cannot sustain contact — it scorches cardboard at close range and dissipates on contact. Accuracy is variable because decoherence is environmentally sensitive. It requires both hands because the offhand piezo is part of the firing sequence — you cannot operate it single-handed. The two-hand form factor, combined with a body sized specifically to prevent self-targeting, is not a compliance workaround; it is a mechanical requirement of the design.
+
+FORM FACTOR
+
+Not a pistol. The closest existing cultural analog is the Heavy Plasma Cannon: two-hand grip, wide rounded body, substantial length, large emitter. The body is bright ASA plastic — not acrylic, which cannot withstand prolonged UV from the plasma — in the color of the cartridge variant. All metal components are sheathed in the housing; nothing electrically active is touchable during operation. The translucent globe at the center of the housing is structural — it is the visible charging chamber, and it glows the color of the loaded noble gas as the plasma builds. The muzzle is wide and flared, the barrel visibly long, and the overall silhouette reads as science equipment before it reads as anything else. The device is specifically engineered to be too large for a child to aim at themselves.
+
+INVENTOR LINEAGE
+
+The first Super Soaker was designed by a NASA engineer. The first Voltex was designed by an engineer who would have been at NASA if NASA had still been hiring in plasma confinement and field propulsion at the time they graduated. The design philosophy is identical: take physics that belongs in a laboratory and find the exact configuration that makes it safe, manufacturable, and undeniably fun.
+
+        Output contract
+        ---------------
+        Return strict JSON only. Top-level keys: "primary_archetype" and "approaches".
+        "primary_archetype": the shared primary archetype object.
+        "approaches": exactly four objects, approach_id values approach_1 through
+        approach_4. Each approach has its OWN secondary archetype (all four must differ).
+        Each approach object contains:
+        - approach_id
+        - secondary_archetype: the full archetype object chosen for this approach
+        - effective_archetype_id: the archetype_id of whichever of the two is dominant
+          in the resulting interference sum for this approach
+        - label: unique two- or three-word label; not a company name; not an archetype label
+        - pitch_angle: one to two sentences on the strategic emphasis and why it wins
+        - key_differentiator: one sentence on what makes this approach distinct from
+          the other three
+        - visual_direction: artifact tradition, typography, material language, and
+          composition -- enough for a later call to write a single hero-slide image
+          prompt from this alone
+
+        JSON shape:
+        {
+          "primary_archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+          "approaches": [
+            {
+              "approach_id": "approach_1",
+              "secondary_archetype": {"archetype_id": "...", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
+              "effective_archetype_id": "...",
+              "label": "...",
+              "pitch_angle": "...",
+              "key_differentiator": "...",
+              "visual_direction": "..."
+            }
+          ]
+        }
