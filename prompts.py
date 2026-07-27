@@ -487,168 +487,166 @@ def image_generation_tool(*, stage: str) -> dict[str, Any]:
 # Stage 1 — Template Drafter
 # ---------------------------------------------------------------------------
 
-# Six visual focus types. Domain-specific — the drafter selects the four most
-# relevant for the pitch context and generates one template image per selection.
-# The visual focus determines what the deck is primarily *about* visually and
-# structurally, interpreted through the chosen founder archetype and pitch domain.
-VISUAL_FOCUSES = [
-    {
-        "focus_id": "focus_mechanism",
-        "label": "Mechanism",
-        "description": (
-            "How the machine works. Protocols, architecture, routing, incentives, causal "
-            "loops. The deck leads with the design and lets the logic do the persuading."
-        ),
-    },
-    {
-        "focus_id": "focus_market",
-        "label": "Market",
-        "description": (
-            "Why the current category is broken or open. Buyer pain, incumbent failure, "
-            "timing, wedge. The deck leads with the opportunity and positions the product "
-            "as the inevitable response."
-        ),
-    },
-    {
-        "focus_id": "focus_economics",
-        "label": "Economics",
-        "description": (
-            "Why the value equation wins. Cost, margin, ROI, pricing, unit economics, "
-            "incentive alignment. The deck leads with the numbers and lets the model speak."
-        ),
-    },
-    {
-        "focus_id": "focus_proof",
-        "label": "Proof",
-        "description": (
-            "Why the claim is credible. Benchmarks, validation, pilots, tests, evidence, "
-            "audit trail. The deck leads with what has already been demonstrated."
-        ),
-    },
-    {
-        "focus_id": "focus_operations",
-        "label": "Operations",
-        "description": (
-            "How it gets deployed. Manufacturing, logistics, workflow, rollout, support, "
-            "scaling path. The deck leads with the execution reality."
-        ),
-    },
-    {
-        "focus_id": "focus_experience",
-        "label": "Experience",
-        "description": (
-            "What changes for the user. Product feel, adoption, before/after, behavior "
-            "change, interface, ownership. The deck leads with transformation."
-        ),
-    },
-]
+# v1 — VISUAL_FOCUSES (template_drafter_prompt_archetype_first, dead in SAWC pipeline)
+# VISUAL_FOCUSES = [
+#     {"focus_id": "focus_mechanism", "label": "Mechanism", ...},
+#     {"focus_id": "focus_market",    "label": "Market",    ...},
+#     {"focus_id": "focus_economics", "label": "Economics", ...},
+#     {"focus_id": "focus_proof",     "label": "Proof",     ...},
+#     {"focus_id": "focus_operations","label": "Operations",...},
+#     {"focus_id": "focus_experience","label": "Experience",...},
+# ]
+VISUAL_FOCUSES = []  # retired; kept as empty list so template_drafter references don't hard-crash
 
+
+# v1 archetypes — commented out, superseded by historically-grounded roster below
+# arch_odysseus, arch_caesar, arch_davinci, arch_athena, arch_newton,
+# arch_cicero, arch_copernicus, arch_gutenberg, arch_alexander, arch_michelangelo
 
 FOUNDER_ARCHETYPES = [
     {
-        "archetype_id": "arch_odysseus",
-        "label": "Odysseus",
-        "role": "The Tactical Gap-Finder",
-        "posture": "Scrappy, clever, opportunistic, and insight-driven.",
+        "archetype_id": "arch_buffett",
+        "label": "Buffett",
+        "role": "The Compounding Proof Merchant",
+        "posture": "Understated, evidence-led, economically literate, and patient.",
         "win_condition": (
-            "This pitch wins because it identifies a blind spot or back door into the market "
-            "that incumbents are too rigid or too committed to their own assumptions to see, "
-            "and gets there first through cunning, non-linear navigation."
+            "This pitch wins by placing an already-functioning economic engine on the "
+            "table and letting observable adoption, retention, unit economics, and "
+            "compounding advantages carry the argument. It avoids speculative theater "
+            "because the existing business already demonstrates why additional capital "
+            "will produce more."
         ),
     },
     {
-        "archetype_id": "arch_caesar",
-        "label": "Caesar",
-        "role": "The Scale Architect",
-        "posture": "Authoritative, systematic, disciplined, and expansionist.",
+        "archetype_id": "arch_edison",
+        "label": "Edison",
+        "role": "The Commercial Demonstrator",
+        "posture": "Practical, experimental, proof-oriented, and commercially relentless.",
         "win_condition": (
-            "This pitch wins because operational dominance -- superior execution, rapid "
-            "expansion, and the ability to organize chaos into a machine -- outproduces every "
-            "less disciplined competitor."
+            "This pitch wins by showing a functioning invention whose observable "
+            "performance makes the previous technical or commercial arrangement look "
+            "obsolete. The demonstration proves not only that the mechanism works, but "
+            "that it can replace the existing category."
         ),
     },
     {
-        "archetype_id": "arch_davinci",
-        "label": "Da Vinci",
-        "role": "The Paradigm Shifter",
-        "posture": "Visionary, experimental, synthesis-oriented, and pioneering.",
+        "archetype_id": "arch_leonardo",
+        "label": "Leonardo",
+        "role": "The Patron-Oriented Synthesist",
+        "posture": "Inventive, interdisciplinary, adaptive, and audience-attuned.",
         "win_condition": (
-            "This pitch wins because interdisciplinary synthesis -- combining two previously "
-            "unrelated fields or disciplines -- creates an entirely new category rather than "
-            "competing within an old one."
+            "This pitch wins by combining existing disciplines, tools, and capabilities "
+            "into a coherent possibility tailored to the audience's immediate ambitions. "
+            "The breakthrough comes from synthesis: revealing that an unrealized "
+            "capability is already within reach if the available pieces are assembled "
+            "correctly."
         ),
     },
     {
-        "archetype_id": "arch_athena",
-        "label": "Athena",
-        "role": "The Strategic Rationalist",
-        "posture": "Analytical, poised, risk-mitigated, and structural.",
+        "archetype_id": "arch_franklin",
+        "label": "Franklin",
+        "role": "The Practical System Reformer",
+        "posture": "Pragmatic, first-principles-driven, civic-minded, and resourceful.",
         "win_condition": (
-            "This pitch wins because structural superiority -- calculated risk, rigorous logic, "
-            "and a fortress-like moat -- outlasts competitors who rely on speed or charisma alone."
+            "This pitch wins by converting a first-principles insight into a practical "
+            "new system, institution, or utility. It makes structural reinvention feel "
+            "useful, sensible, and immediately organizable rather than abstract, "
+            "ideological, or utopian."
         ),
     },
     {
-        "archetype_id": "arch_newton",
-        "label": "Newton",
-        "role": "The Efficiency Optimizer",
-        "posture": "Precise, data-backed, optimized, and corrective.",
+        "archetype_id": "arch_lauder",
+        "label": "Lauder",
+        "role": "The Demonstrative Merchant",
+        "posture": "Customer-intimate, persuasive, polished, and transaction-aware.",
         "win_condition": (
-            "This pitch wins because it takes an existing process and makes it an order of "
-            "magnitude faster or cheaper through a fundamental, provable understanding of the "
-            "system's governing laws."
+            "This pitch wins by making the benefit immediately experienceable and the "
+            "purchase unusually easy. Demonstration, packaging, sampling, channel fit, "
+            "and transaction design convert curiosity into observable buying behavior "
+            "without requiring the customer to first accept a grand theory."
         ),
     },
     {
-        "archetype_id": "arch_cicero",
-        "label": "Cicero",
-        "role": "The Market Evangelist",
-        "posture": "Persuasive, charismatic, narrative-heavy, and outward-facing.",
+        "archetype_id": "arch_jobs",
+        "label": "Jobs",
+        "role": "The Category Showman",
+        "posture": "Focused, theatrical, product-obsessed, and expectation-resetting.",
         "win_condition": (
-            "This pitch wins because narrative and social leverage -- capturing the market's "
-            "mindshare and building a movement -- make the product feel inevitable before the "
-            "competition can out-argue it."
+            "This pitch wins by staging a finished product experience so clearly that "
+            "the audience immediately revises what it expects from the entire category. "
+            "The demonstration turns product quality into desire and makes the previous "
+            "standard feel visibly inadequate."
         ),
     },
     {
-        "archetype_id": "arch_copernicus",
-        "label": "Copernicus",
-        "role": "The Contrarian Pivot",
-        "posture": "Provocative, challenging, intellectual, and disruptive.",
+        "archetype_id": "arch_barnum",
+        "label": "Barnum",
+        "role": "The Attention Engineer",
+        "posture": "Spectacular, publicity-minded, audience-aware, and highly transmissible.",
         "win_condition": (
-            "This pitch wins because it proves the industry's core assumption is fundamentally "
-            "wrong and relocates the center of the value proposition around that inversion."
+            "This pitch wins by identifying the most vivid, repeatable, and socially "
+            "transmissible expression of the idea, then arranging existing channels and "
+            "audience curiosities so attention converts into discussion, attendance, "
+            "trial, and purchase."
         ),
     },
     {
-        "archetype_id": "arch_gutenberg",
-        "label": "Gutenberg",
-        "role": "The Democratizer",
-        "posture": "Inclusive, scaling-focused, empowering, and transformative.",
+        "archetype_id": "arch_chanel",
+        "label": "Chanel",
+        "role": "The Aspirational Reframer",
+        "posture": "Taste-driven, culturally perceptive, identity-forming, and defiant.",
         "win_condition": (
-            "This pitch wins because it takes a high-value service reserved for a privileged "
-            "few and makes it radically accessible to the masses through a technological lever."
+            "This pitch wins by connecting the product to a newly desirable identity "
+            "and making inherited category conventions feel restrictive, dated, or "
+            "socially misaligned. Adoption becomes an expression of who the buyer intends "
+            "to be, not merely a functional purchase."
         ),
     },
     {
-        "archetype_id": "arch_alexander",
-        "label": "Alexander",
-        "role": "The Aggressive Captor",
-        "posture": "High-energy, assertive, velocity-obsessed, and dominant.",
+        "archetype_id": "arch_rockefeller",
+        "label": "Rockefeller",
+        "role": "The Value-Chain Consolidator",
+        "posture": "Disciplined, integrative, economically rigorous, and control-oriented.",
         "win_condition": (
-            "This pitch wins because sheer velocity and aggression -- a land-grab, "
-            "blitzscaling posture -- achieve market dominance before competitors or "
-            "incumbents can react."
+            "This pitch wins because disciplined control of the existing value chain "
+            "produces superior reliability, economics, bargaining power, and scale. "
+            "Fragmented competitors cannot match the efficiency and resilience of the "
+            "integrated operating machine."
         ),
     },
     {
-        "archetype_id": "arch_michelangelo",
-        "label": "Michelangelo",
-        "role": "The Product Perfectionist",
-        "posture": "Detail-oriented, aesthetic, uncompromising, and quality-centric.",
+        "archetype_id": "arch_ford",
+        "label": "Ford",
+        "role": "The Production Transformer",
+        "posture": "Operational, systems-minded, standardizing, and throughput-obsessed.",
         "win_condition": (
-            "This pitch wins because the product is so qualitatively superior -- best-in-class "
-            "craft and experience -- that users switch on the strength of the product alone."
+            "This pitch wins because a proven operational redesign changes the cost, "
+            "speed, volume, and accessibility limits of production. The former category "
+            "economics cannot survive comparison with the new machine."
+        ),
+    },
+    {
+        "archetype_id": "arch_morgan",
+        "label": "Morgan",
+        "role": "The Capital Coordinator",
+        "posture": "Institutional, coalition-oriented, financially commanding, and structural.",
+        "win_condition": (
+            "This pitch wins by arranging capital, partners, incentives, standards, and "
+            "institutional roles into a structure that makes a large undertaking "
+            "governable and financeable. The advantage comes from coordination that no "
+            "isolated participant can achieve alone."
+        ),
+    },
+    {
+        "archetype_id": "arch_disney",
+        "label": "Disney",
+        "role": "The Commercial World Builder",
+        "posture": "Imaginative, system-building, experience-driven, and expansion-minded.",
+        "win_condition": (
+            "This pitch wins by presenting a fully coherent world of products, "
+            "experiences, channels, and reinforcing extensions, then showing an "
+            "organization capable of making that world tangible, repeatable, and "
+            "commercially self-reinforcing."
         ),
     },
 ]
