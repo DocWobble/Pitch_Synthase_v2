@@ -401,7 +401,7 @@ def _design_reference_image(job: dict, job_id: str) -> Path | None:
 
 def _workshop_archetype(job: dict) -> dict:
     archetype_id = job.get("selected_archetype_id") or ""
-    archetype = prompts.experiment_archetype_by_id(archetype_id)
+    archetype = prompts.archetype_by_id(archetype_id)
     if not archetype:
         raise RuntimeError(f"Unknown or missing workshop archetype: {archetype_id or '[blank]'}")
     return dict(archetype)
@@ -1198,7 +1198,7 @@ async def approach_drafter_worker(job_id: str):
     job = db.get_job(job_id) or {}
     fixed_archetype = None
     if job.get("selected_archetype_id"):
-        fixed_archetype = prompts.experiment_archetype_by_id(job["selected_archetype_id"])
+        fixed_archetype = prompts.archetype_by_id(job["selected_archetype_id"])
 
     cand_dir = job_dir(job_id) / "approaches"
     cand_dir.mkdir(exist_ok=True)
@@ -1247,7 +1247,7 @@ async def approach_drafter_worker(job_id: str):
                        (a.get("archetype_a") or {}).get("archetype_id") or ""
                        for a in cleaned]
             dominant_id = Counter(eff_ids).most_common(1)[0][0] if eff_ids else ""
-            dominant = prompts.experiment_archetype_by_id(dominant_id) or {}
+            dominant = prompts.archetype_by_id(dominant_id) or {}
             db.update_job(
                 job_id,
                 status="approaches_ready",
@@ -1294,7 +1294,7 @@ async def approach_regenerate_worker(job_id: str, regenerate_ids: list[str]):
     if not job or not job.get("approach_candidates_json"):
         raise RuntimeError("Job has no existing approaches to regenerate")
 
-    archetype = prompts.experiment_archetype_by_id(job["selected_archetype_id"])
+    archetype = prompts.archetype_by_id(job["selected_archetype_id"])
     existing = job["approach_candidates_json"]
     keep = [a for a in existing if a["approach_id"] not in regenerate_ids]
 
@@ -1502,7 +1502,7 @@ async def single_slide_preview_worker(job_id: str, approach_id: str):
     approach = next((a for a in approaches if a["approach_id"] == approach_id), None)
     if not approach:
         raise RuntimeError(f"Unknown approach_id {approach_id!r} for job {job_id}")
-    arch_a = approach.get("archetype_a") or prompts.experiment_archetype_by_id(job.get("selected_archetype_id") or "") or {}
+    arch_a = approach.get("archetype_a") or prompts.archetype_by_id(job.get("selected_archetype_id") or "") or {}
     arch_b = approach.get("archetype_b") or arch_a
 
     slide_dir = job_dir(job_id) / "single_slide_previews"

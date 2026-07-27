@@ -103,7 +103,7 @@ def _selected_template_payload_for_approach(job: dict) -> dict:
         or job.get("selected_archetype_id")
         or ""
     )
-    archetype = _prompts.experiment_archetype_by_id(archetype_id) or {}
+    archetype = _prompts.archetype_by_id(archetype_id) or {}
     return {
         "candidate_id": approach_id,
         "focus_id": "",

@@ -487,79 +487,6 @@ def image_generation_tool(*, stage: str) -> dict[str, Any]:
 # Stage 1 — Template Drafter
 # ---------------------------------------------------------------------------
 
-# Six founder posture archetypes. Domain-invariant — the drafter selects the
-# four most relevant for the pitch context. No template images generated for these;
-# they are represented by icons in the UI and passed as text to the deck builder.
-FOUNDER_ARCHETYPES = [
-    {
-        "archetype_id": "arch_liberator",
-        "label": "Liberator",
-        "posture": (
-            "Anti-capture, anti-rent, anti-incumbent, ownership-first. The founders are "
-            "returning something the market has locked away. The deck is structured around "
-            "what the user gets to own, repair, and control — and what they no longer have "
-            "to pay for repeatedly. The founders are motivated by AUTONOMY; they know the "
-            "incumbent model is extractive by design, and are determined to disrupt it."
-        ),
-    },
-    {
-        "archetype_id": "arch_architect",
-        "label": "Architect",
-        "posture": (
-            "The mechanism is correctly designed, and the deck proves it. The founders are "
-            "system thinkers who understand exactly what they're building, and they have the data "
-            "to support it — protocols, causal loops, dependencies, incentive structures, and the "
-            "list of reasons why the current approach is already obsolete. The founders are motivated "
-            "by ORDER; they know the system can be better, and are determined to fix it themselves."
-        ),
-    },
-    {
-        "archetype_id": "arch_operator",
-        "label": "Operator",
-        "posture": (
-            "Practical, methodical, field-tested, implementation-first. The founders are deeply embedded "
-            "in the operational reality of their domain, and have seen exactly where the conventional wisdom "
-            "fails to plan for that reality. Their language is one of action; logistics and workflow, hazards "
-            "and contingencies, deployment and execution. The founders are motivated by DISCIPLINE; they know "
-            "an inconsistent system is a failed system, and are determined to make success a matter of routine."
-        ),
-    },
-    {
-        "archetype_id": "arch_steward",
-        "label": "Steward",
-        "posture": (
-            "Safety, trust, continuity, compliance, auditability, reliability. The founders are "
-            "guardians of stability, ensuring that the system is secure, transparent, and built to last. "
-            "Their focus is on risk mitigation, ethical frameworks, and long-term sustainability. "
-            "The founders are motivated by RESPONSIBILITY; they know that trust is the foundation of any "
-            "lasting system, and are determined to uphold it at all costs."
-        ),
-    },
-    {
-        "archetype_id": "arch_seer",
-        "label": "Seer",
-        "posture": (
-            "Category redefinition: everyone is measuring the wrong thing. The founders see what others "
-            "cannot — the hidden patterns, the emerging trends, the untapped potential. Their deck is built "
-            "around a transformative insight that reshapes the landscape, not incremental improvements. "
-            "The founders are motivated by VISION; they know the future is already here, and are determined "
-            "to reveal it to the world."
-        ),
-    },
-    {
-        "archetype_id": "arch_catalyst",
-        "label": "Catalyst",
-        "posture": (
-            "Timing, adoption, velocity, network effects, growth. The founders are igniters of change, "
-            "focused on the spark that turns a good idea into a movement. Their language is one of momentum: "
-            "tipping points, viral loops, and the conditions that make adoption inevitable. "
-            "The founders are motivated by IMPACT; they know that the right push at the right moment can "
-            "change everything, and are determined to be the force that makes it happen."
-
-        ),
-    },
-]
-
 # Six visual focus types. Domain-specific — the drafter selects the four most
 # relevant for the pitch context and generates one template image per selection.
 # The visual focus determines what the deck is primarily *about* visually and
@@ -617,7 +544,7 @@ VISUAL_FOCUSES = [
 ]
 
 
-EXPERIMENT_FOUNDER_ARCHETYPES = [
+FOUNDER_ARCHETYPES = [
     {
         "archetype_id": "arch_odysseus",
         "label": "Odysseus",
@@ -727,8 +654,8 @@ EXPERIMENT_FOUNDER_ARCHETYPES = [
 ]
 
 
-def experiment_archetype_by_id(archetype_id: str) -> Mapping[str, Any] | None:
-    for archetype in EXPERIMENT_FOUNDER_ARCHETYPES:
+def archetype_by_id(archetype_id: str) -> Mapping[str, Any] | None:
+    for archetype in FOUNDER_ARCHETYPES:
         if archetype.get("archetype_id") == archetype_id:
             return archetype
     return None
@@ -1088,7 +1015,7 @@ def approach_drafter_prompt(
     """
     catalog_block = "\n\n".join(
         f"- {a['label']}, {a['role']} [{a['archetype_id']}]: {a['win_condition']}"
-        for a in EXPERIMENT_FOUNDER_ARCHETYPES
+        for a in FOUNDER_ARCHETYPES
     )
     if selected_archetype is not None:
         primary_instruction = (
@@ -1372,8 +1299,8 @@ def template_drafter_prompt(
           ],
           "selected_archetypes": [
             {{
-              "archetype_id": "arch_liberator",
-              "label": "Liberator"
+              "archetype_id": "arch_caesar",
+              "label": "Caesar"
             }}
           ]
         }}
