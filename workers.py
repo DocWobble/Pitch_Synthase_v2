@@ -48,6 +48,32 @@ async def _chunked_gather(coros, chunk_size: int = 4):
     return results
 
 
+async def image_scan_worker(job_id: str) -> None:
+    """Vision scan of the intake image. Stores JSON analysis in image_analysis column."""
+    from model_gateway import gateway
+    job = db.get_job(job_id)
+    if not job:
+        return
+    img_path = _supporting_image(job_id)
+    if not img_path:
+        return
+    b64 = base64.b64encode(img_path.read_bytes()).decode()
+    mime = mimetypes.guess_type(str(img_path))[0] or "image/png"
+    resp = await gateway.chat.completions.create(
+        model=gateway.model_for("anchor"),
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompts.image_analysis_prompt()},
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+            ],
+        }],
+        response_format={"type": "json_object"},
+    )
+    result = json.loads(resp.choices[0].message.content)
+    db.update_job(job_id, image_analysis=json.dumps(result))
+
+
 # Image generation is rate-limited to 50 calls per rolling 60-second window
 # (Tier 3 limit for gpt-image-1/gpt-image-2 as of July 2026 -- text
 # calls are in the hundreds of thousands/minute and are not a bottleneck).
@@ -59,8 +85,47 @@ _IMAGE_RATE_WINDOW_SECONDS = 60.0
 _image_call_times: "list[float]" = []
 _image_rate_lock = asyncio.Lock()
 
+# ── DEBUG mode ────────────────────────────────────────────────────────────────
+# PS_DEBUG_MODE=1 stubs all image generation calls with a placeholder PNG and
+# prints each text call's prompt/response to stdout. No image API spend;
+# pipeline logic and all text stages run normally.
+_DEBUG_MODE = os.environ.get("PS_DEBUG_MODE") == "1"
+_STUB_PNG_B64: str = ""
+
+
+def _get_stub_png_b64() -> str:
+    global _STUB_PNG_B64
+    if not _STUB_PNG_B64:
+        from PIL import Image, ImageDraw, ImageFont
+        import io
+        w, h = 1456, 816
+        img = Image.new("RGB", (w, h), "white")
+        draw = ImageDraw.Draw(img)
+        text = "PLACEHOLDER | INFER IMAGE CONTENTS"
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+        except Exception:
+            font = ImageFont.load_default()
+        bbox = draw.textbbox((0, 0), text, font=font)
+        x = (w - (bbox[2] - bbox[0])) // 2
+        y = (h - (bbox[3] - bbox[1])) // 2
+        draw.text((x, y), text, fill="black", font=font)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        _STUB_PNG_B64 = base64.b64encode(buf.getvalue()).decode()
+    return _STUB_PNG_B64
+
+
+def _debug_image_resp():
+    import types as _t
+    item = _t.SimpleNamespace(type="image_generation_call", result=_get_stub_png_b64(), content=[])
+    return _t.SimpleNamespace(id="debug-stub", output=[item], output_text=None,
+                              usage=_t.SimpleNamespace(input_tokens=0, output_tokens=0, total_tokens=0))
+
 
 async def _throttle_image_generation() -> None:
+    if _DEBUG_MODE:
+        return
     async with _image_rate_lock:
         while True:
             now = time.monotonic()
@@ -216,6 +281,17 @@ async def _capture_posthog_generation(
 
 
 async def _responses_create(job_id: str, *, stage: str, model: str, output_path: Path | None = None, **kwargs):
+    if _DEBUG_MODE:
+        tools = kwargs.get("tools") or []
+        is_image = any(isinstance(t, dict) and t.get("type") in ("image_generation", "image_generation_call") for t in tools)
+        if is_image:
+            print(f"[DEBUG] {stage}: image call → stub PNG", flush=True)
+            return _debug_image_resp()
+        inp = kwargs.get("input") or ""
+        prompt_preview = inp if isinstance(inp, str) else f"[{len(inp)}-item list]"
+        print(f"\n[DEBUG] ── {stage} ({model}) ──────────────────", flush=True)
+        print(f"[DEBUG] PROMPT ({len(str(prompt_preview))} chars): {str(prompt_preview)[:400]}", flush=True)
+
     client = _client()
     started = time.perf_counter()
     try:
@@ -237,6 +313,9 @@ async def _responses_create(job_id: str, *, stage: str, model: str, output_path:
         )
         raise
     duration_ms = int((time.perf_counter() - started) * 1000)
+    if _DEBUG_MODE:
+        out = _response_text(resp)
+        print(f"[DEBUG] RESPONSE ({duration_ms}ms): {out[:600]}", flush=True)
     usage = _response_usage(resp)
     append_telemetry(job_id, {
         "event_type": "model_call",

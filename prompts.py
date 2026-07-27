@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import os
 from textwrap import dedent
-from typing import Any, Literal, Mapping, Sequence
+from typing import Any, Literal, Mapping, Sequence, TypedDict
 
 # ---------------------------------------------------------------------------
 # Model and image parameter defaults
@@ -1807,6 +1807,15 @@ def anchor_writer_prompt(
         - why the deck had to exist
         - what kind of scrutiny it survived
         - how the deck made the acceptance of the pitch *inevitable*
+        - the specific ask the deck was explicitly built to make: the most plausible
+          form of winning for this domain and audience (a crowdfunding target,
+          a seed raise, a grant, a competition prize, an LOI target) — inferred
+          from the pitch structure and domain, not supplied by the user — described
+          as a concrete quantitative figure the slides themselves stated and the
+          pitch achieved resoundingly. This is not just a room outcome or a verbal
+          mention; every pitch is a document that makes an ask, and the deck had
+          slide content that named the number. That is what makes it a pitch rather
+          than a presentation.
 
         The fiction must not invent factual claims about the product, company,
         traction, approvals, revenue, customers, or proof. It can however freely 
@@ -1831,8 +1840,11 @@ def anchor_writer_prompt(
 
         The deck_generation_prompt must contain the fictional context for the pitch:
         who the founders are, why the deck existed, what it was structured to say,
-        who the audience was, what pressure the founders faced, and what the deck
-        made undeniable. It must open by defining the founder supergroup as an
+        who the audience was, what pressure the founders faced, what the deck
+        made undeniable, and what specific quantitative ask the deck's slides
+        stated explicitly — the most plausible form of winning for this domain
+        and audience, inferred and stated matter-of-factly as a figure the slides
+        themselves named (not merely spoken in the room). It must open by defining the founder supergroup as an
         instantiation of the selected archetype, and the rest of the deck's framing
         must follow from that team's stance. It is the imaginative substrate — rich enough that the next
         model can convincingly plan, visualize, and describe any individual slide
@@ -2162,6 +2174,22 @@ def deck_builder_prompt(
         - Do NOT generate any images. Return only the JSON storyboard below.
 
         {artifact_request}
+
+        ANCHOR NARRATIVE SCOPE:
+        The deck_generation_prompt above establishes fictional context — the founding
+        team, the room, the strategic posture — that shapes how this deck argues.
+        That narrative context is atmosphere and structure, not slide copy. Do not
+        transcribe invented atmospheric details (team backgrounds, room dynamics,
+        audience reactions) into slide content unless they are grounded in user_inputs.
+
+        EXCEPTION — anchor-described deck contents are canon: any element the anchor
+        explicitly describes as being present in the deck itself (a specific ask the
+        slides stated, a number the deck made visible, a quantitative goal the
+        presentation named on a slide) IS slide content and must appear. In particular:
+        if the anchor states that the deck named a quantitative funding ask, raise
+        target, crowdfunding threshold, or similar investor-facing figure on a slide,
+        that figure is canon for the slides and must be included — it is the deck's
+        explicit ask, which is what makes it a pitch.
 
         PEOPLE HONESTY REQUIREMENT:
         No slide may name, quote, depict, or explicitly reference an individual
@@ -3455,6 +3483,17 @@ def slide_source_accuracy_verifier_prompt(
           reasonable elaboration of something the source substantively
           supports. (Does NOT clear the gate -- do not report it.)
 
+        [anchor-derived figures] -- investor-facing asks absent from source material:
+        Quantitative investor-facing figures on a slide (funding ask, raise target,
+        crowdfunding threshold, grant amount, prize value, LOI target) that do not
+        appear in the source material are INFER-class by definition -- the anchor
+        writer is specifically instructed to infer and state the deck's explicit ask.
+        These figures do NOT clear the evidence gate merely because the source is
+        silent on them. They are only actionable if they directly contradict a
+        specific value the source states. Apply the INFER deck-wide canon rule:
+        the earliest occurrence is authoritative; a different later value is
+        actionable with the first as the correction.
+
         Pitch Aspect mode rules -- these take priority over the ordinary
         evidence-standard above:
         - First classify each substantive element into one of the six Pitch
@@ -3691,3 +3730,44 @@ def slide_disposition_prompt(
         }}
         """
     ).strip()
+
+# ---------------------------------------------------------------------------
+# I2T intake schema and context helpers
+# ---------------------------------------------------------------------------
+
+class IntakeOptions(TypedDict, total=False):
+    use_aesthetic: bool
+    use_mockup: bool
+    use_product_shot: bool
+    use_facts: bool
+    infer_mockup: bool
+    infer_prototype: bool
+
+
+def image_analysis_prompt() -> str:
+    return (
+        "Analyze this uploaded image for use in a startup pitch deck. "
+        "Return JSON with boolean keys: has_aesthetic, has_mockup, has_product_shot, has_figures. "
+        "Also return: inferred_style (short string, e.g. 'minimal SaaS', 'industrial hardware'). "
+        "Only set True if confidently present."
+    )
+
+
+def intake_context_block(options: dict) -> str:
+    """Return a prose fragment describing intake image usage. Empty string if no options."""
+    if not options:
+        return ""
+    parts = []
+    if options.get("use_aesthetic"):
+        parts.append("Match the visual aesthetic of the provided reference image throughout.")
+    if options.get("use_mockup"):
+        parts.append("The reference image contains a mockup or prototype — include it where relevant.")
+    if options.get("use_product_shot"):
+        parts.append("The reference image contains a product photo — use it in relevant slides.")
+    if options.get("use_facts"):
+        parts.append("The reference image contains figures or data — incorporate them as sourced facts.")
+    if options.get("infer_mockup"):
+        parts.append("The deck includes generated mockup UI not present in any source image.")
+    if options.get("infer_prototype"):
+        parts.append("The deck includes a generated prototype visualization.")
+    return "\n".join(parts)

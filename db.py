@@ -3,6 +3,7 @@ import os
 import sqlite3
 import secrets
 import hashlib
+import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +17,7 @@ _JSON_FIELDS = {
     "convert_keep_candidate_ids", "telemetry_context_json",
     "approach_candidates_json", "excepted_inference_elements",
     "inferred_element_decisions", "pitch_aspect_modes",
+    "stage_states", "stage_history", "intake_options", "image_analysis", "identity",
 }
 
 
@@ -118,6 +120,11 @@ def init_db():
             "pitch_aspect_modes": "TEXT",
             "secondary_archetype_id": "TEXT",
             "secondary_archetype_label": "TEXT",
+            "stage_states": "TEXT",
+            "stage_history": "TEXT",
+            "intake_options": "TEXT",
+            "image_analysis": "TEXT",
+            "identity": "TEXT",
         }.items():
             if name not in columns:
                 conn.execute(f"ALTER TABLE jobs ADD COLUMN {name} {sql_type}")
@@ -216,3 +223,119 @@ def record_rate_limit(fingerprint: str):
             "INSERT OR REPLACE INTO rate_limits (fingerprint, last_preview) VALUES (?, ?)",
             (fingerprint, _now()),
         )
+
+
+# ── PostHog telemetry ─────────────────────────────────────────────────────────
+_PH_TOKEN = os.environ.get("POSTHOG_TOKEN", "phc_DaZmzZ9fKszDeecfqdETWQwMq5uSskHG4UutVvj92GUQ")
+_PH_HOST  = "https://us.i.posthog.com"
+
+
+def _ph_capture(distinct_id: str, event: str, props: dict | None = None) -> None:
+    """Fire-and-forget PostHog capture. Swallows all errors — pipeline is unaffected."""
+    import threading, urllib.request
+    def _send():
+        try:
+            payload = json.dumps({
+                "api_key": _PH_TOKEN,
+                "event": event,
+                "distinct_id": distinct_id,
+                "properties": {**(props or {}), "$lib": "ps-pipeline"},
+                "timestamp": _now(),
+            }).encode()
+            req = urllib.request.Request(
+                f"{_PH_HOST}/capture/",
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            urllib.request.urlopen(req, timeout=5)
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
+
+
+# ── Stage state machine ───────────────────────────────────────────────────────
+
+def get_stage_states(job_id: str) -> dict:
+    """Return the stage_states dict for a job (empty dict if none yet)."""
+    job = get_job(job_id)
+    if not job:
+        return {}
+    v = job.get("stage_states")
+    if isinstance(v, dict):
+        return v
+    return {}
+
+
+def set_stage_state(job_id: str, stage_id: str, state: str, error: str | None = None) -> None:
+    """Atomically update stage_states + append to stage_history + fire PostHog event.
+
+    stage_states and stage_history are written in a single UPDATE (one SQL statement)
+    so they can never diverge: a state change without a history entry is impossible.
+    """
+    job = get_job(job_id)
+    if not job:
+        return
+    states = job.get("stage_states") or {}
+    if not isinstance(states, dict):
+        states = {}
+    history = job.get("stage_history") or []
+    if not isinstance(history, list):
+        history = []
+
+    states[stage_id] = state
+    entry: dict = {"stage": stage_id, "state": state, "ts": time.time()}
+    if error:
+        entry["error"] = error[:500]
+    history.append(entry)
+
+    update_job(job_id,
+               stage_states=json.dumps(states),
+               stage_history=json.dumps(history))
+
+    _ph_capture(job_id, f"stage_{state}", {
+        "stage": stage_id,
+        "job_id": job_id,
+        **({"error": error[:200]} if error else {}),
+    })
+
+
+def get_jobs_needing_resume() -> list[dict]:
+    """Return jobs that have stage_states but are not in a terminal status."""
+    terminal = {"complete", "error", "expired"}
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT id, status, stage_states FROM jobs "
+            "WHERE stage_states IS NOT NULL AND stage_states != '{}' AND stage_states != '' "
+            "ORDER BY created_at DESC"
+        ).fetchall()
+    result = []
+    for row in rows:
+        if row["status"] not in terminal:
+            result.append({"id": row["id"], "status": row["status"]})
+    return result
+
+
+def set_identity(job_id: str, identity_patch: dict) -> None:
+    """Merge identity_patch into the job's identity dict.
+
+    Existing keys are preserved; patch keys overwrite. PostHog $identify is
+    called when email is present, aliasing job_id (the anonymous distinct_id)
+    to the email for session merging.
+    """
+    job = get_job(job_id)
+    if not job:
+        return
+    existing = job.get("identity") or {}
+    if not isinstance(existing, dict):
+        existing = {}
+    merged = {**existing, **identity_patch}
+    update_job(job_id, identity=json.dumps(merged))
+
+    email = merged.get("email")
+    if email:
+        _ph_capture(email, "$identify", {"$anon_distinct_id": job_id})
+    _ph_capture(job_id, "identity_updated", {
+        "has_email": bool(email),
+        "has_stripe_customer": bool(merged.get("stripe_customer_id")),
+    })
