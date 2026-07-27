@@ -652,6 +652,8 @@ FOUNDER_ARCHETYPES = [
         ),
     },
 ]
+for _a in FOUNDER_ARCHETYPES:
+    _a["category"] = "Strategic Archetype"
 
 
 def archetype_by_id(archetype_id: str) -> Mapping[str, Any] | None:
@@ -770,6 +772,8 @@ DESIGN_ARCHETYPES = [
         "sacrifices": "visual restraint, cognitive invisibility, material economy",
     },
 ]
+for _a in DESIGN_ARCHETYPES:
+    _a["category"] = "Design Visionary"
 
 
 def design_archetype_by_id(archetype_id: str) -> Mapping[str, Any] | None:
