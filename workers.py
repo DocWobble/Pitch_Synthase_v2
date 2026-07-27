@@ -22,6 +22,7 @@ from pathlib import Path
 
 import httpx
 import db
+from model_gateway import gateway
 
 # Lazy import — prompts.py is gitignored; checked at startup in main.py
 import prompts
@@ -52,7 +53,6 @@ async def _chunked_gather(coros, chunk_size: int = 4):
 
 async def image_scan_worker(job_id: str) -> None:
     """Vision scan of the intake image. Stores JSON analysis in image_analysis column."""
-    from model_gateway import gateway
     job = db.get_job(job_id)
     if not job:
         return

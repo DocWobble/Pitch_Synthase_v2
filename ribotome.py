@@ -280,7 +280,7 @@ register_stage({"id": "approach_draft",  "worker": "approach_drafter_worker", "d
 register_stage({"id": "image_scan",      "worker": "image_scan_worker",       "depends": [], "event_trigger": True})
 register_stage({"id": "human_intake",    "human": True,                       "depends": ["approach_draft"]})
 register_stage({"id": "design_refs",     "worker": "design_drafter_worker",   "depends": ["human_intake", "approach_draft"], "condition": "needs_design"})
-register_stage({"id": "previews",        "worker": "_run_previews",           "depends": ["human_intake", "design_refs", "approach_draft"]})
+register_stage({"id": "previews",        "worker": "_run_previews",           "depends": ["human_intake", "approach_draft"]})
 register_stage({"id": "human_selection", "human": True,                       "depends": ["previews"]})
 register_stage({"id": "human_payment",   "human": True,                       "depends": ["human_selection"]})
 register_stage({"id": "generation",      "worker": "_run_generation",         "depends": ["human_payment"]})
@@ -298,6 +298,9 @@ def _run_stage_in_thread(job_id: str, stage_id: str) -> None:
             else:
                 await getattr(_workers, worker_name)(job_id)
         except Exception as e:
+            import traceback, sys
+            print(f"[STAGE FAILED] {job_id} / {stage_id}: {e}", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
             _db.set_stage_state(job_id, stage_id, "failed", error=str(e))
             _db.update_job(job_id, status=f"stage_failed:{stage_id}")
             return
