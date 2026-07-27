@@ -170,18 +170,16 @@ def _run_async_in_thread(coro_fn, *args):
 
 
 def _run_generation_in_thread(job_id: str):
-    """Run generation_worker with the full-pitch-first field bridge patched in."""
-    def _go():
-        orig_raw = _workers._raw_user_inputs
-        orig_tmpl = _workers._selected_template_payload
+    """Run generation_worker with the full-pitch-first field bridge (legacy endpoint path)."""
+    async def _run_with_cv():
+        tok_raw = _workers._raw_user_inputs_cv.set(_raw_user_inputs_full_pitch)
+        tok_tmpl = _workers._selected_template_payload_cv.set(_selected_template_payload_for_approach)
         try:
-            _workers._raw_user_inputs = _raw_user_inputs_full_pitch
-            _workers._selected_template_payload = _selected_template_payload_for_approach
-            asyncio.run(_workers.generation_worker(job_id))
+            await _workers.generation_worker(job_id)
         finally:
-            _workers._raw_user_inputs = orig_raw
-            _workers._selected_template_payload = orig_tmpl
-    t = threading.Thread(target=_go, daemon=True)
+            _workers._raw_user_inputs_cv.reset(tok_raw)
+            _workers._selected_template_payload_cv.reset(tok_tmpl)
+    t = threading.Thread(target=lambda: asyncio.run(_run_with_cv()), daemon=True)
     t.start()
     return t
 
@@ -214,15 +212,13 @@ _LOCAL_WORKERS: dict = {}
 
 async def _run_generation(job_id: str) -> None:
     """Run generation_worker with the full-pitch-first field bridge."""
-    orig_raw = _workers._raw_user_inputs
-    orig_tmpl = _workers._selected_template_payload
+    tok_raw = _workers._raw_user_inputs_cv.set(_raw_user_inputs_full_pitch)
+    tok_tmpl = _workers._selected_template_payload_cv.set(_selected_template_payload_for_approach)
     try:
-        _workers._raw_user_inputs = _raw_user_inputs_full_pitch
-        _workers._selected_template_payload = _selected_template_payload_for_approach
         await _workers.generation_worker(job_id)
     finally:
-        _workers._raw_user_inputs = orig_raw
-        _workers._selected_template_payload = orig_tmpl
+        _workers._raw_user_inputs_cv.reset(tok_raw)
+        _workers._selected_template_payload_cv.reset(tok_tmpl)
 
 
 async def _run_previews(job_id: str) -> None:

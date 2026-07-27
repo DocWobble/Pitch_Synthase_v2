@@ -16,11 +16,11 @@ import re
 import time
 import zipfile
 from collections import Counter
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
-from openai import AsyncOpenAI
 import db
 
 # Lazy import — prompts.py is gitignored; checked at startup in main.py
@@ -31,9 +31,11 @@ JOBS_DIR.mkdir(parents=True, exist_ok=True)
 
 TEMPLATE_LABELS = ["Mechanism", "Market", "Economics", "Proof"]  # fallback only
 
+# Per-coroutine overrides for the generation bridge — set by ribotome._run_generation
+# so concurrent generation jobs never share a module-global swap.
+_raw_user_inputs_cv: ContextVar = ContextVar('_raw_user_inputs_cv', default=None)
+_selected_template_payload_cv: ContextVar = ContextVar('_selected_template_payload_cv', default=None)
 
-def _client() -> AsyncOpenAI:
-    return AsyncOpenAI(api_key=os.environ["OPENAI_API_KEY"], timeout=360.0)
 
 
 async def _chunked_gather(coros, chunk_size: int = 4):
@@ -292,10 +294,9 @@ async def _responses_create(job_id: str, *, stage: str, model: str, output_path:
         print(f"\n[DEBUG] ── {stage} ({model}) ──────────────────", flush=True)
         print(f"[DEBUG] PROMPT ({len(str(prompt_preview))} chars): {str(prompt_preview)[:400]}", flush=True)
 
-    client = _client()
     started = time.perf_counter()
     try:
-        resp = await client.responses.create(model=model, **kwargs)
+        resp = await gateway.responses.create(model=model, **kwargs)
     except Exception as exc:
         duration_ms = int((time.perf_counter() - started) * 1000)
         append_telemetry(job_id, {
@@ -788,6 +789,9 @@ def _preview_slide_image_input(image_prompt: str, job_id: str):
 
 
 def _raw_user_inputs(job: dict) -> dict:
+    override = _raw_user_inputs_cv.get()
+    if override is not None:
+        return override(job)
     return {
         "page_1": {
             "problem_need": job.get("problem_need") or "",
@@ -804,6 +808,9 @@ def _raw_user_inputs(job: dict) -> dict:
 
 
 def _selected_template_payload(job: dict) -> dict:
+    override = _selected_template_payload_cv.get()
+    if override is not None:
+        return override(job)
     selected_id = job.get("selected_candidate_id") or ""
     selected = None
     for candidate in job.get("candidates_json") or []:

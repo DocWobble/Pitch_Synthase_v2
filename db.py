@@ -270,28 +270,24 @@ def get_stage_states(job_id: str) -> dict:
 def set_stage_state(job_id: str, stage_id: str, state: str, error: str | None = None) -> None:
     """Atomically update stage_states + append to stage_history + fire PostHog event.
 
-    stage_states and stage_history are written in a single UPDATE (one SQL statement)
-    so they can never diverge: a state change without a history entry is impossible.
+    Single SQL UPDATE — no Python read-modify-write, no window for concurrent
+    threads to overwrite each other's transitions.
     """
-    job = get_job(job_id)
-    if not job:
-        return
-    states = job.get("stage_states") or {}
-    if not isinstance(states, dict):
-        states = {}
-    history = job.get("stage_history") or []
-    if not isinstance(history, list):
-        history = []
-
-    states[stage_id] = state
     entry: dict = {"stage": stage_id, "state": state, "ts": time.time()}
     if error:
         entry["error"] = error[:500]
-    history.append(entry)
 
-    update_job(job_id,
-               stage_states=json.dumps(states),
-               stage_history=json.dumps(history))
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE jobs
+            SET stage_states = JSON_SET(COALESCE(stage_states, '{}'), '$.' || ?, ?),
+                stage_history = JSON_INSERT(COALESCE(stage_history, '[]'), '$[#]', JSON(?)),
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (stage_id, state, json.dumps(entry), _now(), job_id),
+        )
 
     _ph_capture(job_id, f"stage_{state}", {
         "stage": stage_id,

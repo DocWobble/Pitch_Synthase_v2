@@ -34,6 +34,10 @@ class ModelGateway:
     def chat(self):
         return self._get_client().chat
 
+    @property
+    def responses(self):
+        return self._get_client().responses
+
     async def images_generate(self, **kwargs):
         async with self._img_sem:
             return await self._get_client().images.generate(**kwargs)
