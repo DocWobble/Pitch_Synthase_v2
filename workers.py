@@ -3220,6 +3220,8 @@ def _build_pptx(composited: list, pptx_path: Path, deck_title: str):
     from pptx import Presentation
     from pptx.util import Inches, Pt, Emu
     from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+    from lxml import etree
 
     prs = Presentation()
     prs.slide_width = Inches(16)
@@ -3228,6 +3230,10 @@ def _build_pptx(composited: list, pptx_path: Path, deck_title: str):
 
     for spec, img_path, headline, body, notes in composited:
         slide = prs.slides.add_slide(blank_layout)
+
+        # Star wipe transition on every slide (p:wheel spokes="4" is PowerPoint's star wipe)
+        trans = etree.SubElement(slide._element, qn('p:transition'))
+        etree.SubElement(trans, qn('p:wheel')).set('spokes', '4')
 
         if img_path.exists():
             slide.shapes.add_picture(
