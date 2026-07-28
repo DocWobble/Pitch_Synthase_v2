@@ -276,16 +276,77 @@ def _gallery_index_preview(job_id: str, approach_id: str) -> None:
 _LOCAL_WORKERS["_run_generation"] = _run_generation
 _LOCAL_WORKERS["_run_previews"] = _run_previews
 
-register_stage({"id": "approach_draft",  "worker": "approach_drafter_worker", "depends": []})
-register_stage({"id": "image_scan",      "worker": "image_scan_worker",       "depends": [], "event_trigger": True})
-register_stage({"id": "human_intake",    "human": True,                       "depends": ["approach_draft"]})
-register_stage({"id": "design_refs",     "worker": "design_drafter_worker",   "depends": ["human_intake", "approach_draft"], "condition": "needs_design"})
-register_stage({"id": "previews",        "worker": "_run_previews",           "depends": ["human_intake", "approach_draft"]})
-register_stage({"id": "human_selection", "human": True,                       "depends": ["previews"]})
-register_stage({"id": "human_payment",   "human": True,                       "depends": ["human_selection"]})
-register_stage({"id": "generation",      "worker": "_run_generation",         "depends": ["human_payment"]})
-register_stage({"id": "human_review",    "human": True,                       "depends": ["generation"]})
-register_stage({"id": "verification",    "worker": "verification_worker",     "depends": ["human_review"]})
+register_stage({
+    "id": "approach_draft",
+    "worker": "approach_drafter_worker",
+    "depends": [],
+    "input_schema": {
+        "audience":                   {"type": "str",  "required": True,  "description": "Target audience for the pitch"},
+        "elevator_pitch":             {"type": "str",  "required": True,  "description": "Core pitch description"},
+        "conveys":                    {"type": "str",  "required": False, "description": "Key message or problem framing"},
+        "selected_archetype_id":      {"type": "str",  "required": False, "description": "Founder archetype ID (e.g. arch_chanel)"},
+        "doc_text":                   {"type": "str",  "required": False, "description": "Supporting document text"},
+        "pitch_aspect_modes":         {"type": "json", "required": False, "description": "Per-aspect inference mode overrides"},
+        "excepted_inference_elements":{"type": "json", "required": False, "description": "Elements to exclude from inference"},
+    },
+})
+register_stage({
+    "id": "image_scan",
+    "worker": "image_scan_worker",
+    "depends": [],
+    "event_trigger": True,
+    "input_schema": {
+        "intake_image_names": {"type": "json", "required": True, "description": "Filenames of uploaded intake images (set by intake endpoint)"},
+    },
+})
+register_stage({"id": "human_intake", "human": True, "depends": ["approach_draft"]})
+register_stage({
+    "id": "design_refs",
+    "worker": "design_drafter_worker",
+    "depends": ["human_intake", "approach_draft"],
+    "condition": "needs_design",
+    "input_schema": {
+        "approach_candidates_json": {"type": "json", "required": True, "description": "Approach candidates from approach_draft"},
+        "intake_options":           {"type": "json", "required": True, "description": "User intake option selections (infer_mockup / infer_prototype)"},
+    },
+})
+register_stage({
+    "id": "previews",
+    "worker": "_run_previews",
+    "depends": ["human_intake", "approach_draft"],
+    "input_schema": {
+        "approach_candidates_json": {"type": "json", "required": True, "description": "Approach candidates from approach_draft"},
+    },
+})
+register_stage({"id": "human_selection", "human": True, "depends": ["previews"]})
+register_stage({"id": "human_payment",   "human": True, "depends": ["human_selection"]})
+register_stage({
+    "id": "generation",
+    "worker": "_run_generation",
+    "depends": ["human_payment"],
+    "input_schema": {
+        "audience":                {"type": "str",  "required": True,  "description": "Target audience"},
+        "elevator_pitch":          {"type": "str",  "required": True,  "description": "Core pitch description"},
+        "conveys":                 {"type": "str",  "required": False, "description": "Key message or problem framing"},
+        "approach_candidates_json":{"type": "json", "required": True,  "description": "Approach candidates (from approach_draft)"},
+        "selected_candidate_id":   {"type": "str",  "required": True,  "description": "Which approach_id was selected"},
+        "selected_archetype_id":   {"type": "str",  "required": False, "description": "Founder archetype ID (may come from approach blend)"},
+        "explicit_slide_count":    {"type": "int",  "required": True,  "description": "Number of content slides (4–10); total = N+2"},
+        "doc_text":                {"type": "str",  "required": False, "description": "Supporting document text"},
+        "image_analysis":          {"type": "json", "required": False, "description": "Result of image_scan (if image was uploaded)"},
+    },
+})
+register_stage({"id": "human_review", "human": True, "depends": ["generation"]})
+register_stage({
+    "id": "verification",
+    "worker": "verification_worker",
+    "depends": ["human_review"],
+    "input_schema": {
+        "slide_specs":      {"type": "json", "required": True, "description": "Generated slide specifications"},
+        "reviewed_slides":  {"type": "json", "required": True, "description": "Per-slide review instructions from human_review"},
+        "expected_text_map":{"type": "json", "required": False, "description": "Expected text map from generation"},
+    },
+})
 
 
 def _run_stage_in_thread(job_id: str, stage_id: str) -> None:
@@ -521,50 +582,163 @@ async def mock_payment(job_id: str, kind: str, request: Request):
     return {"ok": True}
 
 
-@app.post("/api/jobs/{job_id}/run/{step}")
-def run_step(job_id: str, step: str):
-    """
-    steps:
-      approaches      → approach_drafter_worker (resets to created)
-      designs         → design_drafter_worker (4 reference images, one per approach)
-      previews        → single_slide_preview_worker ×4 (all approaches, parallel)
-      paid            → generation_worker via full-pitch-first bridge
-      verification    → verification_worker
-    """
-    if step == "approaches":
-        _db.update_job(job_id, status="created", approach_candidates_json=None, error_message=None)
-        _run_async_in_thread(_workers.approach_drafter_worker, job_id)
-    elif step == "designs":
-        job = _db.get_job(job_id)
-        if not job or not job.get("approach_candidates_json"):
-            return JSONResponse({"error": "no approaches drafted yet"}, status_code=409)
-        _run_async_in_thread(_workers.design_drafter_worker, job_id)
-    elif step == "previews":
-        job = _db.get_job(job_id)
-        approaches = job.get("approach_candidates_json") or [] if job else []
-        if not approaches:
-            return JSONResponse({"error": "no approaches drafted yet"}, status_code=409)
-        approach_ids = [a["approach_id"] for a in approaches]
+@app.get("/api/steps")
+def list_steps():
+    """Return all pipeline stages with their input schemas.
 
+    Human gates show which action satisfies them. Worker stages show
+    what job fields must be populated before running them directly.
+    """
+    out = []
+    for stage in PIPELINE_STAGES:
+        entry: dict = {
+            "id":      stage["id"],
+            "depends": stage["depends"],
+            "human":   bool(stage.get("human")),
+        }
+        if stage.get("condition"):
+            entry["condition"] = stage["condition"]
+        if stage.get("input_schema"):
+            entry["input_schema"] = stage["input_schema"]
+        if stage.get("human"):
+            entry["satisfied_by"] = _ACTION_MAP.get(stage["id"], stage["id"])
+        out.append(entry)
+    return out
+
+
+@app.get("/api/steps/{step_id}")
+def get_step(step_id: str, job_id: str | None = None):
+    """Return schema for one stage, optionally annotated with a job's current field values.
+
+    If job_id is provided, each required field also shows its current value
+    and whether it is populated, so you can see exactly what's missing before
+    calling run/{step}.
+    """
+    stage = _STAGE_REGISTRY.get(step_id)
+    if not stage:
+        return JSONResponse({"error": f"unknown step: {step_id}"}, status_code=404)
+    schema = stage.get("input_schema") or {}
+    result: dict = {
+        "id":      stage["id"],
+        "depends": stage["depends"],
+        "human":   bool(stage.get("human")),
+        "input_schema": schema,
+    }
+    if job_id:
+        job = _db.get_job(job_id)
+        if not job:
+            return JSONResponse({"error": f"job {job_id} not found"}, status_code=404)
+        field_status = {}
+        for field, meta in schema.items():
+            val = job.get(field)
+            populated = val is not None and val != "" and val != [] and val != {}
+            field_status[field] = {
+                **meta,
+                "populated": populated,
+                "value_preview": (
+                    str(val)[:120] if isinstance(val, str)
+                    else (f"[{type(val).__name__} with {len(val)} items]" if isinstance(val, (list, dict))
+                          else str(val))
+                ) if populated else None,
+            }
+        result["field_status"] = field_status
+        missing = [f for f, s in field_status.items() if s["required"] and not s["populated"]]
+        result["missing_required"] = missing
+        result["ready"] = len(missing) == 0
+    return result
+
+
+@app.post("/api/jobs/{job_id}/run/{step}")
+async def run_step(job_id: str, step: str, request: Request):
+    """Run a pipeline step, optionally injecting field values for this run only.
+
+    Body (optional JSON):
+      {
+        "fields": {          // temporarily override job fields before running
+          "explicit_slide_count": 8,
+          "selected_candidate_id": "approach_2",
+          ...
+        }
+      }
+
+    Omit the body to run with the job's current field values.
+    If required fields are missing and no body overrides them, returns 409
+    with {"error": "missing_fields", "missing": [...], "schema_url": "..."}.
+
+    Legacy step aliases still work: approaches, designs, previews, paid, verification.
+    """
+    body: dict = {}
+    ct = request.headers.get("content-type", "")
+    if "application/json" in ct:
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+    field_overrides: dict = body.get("fields") or {}
+
+    # Map legacy aliases to stage IDs
+    _ALIASES = {
+        "approaches":   "approach_draft",
+        "designs":      "design_refs",
+        "previews":     "previews",
+        "paid":         "generation",
+        "verification": "verification",
+    }
+    stage_id = _ALIASES.get(step, step)
+    stage = _STAGE_REGISTRY.get(stage_id)
+    if not stage:
+        return JSONResponse({"error": f"unknown step: {step}"}, status_code=400)
+
+    job = _db.get_job(job_id)
+    if not job:
+        return JSONResponse({"error": "job not found"}, status_code=404)
+
+    # Apply field overrides to job (persistent — caller owns the data)
+    if field_overrides:
+        _db.update_job(job_id, **field_overrides)
+        job = _db.get_job(job_id)
+
+    # Preflight: check required fields
+    schema = stage.get("input_schema") or {}
+    missing = [
+        f for f, meta in schema.items()
+        if meta["required"] and (
+            job.get(f) is None or job.get(f) == "" or job.get(f) == [] or job.get(f) == {}
+        )
+    ]
+    if missing:
+        return JSONResponse({
+            "error":      "missing_fields",
+            "missing":    missing,
+            "schema_url": f"/api/steps/{stage_id}?job_id={job_id}",
+        }, status_code=409)
+
+    # Dispatch
+    if stage_id == "approach_draft":
+        _db.update_job(job_id, status="created", approach_candidates_json=None, error_message=None)
+        _db.set_stage_state(job_id, "approach_draft", "pending")
+        _advance(job_id)
+    elif stage_id == "design_refs":
+        _run_async_in_thread(_workers.design_drafter_worker, job_id)
+    elif stage_id == "previews":
+        approaches = job.get("approach_candidates_json") or []
+        approach_ids = [a["approach_id"] for a in approaches]
         async def _run_all_previews():
             await asyncio.gather(
                 *[_workers.single_slide_preview_worker(job_id, aid) for aid in approach_ids],
                 return_exceptions=True,
             )
         _run_async_in_thread(_run_all_previews)
-    elif step == "paid":
-        job = _db.get_job(job_id)
-        if not job:
-            return JSONResponse({"error": "job not found"}, status_code=404)
+    elif stage_id == "generation":
         _db.update_job(job_id, status="paid", error_message=None)
         _run_generation_in_thread(job_id)
-    elif step == "verification":
+    elif stage_id == "verification":
         _db.update_job(job_id, status="review_received", error_message=None)
         _run_async_in_thread(_workers.verification_worker, job_id)
     else:
-        return JSONResponse({"error": f"unknown step: {step}"}, status_code=400)
+        return JSONResponse({"error": f"step {stage_id!r} cannot be run directly"}, status_code=400)
 
-    return {"ok": True, "started": step}
+    return {"ok": True, "started": stage_id}
 
 
 @app.post("/api/jobs/{job_id}/complete-review")
@@ -578,6 +752,8 @@ async def complete_review(job_id: str, request: Request):
     body = await request.json()
     slide_specs = job.get("slide_specs") or []
     spec_map = {str(s["slide_index"]): s for s in slide_specs}
+    verify_only = body.get("verify_only")  # None = all; [] = none; [3, 7] = only those
+    verify_set = None if verify_only is None else {str(i) for i in verify_only}
     reviewed_slides: dict = {}
     for slide in body.get("slides", []):
         idx = str(slide.get("slide_index", ""))
@@ -586,17 +762,19 @@ async def complete_review(job_id: str, request: Request):
         new_body = slide.get("body", " | ".join(orig.get("body_points", [])))
         new_notes = slide.get("notes", orig.get("speaker_note", ""))
         change_requests = slide.get("change_requests", "")
+        edited = (
+            new_headline != orig.get("headline", "")
+            or new_body != " | ".join(orig.get("body_points", []))
+            or new_notes != orig.get("speaker_note", "")
+            or bool(change_requests.strip())
+        )
         reviewed_slides[idx] = {
             "headline": new_headline,
             "body": new_body,
             "notes": new_notes,
             "change_requests": change_requests,
-            "_edited": (
-                new_headline != orig.get("headline", "")
-                or new_body != " | ".join(orig.get("body_points", []))
-                or new_notes != orig.get("speaker_note", "")
-                or bool(change_requests.strip())
-            ),
+            "_edited": edited,
+            "_reverify": (verify_set is None or idx in verify_set),
         }
     for s in slide_specs:
         idx = str(s["slide_index"])
@@ -607,11 +785,23 @@ async def complete_review(job_id: str, request: Request):
                 "notes": s.get("speaker_note", ""),
                 "change_requests": "",
                 "_edited": False,
+                "_reverify": (verify_set is None or idx in verify_set),
             }
     _db.update_job(job_id, reviewed_slides=reviewed_slides, status="review_received")
     _db.set_stage_state(job_id, "human_review", "completed")
     _advance(job_id)
     return {"ok": True}
+
+
+@app.post("/api/jobs/{job_id}/reset-verification")
+async def reset_verification(job_id: str):
+    """Reset human_review and verification stages to pending so complete-review can re-trigger verification."""
+    job = _db.get_job(job_id)
+    if not job:
+        return JSONResponse({"error": "job not found"}, status_code=404)
+    _db.set_stage_state(job_id, "verification", "pending")
+    _db.set_stage_state(job_id, "human_review", "pending")
+    return {"ok": True, "reset": ["human_review", "verification"]}
 
 
 @app.get("/api/jobs/{job_id}/telemetry")

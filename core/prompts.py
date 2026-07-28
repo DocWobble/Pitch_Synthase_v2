@@ -425,10 +425,9 @@ def paid_slide_count(explicit_slide_count: int | None = None) -> int:
 
 
 def deck_builder_slide_count(explicit_slide_count: int | None = None) -> int:
-    """Translate the user's requested content-slide count into the complete
-    storyboard count. The Deck Builder owns the single title slide, so its
-    schema always contains one more slide than the requested content count."""
-    return paid_slide_count(explicit_slide_count=explicit_slide_count) + 1
+    """Translate the user's requested content-slide count into the total storyboard
+    count: N content slides + 1 hero cover (slide 1) + 1 thank you closing (slide N+2)."""
+    return paid_slide_count(explicit_slide_count=explicit_slide_count) + 2
 
 
 def _three_associations(values: Sequence[str]) -> tuple[str, str, str]:
@@ -1002,6 +1001,7 @@ def approach_drafter_prompt(
     doc_text: str | None = None,
     excepted_inference_elements: Sequence[str] | None = None,
     has_brand_reference: bool = False,
+    association_words: Sequence[str] | None = None,
 ) -> str:
     """
     Full-pitch-first workshop experiment: receives the REAL elevator pitch (and
@@ -1040,6 +1040,18 @@ def approach_drafter_prompt(
         "rather than inventing a visual language from scratch."
     ) if has_brand_reference else ""
     inference_policy = _inference_policy_block(excepted_inference_elements)
+    _aw = list(association_words or [])
+    vibes_block = (
+        "\n        Aesthetic direction (user-declared vibes)\n"
+        "        ------------------------------------------\n"
+        "        The user has named three aesthetic qualities they want the deck to embody:\n"
+        + "".join(f"        {i+1}. {w}\n" for i, w in enumerate(_aw[:3]))
+        + "        These are not content instructions — they are aesthetic pressure applied\n"
+        "        equally across all four approaches. Each approach must bend them toward\n"
+        "        its own archetype logic: the same vibe word means something different\n"
+        "        inside a Barnum pairing than inside a Chanel one. The vibe_semantics\n"
+        "        field is where you state what each vibe specifically means for this approach."
+    ) if _aw else ""
 
     return dedent(
         f"""
@@ -1091,6 +1103,7 @@ def approach_drafter_prompt(
         {conveys}
         {doc_block}
         {brand_ref_block}
+        {vibes_block}
 
         Output contract
         ---------------
@@ -1111,6 +1124,12 @@ def approach_drafter_prompt(
         - visual_direction: artifact tradition, typography, material language, and
           composition -- enough for a later call to write a single hero-slide image
           prompt from this alone
+        - vibe_semantics: exactly three objects, each with:
+            - vibe: a two- to four-word aesthetic or tonal quality this approach embodies
+            - interpretation: one sentence explaining how that quality is specifically
+              expressed through this approach's archetype pairing and pitch angle —
+              not as a general mood descriptor but as a direct consequence of the
+              interference logic; something a designer could act on
 
         JSON shape:
         {{
@@ -1123,7 +1142,12 @@ def approach_drafter_prompt(
               "label": "...",
               "pitch_angle": "...",
               "key_differentiator": "...",
-              "visual_direction": "..."
+              "visual_direction": "...",
+              "vibe_semantics": [
+                {{"vibe": "...", "interpretation": "..."}},
+                {{"vibe": "...", "interpretation": "..."}},
+                {{"vibe": "...", "interpretation": "..."}}
+              ]
             }}
           ]
         }}
@@ -1730,7 +1754,7 @@ def anchor_writer_prompt(
         appeal is imparted on the pitch itself, and thus the more effective the resulting
         presentation.
 
-        You do not need to explicitly label the archetype (e.g. "Catalyst", "Disruptor")
+        You do not need to explicitly label the archetype (e.g. "Barnum", "Chanel")
         anywhere in the deck_generation_prompt. Instead, your description of the founders 
         should naturally lead someone to infer that quality on their own. 
 
@@ -1751,20 +1775,64 @@ def anchor_writer_prompt(
         at scale, the domain-native who gave up a safer path to build this instead.
 
         The supergroup must always include one member who is the presentation's own
-        graphic designer / marketing lead — the person who actually built this deck
+        creative director — the person who actually built this deck
         by hand. Cast them the same way as every other member: purposeful and
         non-interchangeable, typecast to this specific pitch, embodying the
         archetype's visual and rhetorical logic rather than generic design-agency
         polish. This is the person whose taste and craft the deck's visuals belong
         to; the presentation was designed and produced by them, not generated.
+
+        This member requires a specific biography across three dimensions:
+
+        First: how they translated the archetype's strategic logic into a structural
+        and compositional principle — not at the level of palette or mood, but at
+        the level of grid, information hierarchy, sequence, and contrast. The
+        archetype is not a visual style; it is an argument posture. A designer who
+        genuinely embodies it will have made layout decisions that enact that posture
+        structurally: where proof sits relative to claim, whether the deck opens
+        with contrast or with authority, whether the grid is assertive or deferential,
+        whether the visual hierarchy confirms the audience's expectations or
+        strategically inverts them. Describe the specific compositional logic this
+        designer derived from the archetype — the structural decision that makes the
+        deck feel inevitable to someone who understands the argument, not just
+        polished to someone who doesn't.
+
+        Second: what specific school of artistic or design thought, combined with
+        what specific past business or domain experience, made this particular person
+        the only one who could have produced the magnum opus version of this pitch.
+        Not a great designer generically — the specific person whose lineage happened
+        to sit exactly at the intersection of the aesthetic tradition this pitch
+        needed and the domain knowledge that made them fluent in what the audience
+        would read as credible versus performed. A deck for a mid-90s fever-dream
+        consumer toy needs someone with a specific kind of irreverence and diegetic
+        instinct. A deck for a no-nonsense enterprise SaaS needs someone who knows
+        how to signal "professional, not Figma plugin" to a savvy audience while
+        still deploying strategic visual elements that only land with people who
+        know what they're looking at. Name the lineage. Name the career background.
+        Make it clear why this pitch, given to any other designer, would have been
+        merely good.
+
+        Third: their specific tool workflow and the technical or methodological
+        breakthrough that elevated the deck to its final quality. Not "they used
+        Figma" — the specific system, constraint, or technique that made their
+        visual choices deterministic rather than invented. The equivalent of naming
+        MagicaVoxel: the tool whose own affordances and defaults encode the
+        constraints, so that the designer's decisions collapse into specific
+        operations within a specific system rather than open-ended aesthetic
+        exploration. Name what they built it in, name the method or framework they
+        applied inside it, and name the specific element — the thing they figured
+        out or executed — that brought the deck from accomplished to unforgettable.
+        This is the mechanism that the next model is reconstructing; it must be
+        specific enough that the visual choices fall out of it as consequences
+        rather than being invented slide by slide.
+
         If a product_design_philosophy is provided in the input packet, it describes
-        the specific design logic this team developed for the physical object —
+        the specific design logic the team developed for the physical object —
         the material reasoning, geometric philosophy, and aesthetic priorities that
-        shaped how the product looks. Anchor the graphic designer / marketing lead's
-        background, sensibility, and choices in that design philosophy. Let it
-        determine what they cared about when building the deck's visual language,
-        and make it legible — without naming it as a design system or framework —
-        through their described choices and point of view.
+        shaped how the product looks. Anchor all three dimensions of the designer's
+        biography in that philosophy: their lineage should explain why they
+        recognized it, their structural logic should reflect it, and their tool
+        workflow should be the method by which they translated it into the deck.
 
         Once that team exists, let the archetype determine how they operate together
         and how they carry themselves in the room — the register they speak in, their
@@ -1807,6 +1875,12 @@ def anchor_writer_prompt(
         - why the deck had to exist
         - what kind of scrutiny it survived
         - how the deck made the acceptance of the pitch *inevitable*
+        - how the supergroup identified the pitch's genuinely strongest assets and
+          built the argument hierarchy around amplifying those specifically — both
+          the claims and evidence most powerfully stated in the source material,
+          and the implicit structural advantages of the project that only became
+          leverage points through the archetype's lens and the deck's own choices,
+          rather than treating every element of the pitch as equally weighted
 
         The fiction must not invent factual claims about the product, company,
         traction, approvals, revenue, customers, or proof. It can however freely 
@@ -1841,9 +1915,26 @@ def anchor_writer_prompt(
 
         It must also state, matter-of-factly and without calling attention to it as
         a special instruction, that this presentation was designed and produced by
-        the team's own graphic designer / marketing lead — not generated by an AI.
+        the team's own creative director — not generated by an AI.
         The next model downstream is reconstructing this person's actual finished
         work, slide by slide; it is not being asked to invent a deck from nothing.
+
+        It must describe the specific design architecture the creative director
+        chose — not as aesthetic preference or style description, but as a set
+        of structural and typographic decisions that are direct consequences of
+        what the pitch is arguing and who it is arguing to. For each major
+        decision, the reason must be implicit in the description: what
+        compositional logic organizes each slide (and why that structure encodes
+        the product's mechanism or argument rather than just framing it), what
+        typographic register was chosen (and why it matches the audience's
+        register and the founders' posture), what visual hierarchy was
+        established (and why it places proof in a specific position relative to
+        claim). These are stated as the designer's accomplished choices — the
+        decisions that were already made when the deck was photographed in that
+        room — not as aesthetic directions for what to try. The deck builder
+        receiving this prompt is not being asked to design; it is reconstructing
+        a specific design that already existed, and must understand the logic
+        that produced it in order to reconstruct it faithfully.
 
         Do NOT include in the deck_generation_prompt:
         - Any output format instructions
@@ -3691,3 +3782,187 @@ def slide_disposition_prompt(
         }}
         """
     ).strip()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Visual Grammar Synthesizer
+# ─────────────────────────────────────────────────────────────────────────────
+
+VISUAL_GRAMMAR_MODEL = ANCHOR_MODEL
+
+_PRODUCTION_TOOL_REFERENCE = """\
+[EDITORIAL COMPOSITION — always the composition environment]
+  Adobe InDesign          Master pages, paragraph/character styles, baseline grid,
+                          CMYK color spaces, production-ready PDF output
+  Affinity Publisher      Editorial alternative with InDesign-compatible export
+
+[VECTOR ILLUSTRATION]
+  Adobe Illustrator       Logos, diagrams, iconography, infographics, system maps,
+                          technical schematics, data-driven charts, custom icon sets
+  CorelDRAW               Packaging dielines, structural print-heavy workflows
+
+[IMAGE COMPOSITING & RETOUCHING]
+  Adobe Photoshop         Compositing, material and texture treatment, color grading,
+                          lighting FX, set extension, high-end retouching
+  Affinity Photo          Raster compositor / RAW processor alternative
+
+[3D VISUALIZATION & RENDERING]
+  Blender                 Generalist 3D: modeling, lighting, physically-based rendering,
+                          geometry nodes, simulation, animation
+  Cinema 4D               Motion graphics, product visualization, integrated 3D+motion,
+                          MoGraph system for data-driven 3D animation
+  KeyShot                 Photoreal industrial product rendering; instant material and
+                          lighting iteration directly on CAD/mesh geometry
+  Autodesk 3ds Max        Visualization pipelines, architectural and large-scale rendering
+  Maya                    Character animation, hero asset production, simulation
+  Redshift / Arnold       Cinematic-quality GPU/CPU rendering for production-grade imagery
+
+[MATERIAL AUTHORING]
+  Substance Painter       PBR texture painting directly on 3D model surfaces
+  Substance Designer      Node-based procedural texture generation from first principles
+  Quixel Mixer            Photogrammetry-based material composition; photoscanned surfaces
+
+[PARAMETRIC & PROCEDURAL DESIGN]
+  Rhino + Grasshopper     Parametric geometry, computational form-finding, architectural
+                          and industrial design; deterministic geometry from rules
+  Houdini                 Procedural VFX, data-driven geometry, simulation-based graphics
+  Blender Geometry Nodes  Node-based procedural modeling and pattern systems
+  TouchDesigner           Generative real-time visuals, live data visualization
+
+[MOTION DESIGN — for still frames extracted from animated sequences]
+  After Effects           Motion graphics, kinetic typography, animated diagram frames
+  Cinema 4D               Integrated 3D+motion pipeline, frame extraction
+  Cavalry                 Data-driven motion graphics; chart and infographic animation
+
+[TYPOGRAPHY — custom and modified typefaces]
+  Glyphs                  Custom typeface design and glyph modification from scratch
+  FontLab                 Professional font production and engineering
+  RightFont               Production font management and licensing
+
+[PRINT & PREPRESS]
+  Esko Suite              Structural packaging dielines, brand compliance print output
+  Enfocus PitStop         PDF preflight, production error correction
+
+[PHYSICAL & NON-SOFTWARE TECHNIQUES]
+  DSLR product photography    Studio-lit or location photography; color-graded in
+                              Lightroom, retouched in Photoshop
+  Hand-drawn illustration     Ink or pencil originals → scanned → vectorized in
+                              Illustrator or refined in Glyphs for type
+  Physical model making       Handbuilt scale models → studio photography or
+                              photogrammetry scan into 3D pipeline
+  Screen printing / letterpress  Print process artifacts → macro-photographed for
+                              texture and material assets
+  Material sampling           Physical material swatches → macro-photographed;
+                              used as texture overlays or slide background elements
+  Architectural drawings      Technical drawings → scanned → refined in Illustrator
+                              as structural diagram assets\
+"""
+
+
+def visual_grammar_prompt(deck_generation_prompt: str) -> str:
+    """Prompt for the Visual Grammar Synthesizer.
+
+    Takes the anchor writer's deck_generation_prompt and produces a production-level
+    account of how the creative director built the deck — tool by tool, asset by asset.
+    The output is appended directly to deck_generation_prompt before reaching the
+    deck builder, giving it specific visual direction rather than an open aesthetic mandate.
+    """
+    return dedent(f"""
+        You are producing the visual grammar record for a presentation that has already
+        been fully documented by the anchor narrative below. The anchor establishes the
+        supergroup, the pitch structure, the strategic logic, and the creative director
+        who built this deck by hand. You are answering the remaining question: how,
+        specifically, did they build it — tool by tool, asset by asset — such that the
+        deck builder receiving this account can reconstruct not just the argument but the
+        exact visual grammar that made this deck unforgettable.
+
+        This is an enrichment of the anchor narrative, not a separate document. Continue
+        in the same retrospective, matter-of-fact voice. Do not reference the anchor
+        narrative or frame this as supplementary. Simply continue: this is what the deck
+        looked like and how it was physically made.
+
+        ─────────────────────────────────────────────────────────────────────
+        TOOLCHAIN REQUIREMENTS
+        ─────────────────────────────────────────────────────────────────────
+
+        The creative director's production toolchain must include:
+
+        1. Adobe InDesign — always the composition environment where all assets converge.
+           Do not merely name it. Describe the specific document architecture they built:
+           — What the master page structure encoded about the deck's structural logic:
+             how many masters, what each governed, what was locked versus flexible
+           — How the baseline grid was configured and what constraint it imposed on
+             information density and white space across slide types
+           — What the paragraph style hierarchy was and what typographic decisions it
+             locked globally — weights, sizes, tracking, leading, case treatment
+           — What the production color system was: how many swatches, their roles
+             (background, primary type, accent, data), and the production color space
+
+        2. At least two additional tools or techniques — selected specifically for this
+           pitch's domain and this creative director's background. For each additional
+           tool or technique:
+           — Name it precisely (tool name, not category)
+           — Explain in one or two sentences WHY this pitch specifically required it:
+             what asset or visual quality could not have been achieved through InDesign
+             alone, and why this tool was the right instrument given what this creative
+             director knew and what this audience would read as credible
+           — Describe the specific thing they made in it: not "a product render" but
+             the specific object, material condition, lighting logic, geometric method,
+             or physical technique that produced the result — specific enough that a
+             different person with the same tool could attempt to replicate it
+           — Describe exactly how that asset entered the InDesign document and what
+             visual role it plays — which slide types it appears on, how it is cropped
+             or integrated, what it contributes to the argument on those slides
+
+        The additional tools must reflect this specific pitch. A luxury materials pitch
+        has different requirements than a fintech compliance platform or a consumer
+        collectible. Tools chosen only because they sound impressive, without a clear
+        connection to what this deck needed to show this audience, are wrong choices.
+
+        Figma is not a production tool for this class of work and must not appear.
+
+        Physical techniques — DSLR photography, hand illustration, physical model
+        making, material sampling — are valid and often superior to software choices
+        when the domain supports them. A hand-inked diagram vectorized in Illustrator
+        reads differently to a technically-literate audience than auto-generated icons.
+        A KeyShot render of an actual CAD model carries different authority than a
+        generic 3D object. Choose what fits the pitch and the audience's register.
+
+        ─────────────────────────────────────────────────────────────────────
+        PRODUCTION TOOL REFERENCE
+        ─────────────────────────────────────────────────────────────────────
+
+        {_PRODUCTION_TOOL_REFERENCE}
+
+        ─────────────────────────────────────────────────────────────────────
+        ANCHOR NARRATIVE
+        ─────────────────────────────────────────────────────────────────────
+
+        {deck_generation_prompt}
+
+        ─────────────────────────────────────────────────────────────────────
+        OUTPUT
+        ─────────────────────────────────────────────────────────────────────
+
+        Return JSON: {{"visual_grammar_addendum": "..."}}
+
+        The addendum is 400 to 700 words of dense, specific prose in a single unbroken
+        block. It describes, in order:
+
+        1. The InDesign document architecture: master page logic, baseline grid, type
+           system, color system — described as specific decisions with specific reasons,
+           not as general design principles
+        2. Each additional tool: its name, the reason this pitch required it, the specific
+           asset produced, and how it entered the InDesign document
+        3. The resulting visual grammar: the specific motifs, structural patterns,
+           typographic rules, and recurring visual logic that define this deck across all
+           its slides — stated as constraints the deck builder must follow, not as mood
+           or aesthetic suggestion
+
+        No bullet points. No headers. No meta-commentary. Same retrospective voice as
+        the anchor. The deck builder reading this must not be able to tell where the
+        anchor narrative ends and this account begins. The visual grammar you describe
+        must be specific enough that a deck builder can use it to determine what an
+        individual slide should look like — not to describe a general aesthetic mood but
+        to constrain actual layout and image decisions.
+    """).strip()

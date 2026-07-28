@@ -1219,6 +1219,8 @@ def _validate_approach_manifest(manifest: dict, *, expected_count: int = 4) -> l
         }
         if approach.get("effective_archetype_id"):
             entry["effective_archetype_id"] = str(approach["effective_archetype_id"]).strip()
+        if isinstance(approach.get("vibe_semantics"), list):
+            entry["vibe_semantics"] = approach["vibe_semantics"]
         cleaned.append(entry)
     return cleaned
 
@@ -1299,6 +1301,7 @@ async def approach_drafter_worker(job_id: str):
         doc_text=job.get("doc_text"),
         excepted_inference_elements=job.get("excepted_inference_elements"),
         has_brand_reference=bool(intake_img),
+        association_words=job.get("association_words") or [],
     )
     (cand_dir / "approach_prompt.txt").write_text(prompt_text)
 
@@ -1869,6 +1872,26 @@ async def generation_worker(job_id: str):
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_generation", "status": "failed", "error": str(e)[:500]})
         db.update_job(job_id, status="failed", error_message=f"Anchor writer failed: {e}")
         return
+
+    # Phase 1b: Visual Grammar Synthesizer — expands the creative director's toolchain
+    # and production process into specific, constraint-level visual direction for the
+    # deck builder. Non-fatal: if it fails the deck builder proceeds with the anchor prompt.
+    try:
+        vg_prompt = prompts.visual_grammar_prompt(deck_generation_prompt)
+        vg_resp = await _responses_create(
+            job_id,
+            stage="paid_visual_grammar",
+            model=prompts.VISUAL_GRAMMAR_MODEL,
+            input=[{"role": "user", "content": [{"type": "input_text", "text": vg_prompt}]}],
+        )
+        vg_result = _parse_model_json(_response_text(vg_resp))
+        addendum = (vg_result.get("visual_grammar_addendum") or "").strip()
+        if addendum:
+            deck_generation_prompt = deck_generation_prompt + "\n\n" + addendum
+            anchor_json["deck_generation_prompt"] = deck_generation_prompt
+        (strategy_dir / "visual_grammar_output.json").write_text(json.dumps(vg_result, indent=2))
+    except Exception as e:
+        append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_visual_grammar", "status": "failed", "error": str(e)[:500]})
 
     # Phase 2: Deck builder storyboard — one text call that plans all N slides with
     # explicit visual consistency across every image_prompt.
@@ -2810,6 +2833,19 @@ async def _verify_and_finalize_slide(
             f"{disposition.get('corrective_constraints', '').strip()}\n{merged}".strip()
         )
 
+    # Headline override from reviewed_slides is a user-authored mandate —
+    # inject it as an explicit correction so the image model receives it
+    # verbatim rather than leaving the judge to infer it from the diff.
+    reviewed_headline = str(slide_override.get("headline") or "").strip()
+    original_title = str(storyboard_entry.get("title") or "").strip()
+    if reviewed_headline and reviewed_headline != original_title:
+        headline_correction = f'Change the headline text to exactly: "{reviewed_headline}"'
+        existing_cc = (disposition.get("corrective_constraints") or "").strip()
+        disposition["corrective_constraints"] = (
+            f"{headline_correction}\n{existing_cc}" if existing_cc else headline_correction
+        )
+        disposition["verdict"] = "regenerate"
+
     entry = {
         "slide": label,
         "verifier_reports": verifier_reports,
@@ -2851,6 +2887,12 @@ async def _verify_and_finalize_slide(
         # same underspecified line (e.g. "console-style product screenshot"
         # rendered as a GPS hiking app instead of the AI companion console
         # every other slide depicts). Reuse the exact same wrapping here.
+        append_telemetry(job_id, {
+            "event_type": "regen_prompt_compiled",
+            "stage": f"regen_{label}",
+            "slide": label,
+            "regen_prompt": regen_prompt[:2000],
+        })
         await _throttle_image_generation()
         try:
             resp = await _responses_create(
@@ -2995,6 +3037,13 @@ async def verification_worker(job_id: str):
         if not proof_path.exists():
             return idx, None, None
         shutil.copyfile(proof_path, export_presenter_dir / f"slide_{idx:02d}_proof.png")
+        slide_review = (canon_overrides or {}).get(str(idx)) or {}
+        if not slide_review.get("_reverify", True):
+            shutil.copyfile(proof_path, final_path)
+            return idx, final_path, {
+                "slide": idx, "verdict": "passthrough",
+                "final_source": "proof_passthrough", "verifier_reports": [],
+            }
         storyboard_entry = storyboard_by_idx.get(idx) or {
             "slide_number": idx, "title": spec.get("headline", ""),
             "purpose": spec.get("speaker_note", ""), "image_prompt": "",
