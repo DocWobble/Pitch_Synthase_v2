@@ -450,6 +450,40 @@ async def _write_image_from_b64(data: str, path: Path) -> None:
     path.write_bytes(base64.b64decode(data))
 
 
+async def _write_preview_jpg(data: str, path: Path, approach: dict, job: dict) -> None:
+    """Write a preview image as JPG with embedded approach metadata in EXIF UserComment."""
+    import piexif
+    from PIL import Image
+
+    jpg_path = path.with_suffix(".jpg")
+    raw = base64.b64decode(data)
+    img = Image.open(io.BytesIO(raw)).convert("RGB")
+
+    arch_a = approach.get("archetype_a") or {}
+    arch_b = approach.get("archetype_b") or {}
+    metadata = {
+        "ps_version": "1",
+        "job_id": job.get("id") or "",
+        "approach_id": approach.get("approach_id") or "",
+        "approach_label": approach.get("label") or "",
+        "pitch_angle": approach.get("pitch_angle") or "",
+        "key_differentiator": approach.get("key_differentiator") or "",
+        "visual_direction": approach.get("visual_direction") or "",
+        "archetype_a": {"id": arch_a.get("archetype_id") or arch_a.get("id") or "", "label": arch_a.get("label") or ""},
+        "archetype_b": {"id": arch_b.get("archetype_id") or arch_b.get("id") or "", "label": arch_b.get("label") or ""},
+        "vibe_semantics": approach.get("vibe_semantics") or [],
+        "association_words": json.loads(job.get("association_words") or "[]") if isinstance(job.get("association_words"), str) else (job.get("association_words") or []),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    comment_bytes = b"UNICODE\x00" + json.dumps(metadata, ensure_ascii=False).encode("utf-8")
+    exif_dict = {"Exif": {piexif.ExifIFD.UserComment: comment_bytes}}
+    exif_bytes = piexif.dump(exif_dict)
+
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85, optimize=True, exif=exif_bytes)
+    jpg_path.write_bytes(buf.getvalue())
+
+
 def _image_content(path: Path) -> dict:
     mime = mimetypes.guess_type(path.name)[0] or "image/png"
     image_b64 = base64.b64encode(path.read_bytes()).decode()
@@ -468,7 +502,21 @@ def _selected_template_image(job: dict, job_id: str) -> Path | None:
 
 
 def _design_reference_image(job: dict, job_id: str) -> Path | None:
-    """Return the design reference image path for the selected approach, if it exists."""
+    """Return the design reference image for the deck.
+
+    Checks selected_prototype_id in prototype_candidates_json first (new decoupled path),
+    then falls back to design_reference_image_path on the selected approach (legacy path).
+    """
+    selected_proto_id = job.get("selected_prototype_id")
+    if selected_proto_id:
+        for candidate in (job.get("prototype_candidates_json") or []):
+            if candidate.get("design_id") == selected_proto_id:
+                ref = candidate.get("reference_image_path")
+                if ref:
+                    p = Path(ref)
+                    return p if p.exists() else None
+
+    # Legacy: design_reference_image_path on the approach (pre-decoupling)
     selected_id = job.get("selected_candidate_id") or ""
     for approach in (job.get("approach_candidates_json") or []):
         if approach.get("approach_id") == selected_id:
@@ -665,6 +713,22 @@ def _deck_drafter_input(
         ),
     })
 
+    intake_block = prompts.intake_context_block(job.get("intake_options") or {})
+    if intake_block:
+        content.append({"type": "input_text", "text": intake_block})
+
+    image_analysis = job.get("image_analysis") or {}
+    if image_analysis:
+        content.append({
+            "type": "input_text",
+            "text": (
+                "INTAKE IMAGE ANALYSIS — a vision scan of the user-uploaded reference "
+                f"image found: {json.dumps(image_analysis, ensure_ascii=False)}. Use this "
+                "only to corroborate what the image itself shows; it does not override "
+                "the image."
+            ),
+        })
+
     if vertex_images:
         instruction = vertex_instruction or (
             "The following photographs are slides from the preview of this pitch. "
@@ -691,10 +755,10 @@ def _deck_drafter_input(
                 archetype_label = archetype_label or a.get("label") or ""
                 break
 
-        selected_candidate = None
-        for c in (job.get("candidates_json") or []):
-            if c.get("candidate_id") == job.get("selected_candidate_id"):
-                selected_candidate = c
+        selected_approach = None
+        for a in (job.get("approach_candidates_json") or []):
+            if a.get("approach_id") == job.get("selected_candidate_id"):
+                selected_approach = a
                 break
 
         parts = []
@@ -702,38 +766,39 @@ def _deck_drafter_input(
             parts.append(f"Selected founder posture archetype: {archetype_label}.")
             if archetype_posture:
                 parts.append(archetype_posture)
-        if selected_candidate:
-            focus_label = selected_candidate.get("style_label") or ""
-            focus_note  = selected_candidate.get("direction_note") or ""
-            focus_tags  = ", ".join(selected_candidate.get("style_tags") or [])
+        if selected_approach:
+            focus_label = selected_approach.get("visual_direction") or ""
+            focus_note  = selected_approach.get("key_differentiator") or ""
             parts.append(f"\nSelected visual focus: {focus_label}.")
             if focus_note:
                 parts.append(focus_note)
-            if focus_tags:
-                parts.append(f"Visual emphasis register: {focus_tags}.")
         if parts:
             parts.append(
                 "\nHierarchy rule: the founder archetype governs deck argument, founder "
                 "portrayal, evidence posture, emphasis order, and rhetorical stance. "
                 "The visual aesthetic — palette, typographic register, information density, "
-                "and layout conventions — must be derived from the selected template image "
-                "provided below, interpreted in service of that archetype."
+                "and layout conventions — must be derived from the selected approach's "
+                "representative preview slide provided below, interpreted in service of "
+                "that archetype."
             )
             content.append({"type": "input_text", "text": "\n".join(parts)})
 
-        tmpl_path = _selected_template_image(job, job_id)
-        if tmpl_path:
+        preview_path_str = (selected_approach or {}).get("preview_image_path")
+        preview_path = Path(preview_path_str) if preview_path_str else None
+        if preview_path and preview_path.exists():
             content.append({
                 "type": "input_text",
                 "text": (
-                    "Selected template image — this is the mandatory visual style anchor. "
-                    "All generated slides must derive their palette, typographic register, "
-                    "and layout conventions from it. If written style instructions conflict "
-                    "with this image, the image wins for surface styling only. It must not "
-                    "override archetype-driven structure, founder framing, or narrative posture."
+                    "Selected approach's representative preview slide — this is the "
+                    "mandatory visual style anchor. This is the exact slide the human "
+                    "picked when choosing this approach; all generated slides must derive "
+                    "their palette, typographic register, and layout conventions from it. "
+                    "If written style instructions conflict with this image, the image "
+                    "wins for surface styling only. It must not override archetype-driven "
+                    "structure, founder framing, or narrative posture."
                 ),
             })
-            content.append(_image_content(tmpl_path))
+            content.append(_image_content(preview_path))
 
     supporting_image = _supporting_image(job_id)
     if supporting_image:
@@ -1293,6 +1358,15 @@ async def approach_drafter_worker(job_id: str):
     append_telemetry(job_id, {"event_type": "workflow", "stage": "approach_drafter", "status": "started"})
 
     intake_img = _supporting_image(job_id)
+    # Pass physical descriptions from design_refs_text if available — gives all 4
+    # approaches a shared physical grounding without coupling archetype choices.
+    design_philosophies = None
+    prototype_candidates = job.get("prototype_candidates_json") or []
+    if prototype_candidates and not (len(prototype_candidates) == 1 and prototype_candidates[0].get("design_id") == "design_uploaded"):
+        design_philosophies = [
+            {"design_id": d.get("design_id"), "design_philosophy": d.get("design_philosophy", ""), "physical_description": d.get("physical_description", "")}
+            for d in prototype_candidates
+        ]
     prompt_text = prompts.approach_drafter_prompt(
         audience=job.get("audience") or "",
         elevator_pitch=job.get("elevator_pitch") or "",
@@ -1302,6 +1376,7 @@ async def approach_drafter_worker(job_id: str):
         excepted_inference_elements=job.get("excepted_inference_elements"),
         has_brand_reference=bool(intake_img),
         association_words=job.get("association_words") or [],
+        design_philosophies=design_philosophies,
     )
     (cand_dir / "approach_prompt.txt").write_text(prompt_text)
 
@@ -1437,28 +1512,22 @@ async def approach_regenerate_worker(job_id: str, regenerate_ids: list[str]):
     return ordered
 
 
-async def design_drafter_worker(job_id: str):
-    """Generate one canonical prototype design per approach.
+async def design_drafter_text_worker(job_id: str):
+    """Phase 1 of prototype generation: text-only call, independent of approaches.
 
-    If the user uploaded a supporting image that looks like a product design
-    reference, skip generation and use that image for all approaches.
-    Otherwise, one text call produces 4 design philosophies + physical
-    descriptions, then 4 parallel image gen calls produce clean product-shot
-    reference images. Each is saved into approach_candidates_json as
-    design_reference_image_path.
+    Optimizes purely against material physics and functional geometry.
+    Stores 4 design candidates in prototype_candidates_json (no images yet).
+    If the user uploaded a product/brand reference image, uses that instead.
     """
     job = db.get_job(job_id)
     if not job:
         return
-    approaches = job.get("approach_candidates_json") or []
-    if not approaches:
-        raise RuntimeError("design_drafter_worker: no approaches on job yet")
 
     design_dir = job_dir(job_id) / "design_references"
     design_dir.mkdir(exist_ok=True)
-    append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter", "status": "started"})
+    append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter_text", "status": "started"})
 
-    # ── Check if the uploaded supporting image is a usable visual reference ──
+    # ── Uploaded image shortcut ───────────────────────────────────────────────
     supporting = _supporting_image(job_id)
     if supporting:
         check_resp = await _responses_create(
@@ -1466,42 +1535,36 @@ async def design_drafter_worker(job_id: str):
             stage="design_reference_check",
             model=prompts.CLASSIFY_MODEL,
             input=[{"role": "user", "content": [
-                {
-                    "type": "input_text",
-                    "text": (
-                        "Classify this image as exactly one of three types:\n"
-                        "- product: a physical product, prototype, hardware device, or engineering drawing\n"
-                        "- brand: a website, UI screenshot, logo, or brand/marketing material\n"
-                        "- neither: anything else\n"
-                        "Answer only: product, brand, or neither."
-                    ),
-                },
+                {"type": "input_text", "text": (
+                    "Classify this image as exactly one of three types:\n"
+                    "- product: a physical product, prototype, hardware device, or engineering drawing\n"
+                    "- brand: a website, UI screenshot, logo, or brand/marketing material\n"
+                    "- neither: anything else\n"
+                    "Answer only: product, brand, or neither."
+                )},
                 _image_content(supporting),
             ]}],
         )
         _ref_raw = _response_text(check_resp).strip().lower()
         ref_type = "product" if _ref_raw.startswith("product") else "brand" if _ref_raw.startswith("brand") else "neither"
         if ref_type in ("product", "brand"):
-            ref_str = str(supporting)
-            updated = []
-            for a in approaches:
-                a = dict(a)
-                a["design_reference_image_path"] = ref_str
-                a["design_reference_type"] = ref_type
-                updated.append(a)
-            db.update_job(job_id, approach_candidates_json=updated)
-            append_telemetry(job_id, {
-                "event_type": "workflow", "stage": "design_drafter",
-                "status": "done_from_upload", "ref_type": ref_type, "path": ref_str,
-            })
+            # Uploaded image stands in for all 4 prototypes — pre-select it
+            candidate = {
+                "design_id": "design_uploaded",
+                "assigned_archetype_id": ref_type,
+                "design_philosophy": "User-provided reference image.",
+                "physical_description": "See uploaded image.",
+                "reference_image_prompt": "",
+                "reference_image_path": str(supporting),
+            }
+            db.update_job(job_id, prototype_candidates_json=[candidate], selected_prototype_id="design_uploaded")
+            append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter_text",
+                                      "status": "done_from_upload", "ref_type": ref_type})
             return
 
-    # ── Generate 4 distinct designs ───────────────────────────────────────────
+    # ── Generate 4 design philosophies (no images) ───────────────────────────
     prompt_text = prompts.design_drafter_prompt(
-        audience=job.get("audience") or "",
         elevator_pitch=job.get("elevator_pitch") or "",
-        conveys=job.get("conveys") or "",
-        approaches=approaches,
         doc_text=job.get("doc_text"),
         excepted_inference_elements=job.get("excepted_inference_elements"),
     )
@@ -1515,22 +1578,49 @@ async def design_drafter_worker(job_id: str):
         output_path=(design_dir / "design_drafter_response.txt").relative_to(job_dir(job_id)),
     )
     raw_text = _response_text(resp)
-    (design_dir / "design_drafter_response.txt").write_text(raw_text)
     manifest = _parse_model_json(raw_text)
     designs = manifest.get("designs") or []
     if len(designs) != 4:
-        raise RuntimeError(f"design_drafter returned {len(designs)} designs; expected 4")
+        raise RuntimeError(f"design_drafter_text returned {len(designs)} designs; expected 4")
 
-    designs_by_id = {d["approach_id"]: d for d in designs}
+    candidates = [
+        {
+            "design_id": d.get("design_id", f"design_{i+1}"),
+            "assigned_archetype_id": d.get("assigned_archetype_id", ""),
+            "design_philosophy": d.get("design_philosophy", ""),
+            "physical_description": d.get("physical_description", ""),
+            "reference_image_prompt": d.get("reference_image_prompt", ""),
+            "reference_image_path": None,
+        }
+        for i, d in enumerate(designs)
+    ]
     (design_dir / "design_manifest.json").write_text(json.dumps(manifest, indent=2))
+    db.update_job(job_id, prototype_candidates_json=candidates)
+    append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter_text", "status": "done"})
 
-    # ── Generate one reference image per design in parallel ───────────────────
-    async def _gen_design_image(design: dict) -> tuple[str, str]:
-        approach_id = design["approach_id"]
-        ref_prompt = str(design.get("reference_image_prompt") or "").strip()
+
+async def design_drafter_images_worker(job_id: str):
+    """Phase 2 of prototype generation: 4 parallel image gens from text candidates.
+
+    Reads prototype_candidates_json, generates one studio product shot per design,
+    writes paths back. Runs concurrently with approach_draft.
+    """
+    job = db.get_job(job_id)
+    if not job:
+        return
+    candidates = job.get("prototype_candidates_json") or []
+    if not candidates:
+        raise RuntimeError("design_drafter_images_worker: no prototype_candidates_json")
+
+    design_dir = job_dir(job_id) / "design_references"
+    design_dir.mkdir(exist_ok=True)
+    append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter_images", "status": "started"})
+
+    async def _gen(candidate: dict) -> tuple[str, str]:
+        design_id = candidate["design_id"]
+        ref_prompt = str(candidate.get("reference_image_prompt") or "").strip()
         if not ref_prompt:
-            raise RuntimeError(f"design_drafter: missing reference_image_prompt for {approach_id}")
-
+            raise RuntimeError(f"design_drafter_images: missing reference_image_prompt for {design_id}")
         img_prompt_text = (
             f"{ref_prompt}\n\n"
             "Binding output constraints:\n"
@@ -1541,11 +1631,11 @@ async def design_drafter_worker(job_id: str):
             "- Photorealistic product photography.\n"
             "- No text, labels, callouts, or brand marks visible.\n"
         )
-        out = design_dir / f"{approach_id}_design_ref.png"
+        out = design_dir / f"{design_id}_design_ref.png"
         await _throttle_image_generation()
         img_resp = await _responses_create(
             job_id,
-            stage=f"design_ref_image_{approach_id}",
+            stage=f"design_ref_image_{design_id}",
             model=prompts.DECK_DRAFTER_MODEL,
             input=img_prompt_text,
             tools=[prompts.image_generation_tool(stage="design_ref")],
@@ -1553,30 +1643,21 @@ async def design_drafter_worker(job_id: str):
         )
         images = _response_images(img_resp)
         if not images:
-            raise RuntimeError(f"design_drafter: no image returned for {approach_id}")
+            raise RuntimeError(f"design_drafter_images: no image returned for {design_id}")
         await _write_image_from_b64(images[0], out)
-        return approach_id, str(out)
+        return design_id, str(out)
 
-    image_results = await _chunked_gather([_gen_design_image(d) for d in designs], chunk_size=4)
-    path_by_approach = dict(image_results)
+    results = await _chunked_gather([_gen(c) for c in candidates if c.get("reference_image_prompt")], chunk_size=4)
+    path_by_id = dict(results)
 
-    # ── Merge back into approach_candidates_json ──────────────────────────────
     refreshed = db.get_job(job_id)
-    updated = []
-    for a in (refreshed.get("approach_candidates_json") or []):
-        a = dict(a)
-        aid = a.get("approach_id")
-        design = designs_by_id.get(aid) or {}
-        a["design_philosophy"] = design.get("design_philosophy") or ""
-        a["design_assigned_archetype_id"] = design.get("assigned_archetype_id") or ""
-        a["design_reference_image_path"] = path_by_approach.get(aid) or ""
-        updated.append(a)
-    db.update_job(job_id, approach_candidates_json=updated)
-
-    append_telemetry(job_id, {
-        "event_type": "workflow", "stage": "design_drafter", "status": "done",
-        "paths": path_by_approach,
-    })
+    updated = [
+        {**c, "reference_image_path": path_by_id.get(c["design_id"], c.get("reference_image_path"))}
+        for c in (refreshed.get("prototype_candidates_json") or [])
+    ]
+    db.update_job(job_id, prototype_candidates_json=updated)
+    append_telemetry(job_id, {"event_type": "workflow", "stage": "design_drafter_images",
+                               "status": "done", "paths": path_by_id})
 
 
 async def single_slide_preview_worker(job_id: str, approach_id: str):
@@ -1618,14 +1699,27 @@ async def single_slide_preview_worker(job_id: str, approach_id: str):
     (slide_dir / f"{approach_id}_draft_response.txt").write_text(raw_text)
     slide_draft = _parse_model_json(raw_text)
 
-    design_ref_path_str = approach.get("design_reference_image_path")
-    design_ref_path = Path(design_ref_path_str) if design_ref_path_str else None
-    if design_ref_path and not design_ref_path.exists():
-        design_ref_path = None
+    # Use the user-selected prototype image if one has been chosen,
+    # otherwise fall back to the approach's own design_reference_image_path
+    # (legacy path, or uploaded-image shortcut).
+    design_ref_path: Path | None = None
+    selected_proto_id = job.get("selected_prototype_id")
+    if selected_proto_id:
+        proto_candidates = job.get("prototype_candidates_json") or []
+        proto = next((c for c in proto_candidates if c.get("design_id") == selected_proto_id), None)
+        proto_path_str = proto.get("reference_image_path") if proto else None
+        if proto_path_str:
+            p = Path(proto_path_str)
+            design_ref_path = p if p.exists() else None
+    if design_ref_path is None:
+        fallback_str = approach.get("design_reference_image_path")
+        if fallback_str:
+            p = Path(fallback_str)
+            design_ref_path = p if p.exists() else None
+    design_ref_type = "product"
 
     slide_image_text = prompts.single_slide_image_prompt(slide_draft=slide_draft)
     if design_ref_path:
-        design_ref_type = approach.get("design_reference_type", "product")
         if design_ref_type == "brand":
             ref_label = (
                 "BRAND VISUAL REFERENCE — this is the client's existing visual identity. "
@@ -1654,13 +1748,13 @@ async def single_slide_preview_worker(job_id: str, approach_id: str):
         model=prompts.DECK_DRAFTER_MODEL,
         input=slide_image_input,
         tools=[prompts.image_generation_tool(stage="single_slide")],
-        output_path=(slide_dir / f"{approach_id}.png").relative_to(job_dir(job_id)),
+        output_path=(slide_dir / f"{approach_id}.jpg").relative_to(job_dir(job_id)),
     )
     images = _response_images(image_resp)
     if len(images) != 1:
         raise RuntimeError(f"Single-slide preview {approach_id} returned {len(images)} images; expected 1")
-    img_path = slide_dir / f"{approach_id}.png"
-    await _write_image_from_b64(images[0], img_path)
+    img_path = slide_dir / f"{approach_id}.jpg"
+    await _write_preview_jpg(images[0], img_path, approach, job)
 
     refreshed = db.get_job(job_id)
     updated_approaches = refreshed.get("approach_candidates_json") or []
@@ -1868,6 +1962,7 @@ async def generation_worker(job_id: str):
         strategy_dir = job_dir(job_id) / "strategy"
         strategy_dir.mkdir(exist_ok=True)
         (strategy_dir / "anchor_writer_output.json").write_text(json.dumps(anchor_json, indent=2))
+        db.append_progress(job_id, "generation", "Creative direction locked — anchor write complete", pct=0.10)
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_generation", "status": "failed", "error": str(e)[:500]})
         db.update_job(job_id, status="failed", error_message=f"Anchor writer failed: {e}")
@@ -1875,7 +1970,9 @@ async def generation_worker(job_id: str):
 
     # Phase 1b: Visual Grammar Synthesizer — expands the creative director's toolchain
     # and production process into specific, constraint-level visual direction for the
-    # deck builder. Non-fatal: if it fails the deck builder proceeds with the anchor prompt.
+    # deck builder. Mandatory: this is what locks in the art direction as a constraint
+    # rather than an open aesthetic mandate; a deck built without it has no coherent
+    # visual authority, so a failure here fails generation rather than proceeding silently.
     try:
         vg_prompt = prompts.visual_grammar_prompt(deck_generation_prompt)
         vg_resp = await _responses_create(
@@ -1886,12 +1983,16 @@ async def generation_worker(job_id: str):
         )
         vg_result = _parse_model_json(_response_text(vg_resp))
         addendum = (vg_result.get("visual_grammar_addendum") or "").strip()
-        if addendum:
-            deck_generation_prompt = deck_generation_prompt + "\n\n" + addendum
-            anchor_json["deck_generation_prompt"] = deck_generation_prompt
+        if not addendum:
+            raise RuntimeError("Visual Grammar Synthesizer returned no visual_grammar_addendum")
+        deck_generation_prompt = deck_generation_prompt + "\n\n" + addendum
+        anchor_json["deck_generation_prompt"] = deck_generation_prompt
         (strategy_dir / "visual_grammar_output.json").write_text(json.dumps(vg_result, indent=2))
+        db.append_progress(job_id, "generation", "Visual grammar synthesized", pct=0.18)
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_visual_grammar", "status": "failed", "error": str(e)[:500]})
+        db.update_job(job_id, status="failed", error_message=f"Visual Grammar Synthesizer failed: {e}")
+        return
 
     # Phase 2: Deck builder storyboard — one text call that plans all N slides with
     # explicit visual consistency across every image_prompt.
@@ -1926,9 +2027,12 @@ async def generation_worker(job_id: str):
         for item in paid_storyboard:
             if not str(item.get("image_prompt") or "").strip():
                 raise RuntimeError(f"Deck builder storyboard entry for slide {item.get('slide_number')} is missing image_prompt")
+            if not [p for p in (item.get("body_points") or []) if str(p).strip()]:
+                raise RuntimeError(f"Deck builder storyboard entry for slide {item.get('slide_number')} is missing body_points")
         image_prompts = {int(item["slide_number"]): item["image_prompt"] for item in paid_storyboard}
         visual_grammar = storyboard_json.get("visual_grammar") or {}
         (d / "paid_storyboard.json").write_text(json.dumps(storyboard_json, indent=2))
+        db.append_progress(job_id, "generation", f"Storyboard complete — {slide_count} slides planned, starting render", pct=0.25)
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_generation", "status": "failed", "error": str(e)[:500]})
         db.update_job(job_id, status="failed", error_message=f"Deck builder storyboard failed: {e}")
@@ -1939,7 +2043,7 @@ async def generation_worker(job_id: str):
             "slide_index": item["slide_number"],
             "slide_label": f"Slide {item['slide_number']}",
             "headline": item.get("title") or f"Slide {item['slide_number']}",
-            "body_points": [],
+            "body_points": [str(p).strip() for p in (item.get("body_points") or []) if str(p).strip()],
             "speaker_note": item.get("purpose") or "",
         }
         for item in paid_storyboard
@@ -1956,7 +2060,10 @@ async def generation_worker(job_id: str):
         "anchor_writer_output": anchor_json,
         "paid_storyboard": paid_storyboard,
     }
-    expected_text_map = {}
+    expected_text_map = {
+        str(spec["slide_index"]): {"headline": spec["headline"], "body_points": spec["body_points"]}
+        for spec in slide_specs
+    }
 
     (d / "deck_proof_plan.json").write_text(json.dumps(plan_json, indent=2))
     (d / "slide_specs.json").write_text(json.dumps(slide_specs, indent=2))
@@ -1997,6 +2104,8 @@ async def generation_worker(job_id: str):
                 if not images:
                     raise RuntimeError("No image returned")
                 await _write_image_from_b64(images[0], out)
+                pct = 0.25 + 0.70 * (idx / len(slide_specs))
+                db.append_progress(job_id, "generation", f"Slide {idx} of {len(slide_specs)} rendered", pct=pct)
                 return idx, True
             except Exception as exc:
                 append_telemetry(job_id, {
@@ -2017,6 +2126,7 @@ async def generation_worker(job_id: str):
         db.update_job(job_id, status="failed", error_message=f"Too many slide failures: {failed_slides}")
         return
 
+    db.append_progress(job_id, "generation", "All slides rendered — ready for review", pct=1.0)
     db.update_job(
         job_id,
         status="awaiting_review",

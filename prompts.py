@@ -509,11 +509,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Compounding Proof Merchant",
         "posture": "Understated, evidence-led, economically literate, and patient.",
         "win_condition": (
-            "This pitch wins by placing an already-functioning economic engine on the "
-            "table and letting observable adoption, retention, unit economics, and "
-            "compounding advantages carry the argument. It avoids speculative theater "
-            "because the existing business already demonstrates why additional capital "
-            "will produce more."
+            "This pitch wins by shifting the burden of proof onto the skeptic: it presents "
+            "a trend so uninterrupted and already-observed that continuing to doubt its "
+            "continuation, not believing it, becomes the position that now requires "
+            "justification."
         ),
     },
     {
@@ -522,10 +521,9 @@ FOUNDER_ARCHETYPES = [
         "role": "The Commercial Demonstrator",
         "posture": "Practical, experimental, proof-oriented, and commercially relentless.",
         "win_condition": (
-            "This pitch wins by showing a functioning invention whose observable "
-            "performance makes the previous technical or commercial arrangement look "
-            "obsolete. The demonstration proves not only that the mechanism works, but "
-            "that it can replace the existing category."
+            "This pitch wins by proof through performance: the working demonstration "
+            "itself is the argument, and a skeptic who watches it happen has no rebuttal "
+            "left except to explain why what they just saw shouldn't count."
         ),
     },
     {
@@ -534,11 +532,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Patron-Oriented Synthesist",
         "posture": "Inventive, interdisciplinary, adaptive, and audience-attuned.",
         "win_condition": (
-            "This pitch wins by combining existing disciplines, tools, and capabilities "
-            "into a coherent possibility tailored to the audience's immediate ambitions. "
-            "The breakthrough comes from synthesis: revealing that an unrealized "
-            "capability is already within reach if the available pieces are assembled "
-            "correctly."
+            "This pitch wins by dissolving the objection before it's raised: every "
+            "component the skeptic would need to believe already exists in things they "
+            "already individually accept; the argument is simply the arrangement they "
+            "hadn't yet seen."
         ),
     },
     {
@@ -547,10 +544,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Practical System Reformer",
         "posture": "Pragmatic, first-principles-driven, civic-minded, and resourceful.",
         "win_condition": (
-            "This pitch wins by converting a first-principles insight into a practical "
-            "new system, institution, or utility. It makes structural reinvention feel "
-            "useful, sensible, and immediately organizable rather than abstract, "
-            "ideological, or utopian."
+            "This pitch wins by making its conclusion feel self-derived: it walks the "
+            "skeptic through first principles so plainly that they arrive at the idea "
+            "themselves, leaving no room to resist a claim they feel they reasoned their "
+            "own way into."
         ),
     },
     {
@@ -559,10 +556,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Demonstrative Merchant",
         "posture": "Customer-intimate, persuasive, polished, and transaction-aware.",
         "win_condition": (
-            "This pitch wins by making the benefit immediately experienceable and the "
-            "purchase unusually easy. Demonstration, packaging, sampling, channel fit, "
-            "and transaction design convert curiosity into observable buying behavior "
-            "without requiring the customer to first accept a grand theory."
+            "This pitch wins by skipping the argument altogether: it puts the thing "
+            "directly into the skeptic's hands under conditions where trying it costs "
+            "less than doubting it, so persuasion happens through firsthand contact "
+            "rather than assertion."
         ),
     },
     {
@@ -571,10 +568,9 @@ FOUNDER_ARCHETYPES = [
         "role": "The Category Showman",
         "posture": "Focused, theatrical, product-obsessed, and expectation-resetting.",
         "win_condition": (
-            "This pitch wins by staging a finished product experience so clearly that "
-            "the audience immediately revises what it expects from the entire category. "
-            "The demonstration turns product quality into desire and makes the previous "
-            "standard feel visibly inadequate."
+            "This pitch wins by resetting the standard the skeptic is judging against: "
+            "once they've seen what the category could be, defending what it used to be "
+            "becomes the position that requires justification."
         ),
     },
     {
@@ -583,10 +579,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Attention Engineer",
         "posture": "Spectacular, publicity-minded, audience-aware, and highly transmissible.",
         "win_condition": (
-            "This pitch wins by identifying the most vivid, repeatable, and socially "
-            "transmissible expression of the idea, then arranging existing channels and "
-            "audience curiosities so attention converts into discussion, attendance, "
-            "trial, and purchase."
+            "This pitch wins by proof through contagion: the claim is made so vivid and "
+            "immediately shareable that the skeptic sees everyone else already reacting "
+            "to it, and skepticism starts to feel like the isolated, out-of-step position "
+            "rather than the reasonable one."
         ),
     },
     {
@@ -595,10 +591,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Aspirational Reframer",
         "posture": "Taste-driven, culturally perceptive, identity-forming, and defiant.",
         "win_condition": (
-            "This pitch wins by connecting the product to a newly desirable identity "
-            "and making inherited category conventions feel restrictive, dated, or "
-            "socially misaligned. Adoption becomes an expression of who the buyer intends "
-            "to be, not merely a functional purchase."
+            "This pitch wins by inverting who's on the defensive: it reframes the status "
+            "quo itself as the dated, self-limiting choice, so the skeptic ends up "
+            "explaining why they're still holding an old identity rather than why they "
+            "should accept a new one."
         ),
     },
     {
@@ -607,10 +603,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Value-Chain Consolidator",
         "posture": "Disciplined, integrative, economically rigorous, and control-oriented.",
         "win_condition": (
-            "This pitch wins because disciplined control of the existing value chain "
-            "produces superior reliability, economics, bargaining power, and scale. "
-            "Fragmented competitors cannot match the efficiency and resilience of the "
-            "integrated operating machine."
+            "This pitch wins by proof through comparison: it lays the coordinated whole "
+            "next to every fragmented alternative and dares the skeptic to name one "
+            "disorganized version that has matched it — the absence of a counterexample "
+            "becomes the argument."
         ),
     },
     {
@@ -619,9 +615,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Production Transformer",
         "posture": "Operational, systems-minded, standardizing, and throughput-obsessed.",
         "win_condition": (
-            "This pitch wins because a proven operational redesign changes the cost, "
-            "speed, volume, and accessibility limits of production. The former category "
-            "economics cannot survive comparison with the new machine."
+            "This pitch wins by proof the skeptic can verify themselves: the mechanics of "
+            "the redesign are shown plainly enough that the audience can check the new "
+            "limits with their own arithmetic rather than take them on faith — and a "
+            "limit you've verified yourself is hard to keep doubting."
         ),
     },
     {
@@ -630,10 +627,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Capital Coordinator",
         "posture": "Institutional, coalition-oriented, financially commanding, and structural.",
         "win_condition": (
-            "This pitch wins by arranging capital, partners, incentives, standards, and "
-            "institutional roles into a structure that makes a large undertaking "
-            "governable and financeable. The advantage comes from coordination that no "
-            "isolated participant can achieve alone."
+            "This pitch wins by proof through inevitability: it shows the skeptic that "
+            "every party who would need to agree already has independent reason to, so "
+            "accepting the pitch isn't a leap of faith — it's recognizing a structure "
+            "that is already locking into place with or without them."
         ),
     },
     {
@@ -642,10 +639,10 @@ FOUNDER_ARCHETYPES = [
         "role": "The Commercial World Builder",
         "posture": "Imaginative, system-building, experience-driven, and expansion-minded.",
         "win_condition": (
-            "This pitch wins by presenting a fully coherent world of products, "
-            "experiences, channels, and reinforcing extensions, then showing an "
-            "organization capable of making that world tangible, repeatable, and "
-            "commercially self-reinforcing."
+            "This pitch wins by proof through immersion: rather than arguing the world "
+            "could exist, it places the skeptic inside a fully realized piece of it, so "
+            "doubt requires them to consciously step back out of an experience they were "
+            "already having."
         ),
     },
 ]
@@ -1004,6 +1001,7 @@ def approach_drafter_prompt(
     excepted_inference_elements: Sequence[str] | None = None,
     has_brand_reference: bool = False,
     association_words: Sequence[str] | None = None,
+    design_philosophies: Sequence[Mapping[str, Any]] | None = None,
 ) -> str:
     """
     Full-pitch-first workshop experiment: receives the REAL elevator pitch (and
@@ -1032,6 +1030,33 @@ def approach_drafter_prompt(
             f"Archetype catalog:\n{catalog_block}"
         )
     doc_block = f"\n\nSupporting document (uploaded by the user):\n{doc_text}" if doc_text else ""
+    if design_philosophies:
+        _shared = "\n".join(
+            f"  [{d.get('design_id','?')}] {d.get('assigned_archetype_id','?')}: "
+            f"{d.get('physical_description','')[:200]}"
+            for d in design_philosophies
+        )
+        design_context_block = dedent(f"""
+
+        Physical prototype context
+        --------------------------
+        Engineering has independently produced four prototype designs for this
+        mechanism. The user has not yet chosen one. Your approaches will each
+        be built around whichever prototype the user ultimately selects.
+
+        Use these physical descriptions to ensure your narrative choices are
+        grounded in what the device can actually be — not to constrain the
+        commercial angle, but to ensure each approach is compatible with the
+        shared physical invariants present across all four designs.
+
+        {_shared}
+
+        Do NOT optimize approaches toward or against any specific design above.
+        Optimize against what they have in common — the physical constraints
+        that will be present regardless of which design the user chooses.
+        """)
+    else:
+        design_context_block = ""
     brand_ref_block = (
         "\n\nBrand reference\n"
         "---------------\n"
@@ -1105,6 +1130,7 @@ def approach_drafter_prompt(
         {conveys}
         {doc_block}
         {brand_ref_block}
+        {design_context_block}
         {vibes_block}
 
         Output contract
@@ -1336,29 +1362,25 @@ def template_drafter_prompt(
 
 def design_drafter_prompt(
     *,
-    audience: str,
     elevator_pitch: str,
-    conveys: str,
-    approaches: Sequence[Mapping[str, Any]],
     doc_text: str | None = None,
     excepted_inference_elements: Sequence[str] | None = None,
 ) -> str:
     """
-    For a pitch with 4 drafted approaches, generate one canonical prototype
-    design per approach — same mechanism, four distinct design philosophies
-    drawn from the DESIGN_ARCHETYPES catalog.
+    Generate four independent prototype designs from product description alone.
 
-    The model selects the 4 archetypes from the catalog that will produce the
-    most differentiated designs for this specific product, assigns one per
-    approach, and generates a design that enacts that archetype's priorities
-    while obeying all hard constraints from the user's description.
+    Engineering optimization target: material physics and functional geometry.
+    No marketing input. No approach context. The designs are selected and
+    developed purely to explore the space of physically valid, meaningfully
+    differentiated realizations of the stated mechanism.
 
-    The resulting reference images become the visual contract for all subsequent
-    image generation in each approach's deck.
+    Runs before and independently of approach drafting. Output is stored as
+    prototype_candidates_json and read by the approach drafter for physical
+    grounding — not to constrain narrative, but to ensure commercial claims
+    are consistent with what the device can actually be.
     """
-    doc_block = f"\n\nSupporting document (uploaded by the user):\n{doc_text}" if doc_text else ""
+    doc_block = f"\n\nSupporting document:\n{doc_text}" if doc_text else ""
     inference_policy = _inference_policy_block(excepted_inference_elements)
-    approaches_block = _json(list(approaches))
     catalog_block = "\n\n".join(
         f"[{a['archetype_id']}] {a['label']} ({a['figure']}, {a['reference']})\n"
         f"Design language: {a['design_language']}\n"
@@ -1372,56 +1394,45 @@ def design_drafter_prompt(
         f"""
         {inference_policy}
 
-        You are designing four canonical prototype visuals for a product pitch.
+        You are an engineering design team generating four distinct physical
+        prototypes of the same underlying mechanism.
 
-        These are not four different products. They are the SAME underlying
-        mechanism — expressed through four DISTINCT design philosophy archetypes,
-        the way four different engineering teams, starting from the same physics,
-        would each have built a different prototype shaped by their own priorities,
-        material instincts, and serendipitous discoveries during development.
+        These are not four different products. They are the SAME mechanism —
+        expressed through four DISTINCT design philosophy archetypes, the way
+        four different engineering teams, starting from the same physics, would
+        each have built a different prototype shaped by their own material
+        priorities, geometric instincts, and serendipitous discoveries during
+        development.
 
-        The reference image produced for each design becomes the authoritative
-        visual contract for every slide that features the product in the
-        corresponding approach's deck. The physical form must remain fully
-        consistent within a design; it must vary MEANINGFULLY between designs —
-        not as color variants, but as genuinely different engineering decision
-        paths that arrived at the same function from different directions.
+        Your optimization target is physical plausibility and engineering
+        differentiation. You have no information about and no interest in how
+        this product will be marketed. Select archetypes based on which design
+        philosophies will produce the most meaningfully different physical
+        realizations of this specific mechanism — not on any commercial angle.
 
         HARD CONSTRAINTS — treat as physical law:
-        Constraints stated in the elevator pitch or supporting document apply
-        to ALL four designs without exception. If the user specifies a material,
-        an ergonomic requirement, a safety constraint, a form factor requirement,
-        or a dimension, that is binding. Do not introduce geometry, materials,
-        or proportions that contradict the user-stated description or physical
-        reality. No impossible geometry. No materials that cannot satisfy the
-        described function.
+        All constraints stated in the product description apply to ALL four
+        designs without exception. If the description specifies a material,
+        an ergonomic requirement, a safety constraint, a form factor, or a
+        dimension, that is binding. Do not introduce geometry, materials, or
+        proportions that contradict the stated description or physical reality.
+        No impossible geometry. No materials that cannot satisfy the function.
 
         DESIGN ARCHETYPE CATALOG:
         Select exactly 4 of the following 6 archetypes — the 4 whose design
-        languages will produce the most differentiated prototypes for THIS
-        specific product and these specific approaches. Assign one archetype
-        to each approach. No two approaches may share an archetype.
+        philosophies will produce the most physically differentiated prototypes
+        for THIS specific mechanism. No two designs may share an archetype.
 
-        Your selection should maximize the range of material, geometric, and
-        aesthetic outcomes across the four designs. Consider which archetype
-        naturally amplifies each approach's pitch_angle and visual_direction.
+        Maximize range of material tendency, geometric approach, and surface
+        character across the four. Each design must be a distinct engineering
+        decision path — not a color variant or scale variant of another.
 
         {catalog_block}
 
-        Pitch context
-        -------------
-        Audience:
-        {audience}
-
-        Elevator pitch (the real invention — all designs must realize THIS):
+        Product description
+        -------------------
         {elevator_pitch}
-
-        What the user wants this pitch to convey:
-        {conveys}
         {doc_block}
-
-        The four approaches to design for:
-        {approaches_block}
 
         Output contract
         ---------------
@@ -1429,32 +1440,28 @@ def design_drafter_prompt(
         and "designs".
 
         "archetype_selection_rationale": one or two sentences explaining which
-        4 archetypes you selected and why they produce maximum differentiation
-        for this product.
+        4 archetypes you selected and why they produce maximum physical
+        differentiation for this specific mechanism.
 
-        "designs": exactly four objects, one per approach_id, in the same order
-        as the approaches above.
+        "designs": exactly four objects, numbered design_1 through design_4.
 
         Each design object:
-        - approach_id: matches the approach it was designed for
+        - design_id: "design_1" through "design_4"
         - assigned_archetype_id: the archetype_id from the catalog
-        - design_philosophy: 2–4 sentences. The engineering origin story for
-          this specific design under this archetype — what priority the team
-          held highest, what tradeoff shaped the form factor, what serendipitous
-          constraint or discovery determined a specific geometric decision. Must
-          be grounded in physical plausibility, not marketing language.
+        - design_philosophy: 2–4 sentences. The engineering origin story —
+          what priority the team held highest, what tradeoff shaped the form
+          factor, what constraint or discovery determined a specific geometric
+          decision. Physical plausibility only. No marketing language.
         - physical_description: precise visual description of the finished
-          prototype. Enough detail to anchor a consistent product image:
-          material finishes, color, proportions, specific geometric features,
-          visible mechanism elements, and how they relate to each other.
-          Do not mention brand names or text visible on the device.
-        - reference_image_prompt: a complete, self-contained prompt for
-          generating a clean studio product reference shot. Must specify:
-          a clean neutral studio background (white or near-white),
+          prototype. Material finishes, color, proportions, specific geometric
+          features, visible mechanism elements, and how they relate spatially.
+          Detailed enough to anchor consistent image generation.
+          No brand names or visible text on device.
+        - reference_image_prompt: complete, self-contained prompt for a clean
+          studio product reference shot. White or near-white background,
           three-quarter front view, full device visible, soft diffused studio
-          lighting, no human hands, no scene context, no background elements.
-          Must include the complete physical_description inline — this prompt
-          will be used standalone without any other context.
+          lighting, no human hands, no scene context, no props.
+          Must embed the full physical_description inline — used standalone.
           Photorealistic product photography. No text, callouts, or labels.
 
         JSON shape:
@@ -1462,8 +1469,8 @@ def design_drafter_prompt(
           "archetype_selection_rationale": "...",
           "designs": [
             {{
-              "approach_id": "approach_1",
-              "assigned_archetype_id": "design_rams",
+              "design_id": "design_1",
+              "assigned_archetype_id": "<one archetype_id from the catalog above>",
               "design_philosophy": "...",
               "physical_description": "...",
               "reference_image_prompt": "..."
@@ -2324,11 +2331,18 @@ def deck_builder_prompt(
         evidence.
 
         VISUAL GRAMMAR REQUIREMENT — this is the core function of this call:
-        Before writing any slide image_prompt, synthesize one coherent visual
-        grammar for this specific deck from the selected visual focus, founder
-        archetype, pitch domain, audience, association words, user_inputs, and
-        supporting materials. If a template/style reference is provided, use it as
-        evidence for that grammar.
+        The Deck Builder prompt above already contains a full production account of
+        how this deck's creative director built it — their toolchain, their document
+        architecture, their material and typographic decisions, tool by tool, asset
+        by asset. That account is the deck's visual authority. Before writing any
+        slide image_prompt, extract and restate the literal values that account
+        already established into the structured "visual_grammar" fields below. Do
+        not invent a new palette, typography, or layout system independently of what
+        the creative director's account describes — you are transcribing decisions
+        that were already made, not making new ones. If the account leaves a
+        required field underspecified, choose a value that is consistent with
+        everything the account does establish, rather than inventing an unrelated
+        direction.
 
         STRUCTURE HIERARCHY REQUIREMENT:
         The founder archetype is not flavor text. It is the governing structural
@@ -2361,12 +2375,12 @@ def deck_builder_prompt(
         the values, not to restate them per slide.
 
         Required visual_grammar fields. The fields themselves are fixed -- every
-        field must be filled -- but the VALUE in each field is your creative
-        choice and does not have to be a flat color or hex code. A background
-        can be a gradient, a texture, an image treatment, or a pattern; describe
-        whatever you choose precisely enough that it reads the same way every
-        time it's repeated verbatim. The requirement is precision, not a
-        particular format:
+        field must be filled -- with the VALUE in each field extracted from the
+        creative director's account above, not invented fresh, and does not have
+        to be a flat color or hex code. A background can be a gradient, a texture,
+        an image treatment, or a pattern; describe it precisely enough that it
+        reads the same way every time it's repeated verbatim. The requirement is
+        precision, not a particular format:
         - background: however you want the background to look (solid, gradient,
           texture, imagery), described precisely enough to repeat identically.
         - foreground: the primary text/line treatment, described the same way.
@@ -2421,7 +2435,15 @@ def deck_builder_prompt(
           requested slide, in ascending slide_number order.
         - The slide_number values must be exactly {_json(numbers)}.
         - Each storyboard object must have slide_number, title, purpose,
-          style_tags, and image_prompt.
+          style_tags, body_points, and image_prompt.
+        - body_points is a list of 2-5 short phrases: the actual on-slide bullet
+          copy for this slide (the real words a viewer reading the slide would
+          see as supporting text under the headline). This is separate from
+          image_prompt -- image_prompt describes how the slide should look and
+          render; body_points is the literal text content the calling application
+          uses for the deck's exported text layer (PPTX/HTML/Markdown exports),
+          independent of how the image renders it. Every slide must have at least
+          one body_point; do not leave this empty.
         - image_prompt must be a complete, self-contained description of THIS
           slide's specific content and layout only. Do not restate the visual
           grammar inside image_prompt -- that is supplied separately by
@@ -2464,6 +2486,7 @@ def deck_builder_prompt(
               "title": "...",
               "purpose": "...",
               "style_tags": ["...", "..."],
+              "body_points": ["...", "..."],
               "image_prompt": "..."
             }}
           ]

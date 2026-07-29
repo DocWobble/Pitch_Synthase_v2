@@ -52,7 +52,7 @@ import prompts as _prompts
 _db.init_db()
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 import uvicorn
 
 app = FastAPI(docs_url=None, redoc_url=None)
@@ -200,11 +200,12 @@ def _stage_by_id(stage_id: str) -> dict:
 
 
 _CONDITIONS = {
-    "has_image":    lambda job: bool(_workers._supporting_image(job.get("id", ""))),
-    "needs_design": lambda job: bool(
+    "has_image":      lambda job: bool(_workers._supporting_image(job.get("id", ""))),
+    "needs_design":   lambda job: bool(
         (job.get("intake_options") or {}).get("infer_mockup")
         or (job.get("intake_options") or {}).get("infer_prototype")
     ),
+    "has_prototype":  lambda job: bool(job.get("infer_prototype")),
 }
 
 _LOCAL_WORKERS: dict = {}
@@ -276,10 +277,106 @@ def _gallery_index_preview(job_id: str, approach_id: str) -> None:
 _LOCAL_WORKERS["_run_generation"] = _run_generation
 _LOCAL_WORKERS["_run_previews"] = _run_previews
 
+# [canonical-reference]: fields set at POST /api/jobs — always present, no upstream producer needed
+CREATION_FIELDS: frozenset = frozenset({
+    "elevator_pitch", "audience", "doc_text", "conveys",
+    "infer_prototype", "selected_archetype_id", "pitch_aspect_modes",
+    "excepted_inference_elements", "inferred_element_decisions",
+    "association_words",
+})
+
+
+def _audit_pipeline() -> None:
+    """[preflight-check] + [red-team-review]: verify every declared input_schema field
+    (required or not) has an unbroken producer, and every declared output_fields entry
+    is actually consumed by some stage. A field with no provenance or no destination is
+    a defect, not an exception — marking a field optional does not exempt it from the
+    provenance check, and there is no allowlist for unconsumed outputs. Runs at server
+    startup — fail-fast before any job can dispatch. Raises RuntimeError naming every
+    orphan field and the stage(s) involved.
+    """
+    # field → set of stage_ids that declare producing it
+    field_producers: dict[str, set[str]] = {}
+    for stage in PIPELINE_STAGES:
+        for field in (stage.get("output_fields") or []):
+            field_producers.setdefault(field, set()).add(stage["id"])
+
+    # Fields produced by event-triggered stages (e.g. image_scan) are available at any
+    # time, independent of DAG position — they are not constrained to the depends chain.
+    event_triggered_outputs: set[str] = {
+        field
+        for stage in PIPELINE_STAGES if stage.get("event_trigger")
+        for field in (stage.get("output_fields") or [])
+    }
+
+    def upstream_of(stage_id: str) -> set[str]:
+        visited: set[str] = set()
+        queue = [stage_id]
+        while queue:
+            sid = queue.pop()
+            for dep in (_STAGE_REGISTRY.get(sid) or {}).get("depends", []):
+                if dep not in visited:
+                    visited.add(dep)
+                    queue.append(dep)
+        return visited
+
+    errors = []
+
+    # --- provenance: every declared input field must have a producer, required or not ---
+    for stage in PIPELINE_STAGES:
+        schema = stage.get("input_schema") or {}
+        up = upstream_of(stage["id"])
+        for field, spec in schema.items():
+            if spec.get("source") == "filesystem":
+                continue
+            if field in CREATION_FIELDS or field in event_triggered_outputs:
+                continue
+            producers_up = field_producers.get(field, set()) & up
+            if not producers_up:
+                errors.append(
+                    f"  [no provenance] stage '{stage['id']}' declares input '{field}' "
+                    f"(required={spec.get('required', False)}) but no upstream stage in "
+                    f"its dependency chain declares it in output_fields"
+                )
+
+    # --- destination: every declared output field must be consumed by some stage ---
+    all_inputs: set[str] = set()
+    for stage in PIPELINE_STAGES:
+        all_inputs |= set((stage.get("input_schema") or {}).keys())
+    for stage in PIPELINE_STAGES:
+        for field in (stage.get("output_fields") or []):
+            if field not in all_inputs:
+                errors.append(
+                    f"  [no destination] stage '{stage['id']}' produces '{field}' but no "
+                    f"stage declares it in input_schema — nothing but the exported deck "
+                    f"package may be a dead end"
+                )
+
+    if errors:
+        raise RuntimeError("Pipeline field provenance audit FAILED:\n" + "\n".join(errors))
+    total_checks = (
+        sum(len(s.get("input_schema") or {}) for s in PIPELINE_STAGES)
+        + sum(len(s.get("output_fields") or []) for s in PIPELINE_STAGES)
+    )
+    print(f"[pipeline] field provenance audit passed — {total_checks} field checks OK (provenance + destination)", flush=True)
+
+
+register_stage({
+    "id": "design_refs_text",
+    "worker": "design_drafter_text_worker",
+    "depends": [],
+    "condition": "has_prototype",
+    "input_schema": {
+        "elevator_pitch":  {"type": "str",  "required": True,  "description": "Core pitch description"},
+        "doc_text":        {"type": "str",  "required": False, "description": "Supporting document text"},
+        "infer_prototype": {"type": "int",  "required": True,  "description": "Set at job creation; 1 = generate prototypes"},
+    },
+    "output_fields": ["prototype_candidates_json"],
+})
 register_stage({
     "id": "approach_draft",
     "worker": "approach_drafter_worker",
-    "depends": [],
+    "depends": ["design_refs_text"],
     "input_schema": {
         "audience":                   {"type": "str",  "required": True,  "description": "Target audience for the pitch"},
         "elevator_pitch":             {"type": "str",  "required": True,  "description": "Core pitch description"},
@@ -288,7 +385,9 @@ register_stage({
         "doc_text":                   {"type": "str",  "required": False, "description": "Supporting document text"},
         "pitch_aspect_modes":         {"type": "json", "required": False, "description": "Per-aspect inference mode overrides"},
         "excepted_inference_elements":{"type": "json", "required": False, "description": "Elements to exclude from inference"},
+        "association_words":          {"type": "json", "required": True,  "description": "Exactly 3 user-supplied vibe/association words shaping the pitch"},
     },
+    "output_fields": ["approach_candidates_json", "selected_archetype_id", "selected_archetype_label"],
 })
 register_stage({
     "id": "image_scan",
@@ -296,56 +395,96 @@ register_stage({
     "depends": [],
     "event_trigger": True,
     "input_schema": {
-        "intake_image_names": {"type": "json", "required": True, "description": "Filenames of uploaded intake images (set by intake endpoint)"},
+        # source=filesystem: assembled at runtime from disk scan, never a DB column — audit skips it
+        "intake_image_names": {"type": "json", "required": True, "source": "filesystem", "description": "Filenames of uploaded intake images"},
     },
+    "output_fields": ["image_analysis"],
 })
-register_stage({"id": "human_intake", "human": True, "depends": ["approach_draft"]})
 register_stage({
-    "id": "design_refs",
-    "worker": "design_drafter_worker",
-    "depends": ["human_intake", "approach_draft"],
-    "condition": "needs_design",
+    "id": "human_intake",
+    "human": True,
+    "depends": ["approach_draft"],
+    "output_fields": ["intake_options"],
+})
+register_stage({
+    "id": "design_refs_images",
+    "worker": "design_drafter_images_worker",
+    "depends": ["design_refs_text"],
+    "condition": "has_prototype",
     "input_schema": {
-        "approach_candidates_json": {"type": "json", "required": True, "description": "Approach candidates from approach_draft"},
-        "intake_options":           {"type": "json", "required": True, "description": "User intake option selections (infer_mockup / infer_prototype)"},
+        "prototype_candidates_json": {"type": "json", "required": True, "description": "Text candidates from design_refs_text"},
     },
+    # enriches prototype_candidates_json in-place (adds reference_image_path to each candidate)
+    "output_fields": ["prototype_candidates_json"],
+})
+register_stage({
+    "id": "human_prototype_selection",
+    "human": True,
+    "depends": ["design_refs_images"],
+    "condition": "has_prototype",
+    "output_fields": ["selected_prototype_id"],
 })
 register_stage({
     "id": "previews",
     "worker": "_run_previews",
-    "depends": ["human_intake", "approach_draft"],
+    "depends": ["approach_draft", "human_prototype_selection", "human_intake"],
     "input_schema": {
         "approach_candidates_json": {"type": "json", "required": True, "description": "Approach candidates from approach_draft"},
     },
+    # enriches approach_candidates_json in-place (adds preview_image_path to each candidate)
+    "output_fields": ["approach_candidates_json"],
 })
-register_stage({"id": "human_selection", "human": True, "depends": ["previews"]})
-register_stage({"id": "human_payment",   "human": True, "depends": ["human_selection"]})
+register_stage({
+    "id": "human_selection",
+    "human": True,
+    "depends": ["previews"],
+    "output_fields": ["selected_candidate_id", "selected_candidate_label", "selected_archetype_id", "selected_archetype_label"],
+})
+register_stage({
+    "id": "human_payment",
+    "human": True,
+    "depends": ["human_selection"],
+    "output_fields": ["explicit_slide_count"],
+})
 register_stage({
     "id": "generation",
     "worker": "_run_generation",
     "depends": ["human_payment"],
     "input_schema": {
-        "audience":                {"type": "str",  "required": True,  "description": "Target audience"},
-        "elevator_pitch":          {"type": "str",  "required": True,  "description": "Core pitch description"},
-        "conveys":                 {"type": "str",  "required": False, "description": "Key message or problem framing"},
-        "approach_candidates_json":{"type": "json", "required": True,  "description": "Approach candidates (from approach_draft)"},
-        "selected_candidate_id":   {"type": "str",  "required": True,  "description": "Which approach_id was selected"},
-        "selected_archetype_id":   {"type": "str",  "required": False, "description": "Founder archetype ID (may come from approach blend)"},
-        "explicit_slide_count":    {"type": "int",  "required": True,  "description": "Number of content slides (4–10); total = N+2"},
-        "doc_text":                {"type": "str",  "required": False, "description": "Supporting document text"},
-        "image_analysis":          {"type": "json", "required": False, "description": "Result of image_scan (if image was uploaded)"},
+        "audience":                 {"type": "str",  "required": True,  "description": "Target audience"},
+        "elevator_pitch":           {"type": "str",  "required": True,  "description": "Core pitch description"},
+        "conveys":                  {"type": "str",  "required": False, "description": "Key message or problem framing"},
+        "approach_candidates_json": {"type": "json", "required": True,  "description": "Approach candidates (from approach_draft)"},
+        "selected_candidate_id":    {"type": "str",  "required": True,  "description": "Which approach_id was selected"},
+        "selected_archetype_id":    {"type": "str",  "required": False, "description": "Founder archetype ID (may come from approach blend)"},
+        "explicit_slide_count":     {"type": "int",  "required": True,  "description": "Number of content slides (4–10); total = N+2"},
+        "doc_text":                 {"type": "str",  "required": False, "description": "Supporting document text"},
+        "image_analysis":           {"type": "json", "required": False, "description": "Result of image_scan (if image was uploaded); folded into intake context"},
+        "intake_options":           {"type": "json", "required": False, "description": "Aesthetic/mockup/product-shot signals from human_intake; folded into intake context"},
+        "selected_archetype_label": {"type": "str",  "required": False, "description": "Human-readable archetype label (from approach_draft/human_selection)"},
+        "selected_candidate_label": {"type": "str",  "required": False, "description": "Human-readable approach label (from human_selection)"},
+        # prototype path — optional; only present when infer_prototype=1
+        "selected_prototype_id":    {"type": "str",  "required": False, "description": "Chosen prototype design_id (from human_prototype_selection)"},
+        "prototype_candidates_json":{"type": "json", "required": False, "description": "Design candidates with reference_image_path (from design_refs_images)"},
     },
+    "output_fields": ["slide_specs", "deck_proof_plan"],
 })
-register_stage({"id": "human_review", "human": True, "depends": ["generation"]})
+register_stage({
+    "id": "human_review",
+    "human": True,
+    "depends": ["generation"],
+    "output_fields": ["reviewed_slides"],
+})
 register_stage({
     "id": "verification",
     "worker": "verification_worker",
     "depends": ["human_review"],
     "input_schema": {
-        "slide_specs":      {"type": "json", "required": True, "description": "Generated slide specifications"},
-        "reviewed_slides":  {"type": "json", "required": True, "description": "Per-slide review instructions from human_review"},
-        "expected_text_map":{"type": "json", "required": False, "description": "Expected text map from generation"},
+        "slide_specs":      {"type": "json", "required": True,  "description": "Generated slide specifications"},
+        "reviewed_slides":  {"type": "json", "required": True,  "description": "Per-slide review instructions from human_review"},
+        "deck_proof_plan":  {"type": "json", "required": True,  "description": "Deck title, storyboard, and anchor narrative from generation — grounds every regeneration"},
     },
+    "output_fields": [],
 })
 
 
@@ -353,7 +492,26 @@ def _run_stage_in_thread(job_id: str, stage_id: str) -> None:
     """[durable-state]: run worker with failure ownership. Calls _advance on success."""
     async def _run():
         try:
-            worker_name = _stage_by_id(stage_id)["worker"]
+            # [output-validator]: verify required inputs are non-null before making any API call.
+            # Catches the case where a prior gate wrote nothing (e.g. select-prototype never called)
+            # while the graph audit declared the field present. Fail-fast with named missing fields.
+            stage = _stage_by_id(stage_id)
+            schema = stage.get("input_schema") or {}
+            if schema:
+                job = _db.get_job(job_id) or {}
+                missing = [
+                    f for f, spec in schema.items()
+                    if spec.get("required")
+                    and spec.get("source") != "filesystem"
+                    and not job.get(f)
+                ]
+                if missing:
+                    err = f"Pre-dispatch field check failed — required fields are null: {missing}"
+                    print(f"[STAGE BLOCKED] {job_id} / {stage_id}: {err}", flush=True)
+                    _db.set_stage_state(job_id, stage_id, "failed", error=err)
+                    _db.update_job(job_id, status=f"stage_failed:{stage_id}", error_message=err)
+                    return
+            worker_name = stage["worker"]
             if worker_name in _LOCAL_WORKERS:
                 await _LOCAL_WORKERS[worker_name](job_id)
             else:
@@ -385,7 +543,15 @@ def _advance(job_id: str) -> None:
         sid = stage["id"]
         if states.get(sid, "pending") != "pending":
             continue
-        if stage.get("human") or stage.get("event_trigger"):
+        if stage.get("event_trigger"):
+            continue
+        # Human gates auto-skip if their condition is false (e.g. human_prototype_selection
+        # skips when infer_prototype is not set).
+        if stage.get("human"):
+            condition = stage.get("condition")
+            if condition and not _CONDITIONS[condition](job):
+                _db.set_stage_state(job_id, sid, "skipped")
+                states[sid] = "skipped"
             continue
         deps = stage["depends"]
         if not all(states.get(d) in ("completed", "skipped") for d in deps):
@@ -402,7 +568,8 @@ def _advance(job_id: str) -> None:
 
 @app.on_event("startup")
 def resume_incomplete_jobs():
-    """On restart: reset in_progress stages to pending and re-dispatch."""
+    """On restart: audit field graph, reset in_progress stages to pending, re-dispatch."""
+    _audit_pipeline()  # [preflight-check]: abort startup if field graph has gaps
     for job in _db.get_jobs_needing_resume():
         jid = job["id"]
         states = _db.get_stage_states(jid)
@@ -438,13 +605,46 @@ _ACTION_MAP = {
 
 # ── API: jobs ─────────────────────────────────────────────────────────────────
 @app.get("/api/jobs")
-def list_jobs():
+def list_jobs(
+    status: str | None = None,
+    archetype: str | None = None,
+    label: str | None = None,
+    audience: str | None = None,
+    vibe: str | None = None,
+    limit: int = 100,
+):
+    return _db.filter_jobs(
+        status=status, archetype=archetype, label=label,
+        audience=audience, vibe=vibe, limit=limit,
+    )
+
+
+@app.get("/api/jobs/by-label/{label}")
+def get_job_by_label(label: str):
+    """Find the most recent job where selected_candidate_label or any approach label matches."""
     with _db.get_conn() as conn:
-        rows = conn.execute(
-            "SELECT id, status, created_at, updated_at, audience "
-            "FROM jobs ORDER BY created_at DESC LIMIT 100"
-        ).fetchall()
-    return [dict(r) for r in rows]
+        row = conn.execute(
+            "SELECT id FROM jobs WHERE selected_candidate_label = ? "
+            "ORDER BY created_at DESC LIMIT 1", (label,)
+        ).fetchone()
+        if not row:
+            rows = conn.execute(
+                "SELECT id, approach_candidates_json FROM jobs "
+                "WHERE approach_candidates_json LIKE ? ORDER BY created_at DESC LIMIT 50",
+                (f'%"{label}"%',)
+            ).fetchall()
+            for r in rows:
+                try:
+                    candidates = json.loads(r["approach_candidates_json"] or "[]")
+                    if any(a.get("label") == label for a in candidates):
+                        row = r
+                        break
+                except (json.JSONDecodeError, TypeError):
+                    continue
+    if not row:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    job = _db.get_job(row["id"])
+    return job
 
 
 @app.get("/api/jobs/{job_id}")
@@ -470,6 +670,81 @@ def get_job(job_id: str):
     return job
 
 
+@app.get("/api/jobs/{job_id}/stream")
+async def stream_job_progress(job_id: str):
+    """SSE endpoint: pushes progress_log checkpoints and stage transitions as they happen.
+
+    Polls the DB every 2s (SQLite is local, negligible cost). Emits:
+      - data: {"type": "progress", "stage": "...", "message": "...", "pct": 0.0, "ts": ...}
+      - data: {"type": "stage", "stage_id": "...", "state": "..."}
+      - data: {"type": "done", "state": "completed"|"failed"}
+    Plus ": heartbeat" comments every 15s to keep proxies from dropping the connection.
+    """
+    async def _generate():
+        last_progress_count = 0
+        last_stage_states: dict = {}
+        idle_ticks = 0
+
+        # Emit current state immediately so the client doesn't start from zero
+        job = _db.get_job(job_id)
+        if not job:
+            yield f"data: {json.dumps({'type': 'error', 'message': 'job not found'})}\n\n"
+            return
+        for sid, sv in (job.get("stage_states") or {}).items():
+            if sv != "pending":
+                last_stage_states[sid] = sv
+                yield f"data: {json.dumps({'type': 'stage', 'stage_id': sid, 'state': sv})}\n\n"
+        for entry in (job.get("progress_log") or []):
+            yield f"data: {json.dumps({'type': 'progress', **entry})}\n\n"
+        last_progress_count = len(job.get("progress_log") or [])
+
+        terminal_states = {"completed", "failed", "error"}
+
+        while True:
+            await asyncio.sleep(2)
+            idle_ticks += 1
+
+            job = _db.get_job(job_id)
+            if not job:
+                break
+
+            # Push new progress_log entries
+            log = job.get("progress_log") or []
+            for entry in log[last_progress_count:]:
+                yield f"data: {json.dumps({'type': 'progress', **entry})}\n\n"
+                idle_ticks = 0
+            last_progress_count = len(log)
+
+            # Push stage state changes
+            stage_states = job.get("stage_states") or {}
+            for sid, sv in stage_states.items():
+                if last_stage_states.get(sid) != sv:
+                    last_stage_states[sid] = sv
+                    yield f"data: {json.dumps({'type': 'stage', 'stage_id': sid, 'state': sv})}\n\n"
+                    idle_ticks = 0
+
+            # Terminal: all registered stages are done or skipped
+            all_done = all(
+                stage_states.get(s["id"], "pending") in terminal_states | {"skipped"}
+                for s in PIPELINE_STAGES
+                if not s.get("human") and not s.get("event_trigger")
+            )
+            gen_state = stage_states.get("generation")
+            if gen_state in terminal_states:
+                yield f"data: {json.dumps({'type': 'done', 'state': gen_state})}\n\n"
+                break
+
+            # Heartbeat every ~15s of idle
+            if idle_ticks % 8 == 0:
+                yield ": heartbeat\n\n"
+
+    return StreamingResponse(
+        _generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 @app.post("/api/jobs")
 async def create_job(request: Request):
     """Create a full-pitch-first job and immediately run the approach drafter."""
@@ -481,7 +756,7 @@ async def create_job(request: Request):
     job_id, recovery = _db.create_job(
         problem_need="",
         audience=body.get("audience", ""),
-        association_words=[],
+        association_words=body.get("association_words") or [],
     )
     _db.update_job(
         job_id,
@@ -492,6 +767,7 @@ async def create_job(request: Request):
         pitch_aspect_modes=pitch_aspect_modes,
         excepted_inference_elements=excepted,
         inferred_element_decisions={k: False for k in excepted},
+        infer_prototype=1 if body.get("infer_prototype") else 0,
     )
     _advance(job_id)
     return {"job_id": job_id, "recovery_token": recovery}
@@ -557,6 +833,19 @@ async def select_approach(job_id: str, request: Request):
     _db.set_stage_state(job_id, "human_selection", "completed")
     _advance(job_id)
     return {"ok": True}
+
+
+@app.post("/api/jobs/{job_id}/select-prototype")
+async def select_prototype(job_id: str, request: Request):
+    """Mark the user's chosen design_id, complete the human_prototype_selection gate."""
+    body = await request.json()
+    selected_id = body.get("design_id")
+    if not selected_id:
+        return {"error": "design_id required"}, 400
+    _db.update_job(job_id, selected_prototype_id=selected_id)
+    _db.set_stage_state(job_id, "human_prototype_selection", "completed")
+    _advance(job_id)
+    return {"ok": True, "selected_prototype_id": selected_id}
 
 
 @app.post("/api/jobs/{job_id}/mock-payment/{kind}")
@@ -678,11 +967,12 @@ async def run_step(job_id: str, step: str, request: Request):
 
     # Map legacy aliases to stage IDs
     _ALIASES = {
-        "approaches":   "approach_draft",
-        "designs":      "design_refs",
-        "previews":     "previews",
-        "paid":         "generation",
-        "verification": "verification",
+        "approaches":    "approach_draft",
+        "designs":       "design_refs_text",
+        "design_images": "design_refs_images",
+        "previews":      "previews",
+        "paid":          "generation",
+        "verification":  "verification",
     }
     stage_id = _ALIASES.get(step, step)
     stage = _STAGE_REGISTRY.get(stage_id)
@@ -718,8 +1008,10 @@ async def run_step(job_id: str, step: str, request: Request):
         _db.update_job(job_id, status="created", approach_candidates_json=None, error_message=None)
         _db.set_stage_state(job_id, "approach_draft", "pending")
         _advance(job_id)
-    elif stage_id == "design_refs":
-        _run_async_in_thread(_workers.design_drafter_worker, job_id)
+    elif stage_id == "design_refs_text":
+        _run_async_in_thread(_workers.design_drafter_text_worker, job_id)
+    elif stage_id == "design_refs_images":
+        _run_async_in_thread(_workers.design_drafter_images_worker, job_id)
     elif stage_id == "previews":
         approaches = job.get("approach_candidates_json") or []
         approach_ids = [a["approach_id"] for a in approaches]

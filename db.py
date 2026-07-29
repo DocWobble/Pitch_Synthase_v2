@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB_PATH = Path(os.environ.get("INSTANT_DB_PATH", str(Path(__file__).parent / "pd_synthase.db")))
+DB_PATH = Path(os.environ.get("INSTANT_DB_PATH", str(Path(__file__).parent / "local_state" / "workshop.db")))
 
 _JSON_FIELDS = {
     "association_words", "candidates_json", "archetypes_json", "preview_artifacts_json",
@@ -18,6 +18,7 @@ _JSON_FIELDS = {
     "approach_candidates_json", "excepted_inference_elements",
     "inferred_element_decisions", "pitch_aspect_modes",
     "stage_states", "stage_history", "intake_options", "image_analysis", "identity",
+    "prototype_candidates_json", "progress_log",
 }
 
 
@@ -125,6 +126,11 @@ def init_db():
             "intake_options": "TEXT",
             "image_analysis": "TEXT",
             "identity": "TEXT",
+            "name": "TEXT",
+            "infer_prototype": "INTEGER DEFAULT 0",
+            "prototype_candidates_json": "TEXT",
+            "selected_prototype_id": "TEXT",
+            "progress_log": "TEXT",
         }.items():
             if name not in columns:
                 conn.execute(f"ALTER TABLE jobs ADD COLUMN {name} {sql_type}")
@@ -155,6 +161,103 @@ def create_job(problem_need: str, audience: str, association_words: list) -> tup
             (job_id, "created", now, now, problem_need, audience, json.dumps(association_words), hash_recovery_token(recovery_token)),
         )
     return job_id, recovery_token
+
+
+def filter_jobs(
+    status: str | None = None,
+    archetype: str | None = None,
+    label: str | None = None,
+    audience: str | None = None,
+    vibe: str | None = None,
+    limit: int = 100,
+) -> list[dict]:
+    """Return jobs matching any combination of classifier parameters, newest first.
+
+    status   — exact match on status column
+    archetype — matches selected_archetype_id or any effective_archetype_id in approach_candidates_json
+    label     — matches selected_candidate_label or any approach label
+    audience  — substring match on audience column
+    vibe      — substring match inside approach_candidates_json vibe_semantics
+    """
+    clauses, params = [], []
+    if status:
+        clauses.append("status = ?"); params.append(status)
+    if audience:
+        clauses.append("audience LIKE ?"); params.append(f"%{audience}%")
+    if archetype:
+        clauses.append("(selected_archetype_id = ? OR approach_candidates_json LIKE ?)")
+        params.extend([archetype, f'%"{archetype}"%'])
+    if label:
+        clauses.append("(selected_candidate_label = ? OR approach_candidates_json LIKE ?)")
+        params.extend([label, f'%"{label}"%'])
+    if vibe:
+        clauses.append("approach_candidates_json LIKE ?"); params.append(f"%{vibe}%")
+
+    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    sql = (
+        "SELECT id, status, created_at, updated_at, audience, "
+        "selected_candidate_label, selected_archetype_label, approach_candidates_json "
+        f"FROM jobs {where} ORDER BY created_at DESC LIMIT ?"
+    )
+    params.append(limit)
+
+    with get_conn() as conn:
+        rows = conn.execute(sql, params).fetchall()
+
+    results = []
+    for row in rows:
+        d = dict(row)
+        raw = d.pop("approach_candidates_json") or "[]"
+        try:
+            candidates = json.loads(raw) if isinstance(raw, str) else raw
+        except (json.JSONDecodeError, TypeError):
+            candidates = []
+        # exact-match post-filter for label/archetype (LIKE can over-select)
+        if label and label != d.get("selected_candidate_label"):
+            if not any(a.get("label") == label for a in candidates):
+                continue
+        if archetype and archetype != d.get("selected_archetype_id"):
+            if not any(
+                a.get("effective_archetype_id") == archetype or
+                (a.get("archetype_a") or {}).get("archetype_id") == archetype or
+                (a.get("archetype_b") or {}).get("archetype_id") == archetype
+                for a in candidates
+            ):
+                continue
+        d["approach_labels"] = [a.get("label", "") for a in candidates if a.get("label")]
+        results.append(d)
+    return results
+
+
+def get_job_by_label(label: str) -> dict | None:
+    """Find the most recent job where selected_candidate_label matches, then fall back to approach_candidates_json scan."""
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT * FROM jobs WHERE selected_candidate_label = ? ORDER BY created_at DESC LIMIT 1", (label,)
+        ).fetchone()
+        if not row:
+            rows = conn.execute(
+                "SELECT * FROM jobs WHERE approach_candidates_json LIKE ? ORDER BY created_at DESC LIMIT 50",
+                (f'%"{label}"%',)
+            ).fetchall()
+            for r in rows:
+                try:
+                    candidates = json.loads(r["approach_candidates_json"] or "[]")
+                    if any(a.get("label") == label for a in candidates):
+                        row = r
+                        break
+                except (json.JSONDecodeError, TypeError):
+                    continue
+    if not row:
+        return None
+    d = dict(row)
+    for field in _JSON_FIELDS:
+        if d.get(field):
+            try:
+                d[field] = json.loads(d[field])
+            except (json.JSONDecodeError, TypeError):
+                pass
+    return d
 
 
 def update_job(job_id: str, **kwargs):
@@ -294,6 +397,23 @@ def set_stage_state(job_id: str, stage_id: str, state: str, error: str | None = 
         "job_id": job_id,
         **({"error": error[:200]} if error else {}),
     })
+
+
+def append_progress(job_id: str, stage: str, message: str, pct: float | None = None) -> None:
+    """Write a named checkpoint to progress_log — read by the SSE stream endpoint."""
+    entry: dict = {"ts": time.time(), "stage": stage, "message": message}
+    if pct is not None:
+        entry["pct"] = round(pct, 2)
+    with get_conn() as conn:
+        conn.execute(
+            """
+            UPDATE jobs
+            SET progress_log = JSON_INSERT(COALESCE(progress_log, '[]'), '$[#]', JSON(?)),
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (json.dumps(entry), _now(), job_id),
+        )
 
 
 def get_jobs_needing_resume() -> list[dict]:
