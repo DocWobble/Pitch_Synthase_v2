@@ -3,10 +3,37 @@ PITCH SYNTHASE V2 — CURRENT PROMPT AND WORKER ARCHITECTURE
 
 Document ID   : PS-V2-PROMPTCHAIN
 Version       : 2.0.0
-Status        : Current workshop implementation; not merged to production
+Status        : SUPERSEDED IN PARTS — see correction note below (was: "Current
+                workshop implementation"); not merged to production
 Owner         : Pitch Synthase archetype workshop
-Authority     : prompts.py + workers.py + db.py + ps_test_input.schema.json
-Last Updated  : 2026-07-24
+Authority     : prompts.py + workers.py + db.py (ps_test_input.schema.json,
+                cited below, was deleted 2026-07-29 as an orphaned artifact)
+Last Updated  : 2026-07-24 (correction note added 2026-07-29)
+
+CORRECTION NOTE (2026-07-29) — read before trusting this document
+-------------------------------------------------------------------
+This report predates the `ribotome.py` DAG-dispatcher rewrite (2026-07-27)
+and was never updated after it. Sections 2, 3, and 6 (authority model, Pitch
+Aspect control plane, narrow authorized inference) remain substantively
+accurate. The following are wrong or missing and should NOT be trusted:
+  - The founder-archetype catalog throughout this document (including the
+    "arch_davinci" example below) is the dead, superseded 10-entry roster.
+    The live roster is a different 12-entry set (Buffett, Edison, Leonardo,
+    Franklin, Lauder, Jobs, Barnum, Chanel, Rockefeller, Ford, Morgan,
+    Disney) — see `PITCH_SYNTHASE_V2_SPEC.md` §04 or `prompts.py`.
+  - `ribotome.py`, the DAG dispatcher (`register_stage`/`_advance`/
+    `stage_states`), and `model_gateway.py` are never mentioned anywhere in
+    this document.
+  - The storyboard field list (section 4.7) omits `headline` and
+    `body_points`, which are now required fields.
+  - The Visual Grammar Synthesizer — a distinct, mandatory worker phase
+    between the anchor writer and the storyboard call — is not documented
+    as a separate step here.
+  - `design_drafter_text_worker`/`design_drafter_images_worker` and the
+    optional prototype-design/selection stages are missing entirely.
+  - Section 1/13's `run_ps_test_input.py` harness no longer exists.
+For current architecture, read `architecture.md`, `pipeline.md`, and
+`PITCH_SYNTHASE_V2_SPEC.md` instead of treating this file as ground truth.
 
 
 EXECUTIVE SUMMARY
@@ -102,7 +129,8 @@ Optional source and control inputs:
         evidence at the paid Anchor Writer and Deck Builder stages.
 
     archetype_id
-        One of ten founder-posture archetypes, or null for automatic selection.
+        One of twelve founder-posture archetypes (see correction note above),
+        or null for automatic selection.
 
     approach_id
         The selected one of four drafted approaches for full-deck generation.
@@ -146,7 +174,7 @@ Representative current input:
   "conveys": "A category change, a credible retrofit entry point, and a platform",
   "doc_text": "<verbatim concept specification>",
   "supporting_image_path": "/absolute/path/to/reference.png",
-  "archetype_id": "arch_davinci",
+  "archetype_id": "arch_leonardo",
   "target_stage": "full_deck",
   "approach_id": "approach_1",
   "slide_count": 13,
@@ -362,7 +390,7 @@ Model:
 
 Input:
     founder pitch, audience, desired impressions, optional source text,
-    and either a fixed archetype or the ten-entry archetype catalog.
+    and either a fixed archetype or the twelve-entry archetype catalog.
 
 Output:
     exactly one archetype and four approaches:

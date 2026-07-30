@@ -1,5 +1,20 @@
 # SAWC Refactor: workshop_lab.py as Dispatcher
 
+> **Historical design record — not current-state documentation (flagged 2026-07-29).**
+> The DAG-dispatch direction described here was genuinely implemented and is now
+> live, but in **`ribotome.py`**, not `workshop_lab.py` — `workshop_lab.py` is now
+> a 6-line backward-compat shim (`from ribotome import *`). Several specifics below
+> have also drifted from what shipped: the actual stage list has 12 stages, not the
+> 10 shown here (`design_refs_text`/`design_refs_images` split apart,
+> `human_prototype_selection` added, `approach_draft` now depends on
+> `design_refs_text` rather than firing with no dependencies); endpoint names
+> differ (`/mock-payment/{kind}` and `/complete-review`, not `/paid`/`/review`);
+> the model-router adoption in §8A shipped only partially (`model_gateway.py`
+> exists, but most call sites still use `prompts.py`'s model constants directly);
+> and §8B (packaging as a console script) was never attempted. Read this for the
+> *why* of the dispatcher design, not as a map of current stage names or endpoints
+> — see `architecture.md` and `pipeline.md` for those.
+
 ## Context
 
 Pitch Synthase's workshop currently uses a single `status` TEXT field as a linear state machine with workers having *implicit* knowledge of where they sit in the pipeline — the SAWC "loose calls + prompt glue" anti-pattern. Workers fire when the HTTP handler tells them to; the pipeline topology exists only in the handler code, not as data.

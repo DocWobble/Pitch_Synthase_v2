@@ -4,6 +4,14 @@
 **Server:** `ribotome.py` on port 8793  
 **Working dir:** `/home/director/pitch_synthase_archetype_workshop/`
 
+> **This is a point-in-time session log, kept as history — two corrections as of 2026-07-29:**
+> the pipeline DAG diagram below omits `design_refs_text`/`design_refs_images` being
+> split apart and the `human_prototype_selection` gate added between them; the exact
+> current graph is in `pipeline.md`. Also, "not done" item 1 below (`selected_candidate_id`
+> never written for SAWC-path jobs) has since been fixed — `/api/jobs/{id}/select-approach`
+> writes it directly. For current architecture/endpoint reference, see `architecture.md`,
+> `pipeline.md`, and `WIZARD_INTEGRATION_SCHEMA.md`.
+
 ---
 
 ## What happened this session
@@ -22,7 +30,7 @@ approach_draft → [image_scan*] → human_intake → design_refs† → preview
 
 Key files:
 - `ribotome.py` — canonical server (renamed from `workshop_lab.py`)
-- `workshop_lab.py` — 5-line compatibility shim (`from ribotome import *`)
+- `workshop_lab.py` — 6-line compatibility shim (`from ribotome import *`)
 - `model_gateway.py` — single OAI boundary, `MODEL_ROUTES`, lazy `AsyncOpenAI` init, `Semaphore(4)` for image rate-limiting
 - `db.py` — `set_stage_state`, `get_stage_states`, `_ph_capture`, `set_identity`, `get_jobs_needing_resume`
 

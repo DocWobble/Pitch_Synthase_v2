@@ -6,7 +6,7 @@
 | Version | 1.0 (living — see note) |
 | Status | Living — Updated Continuously, Not a Point-in-Time Release |
 | Owner | Workshop (isolated) |
-| Last Updated | 2026-07-24 |
+| Last Updated | 2026-07-29 |
 
 The single place to check "what's actually true right now" about this workshop. Other docs describe the system as designed (`PITCH_SYNTHASE_V2_SPEC.md`, PS-V2-SPEC) or exactly how it mechanically works (`PROMPT_CHAIN_TECHNICAL_REPORT.txt`, PS-V2-PROMPTCHAIN). This file tracks *status*: what's fixed, what's validated, what's still open, and what's been deliberately deferred. Update this whenever something in that status changes — don't let findings live only in chat history. Unlike the spec (versioned releases with a change history), this document does not carry a change log — it is pruned and rewritten in place, so "Last Updated" is the only temporal marker that matters.
 
@@ -20,8 +20,13 @@ The single place to check "what's actually true right now" about this workshop. 
 
 | Item | Status | Notes |
 |---|---|---|
-| Full-pitch-first pipeline (10 stages) | ✅ Working | Validated end-to-end multiple times |
-| 10-archetype catalog (Odysseus...Michelangelo) | ✅ Working | Replaced original 8-entry set |
+| Full-pitch-first pipeline (12 registered DAG stages, via `ribotome.py`) | ✅ Working | Server rewritten around `register_stage`/`_advance` dispatcher + `stage_states`; `workshop_lab.py` is now just an import shim. See `architecture.md`/`pipeline.md` |
+| Startup schema audit (`_audit_pipeline`) | ✅ Fixed & hardened (2026-07-28/29) | Now checks both provenance AND destination for every declared field, no `required`-only escape hatch; server refuses to boot on any unconnected field |
+| 12-archetype `FOUNDER_ARCHETYPES` catalog (Buffett...Disney) | ✅ Working | Superseded the 10-entry Odysseus...Michelangelo set (`arch_odysseus` etc. are now dead/commented-out code in `prompts.py`). `win_condition` per archetype rewritten this cycle from business-mechanism language to a domain-agnostic rhetorical proof strategy (how that persona convinces a skeptic) |
+| `DESIGN_ARCHETYPES` catalog (Rams/Dyson/Eames/Mead/Fukasawa/Starck) | 🔶 Working, selection collapse open | See item 4 in Open section below |
+| `deck_proof_plan` / `body_points` field wiring | ✅ Fixed (2026-07-28) | Both were previously undeclared/hardcoded-empty; now properly produced by `generation` and consumed by `verification` |
+| Visual Grammar Synthesizer mandatory | ✅ Fixed (2026-07-28) | Was silently swallowed in a try/except; a failure now fails the whole `generation` stage |
+| `association_words` entry-point wiring | ✅ Fixed (2026-07-28) | `POST /api/jobs` previously hardcoded `association_words=[]`, discarding client input before the pipeline ever ran |
 | Visual grammar structured splice | ✅ Fixed & validated | A/B tested directly against old prose-contract mechanism |
 | Pagination/chrome removal (paid mode) | ✅ Fixed & validated | Root-caused, chrome concept removed entirely |
 | Slide-count cap (was 10, now 24) | ✅ Fixed & validated | 16-slide real deck ran clean, ~8 min wall-clock |
@@ -63,6 +68,8 @@ The single place to check "what's actually true right now" about this workshop. 
 1. **Cross-batch approach-label uniqueness.** `_validate_approach_manifest` only checks uniqueness within one 4-approach call. Duplicate labels ("Deterministic Chain," "Behavioral Truth," "Proof Cascade") have recurred across independent runs/archetypes on the same pitch. No code enforcement across batches. Unchanged by the verification-pipeline work.
 2. **Source-material adherence has a real ceiling, not just a tuning problem.** Originally found against `finalization_worker`'s single-batch refiner (now reference-only), but the finding is architecture-independent: a checklist can only fix drift on *source-verifiable* terms (real terms from the mockup/outline) — it has no leverage over the base per-call transcription-fidelity of arbitrary generated slide text with no ground truth anywhere in `elevator_pitch`/`doc_text` to check it against (e.g. invented UI filler dialogue). This is a ceiling on the technique, still true of the new verifiers, not a defect to iterate away.
 3. **Full regeneration doesn't guarantee pixel-level continuity.** A fresh text-to-image regeneration (not an I2I edit) can shift exact composition details relative to its own proof even with the anchor-context and verbatim-prompt-splice fixes. Accepted trade-off for speed and avoiding I2I's own fidelity loss, not a bug — see spec §11.
+4. **Design-archetype selection collapse.** `design_drafter_text_worker`'s 4-of-6 pick from `DESIGN_ARCHETYPES` reliably lands on Rams/Dyson/Eames + one of {Mead, Starck}; Fukasawa has never been selected across repeated runs regardless of product. Stripping a concrete catalog value out of the prompt's own JSON-shape example (it was anchoring on `"design_rams"`) measurably helped the 4th slot vary but did not fix the Rams/Dyson/Eames lock-in — this needs a structural fix (derive optimization axes from the product spec itself, not a fixed named-designer menu), not further prompt hygiene.
+5. **No "intrinsic delight" founder archetype.** All 12 `FOUNDER_ARCHETYPES` win_conditions are rhetorical *proof* strategies; none argues via pure product desirability/joy/collectibility. Toy/playful pitches (e.g. a gacha-mechanic product) never get a genuinely fun-reading approach as a result — a coverage gap, not a selection bug, and expanding the roster would directly help here (unlike item 4).
 
 ## Workshop ↔ production integration — converged independently, no PR ever filed
 
@@ -74,6 +81,8 @@ The single place to check "what's actually true right now" about this workshop. 
 - The legacy `FOUNDER_ARCHETYPES` catalog has 6 entries (Liberator, Architect, Operator, Steward, Seer, Catalyst) in current `master`, not 8, and already carries the "motivated by X" per-archetype language. Production also carries a second, separate 10-entry catalog, `EXPERIMENT_FOUNDER_ARCHETYPES`, with labels identical to `V2_ARCHETYPES` — the relationship between these two 10-entry catalogs (why both exist) hasn't been chased down and is worth checking before assuming either is authoritative.
 
 Net: don't trust this file's status table for "does X exist in production" without re-checking `git log` against current `master` — it has gone stale on exactly that question once already. The original narrative below is kept for its still-accurate details (PR #16 content, the drift explanation) but its "not started" / "doesn't exist yet" conclusions no longer hold.
+
+**Second correction (2026-07-29):** the archetype-catalog alignment claimed above ("identical ids/labels" between this workshop and production's `V2_ARCHETYPES`) is now also stale from the other direction — this workshop's own `FOUNDER_ARCHETYPES` has since moved on to a different 12-entry roster (Buffett...Disney; see status table above), so the two are no longer the same catalog even if production hasn't changed at all. This section needs a fresh side-by-side diff against current production `master` before anyone relies on it — not attempted as part of this doc-audit pass, since that requires review of a separate repository's current (possibly in-progress) state, out of scope for a pass scoped to this workshop repo.
 
 - Production merged PR #16 ("Add free hero/title slide; stop laundering anchor-writer fiction into team slides") on 2026-07-15 — a free, uncounted hero slide generated concurrently with the numbered-slide fan-out, plus a sourcing-authority rule stopping the Anchor Writer's invented "supergroup" narrative from being cited as literal team-slide fact. This is conceptually adjacent to (but independent of and differently solved from) this workshop's own anchor-writer/deck-builder framing addition (graphic-designer-not-AI reminder).
 

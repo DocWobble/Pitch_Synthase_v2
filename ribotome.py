@@ -457,7 +457,7 @@ register_stage({
         "approach_candidates_json": {"type": "json", "required": True,  "description": "Approach candidates (from approach_draft)"},
         "selected_candidate_id":    {"type": "str",  "required": True,  "description": "Which approach_id was selected"},
         "selected_archetype_id":    {"type": "str",  "required": False, "description": "Founder archetype ID (may come from approach blend)"},
-        "explicit_slide_count":     {"type": "int",  "required": True,  "description": "Number of content slides (4–10); total = N+2"},
+        "explicit_slide_count":     {"type": "int",  "required": True,  "description": "Number of content slides (4–24); total = N+2"},
         "doc_text":                 {"type": "str",  "required": False, "description": "Supporting document text"},
         "image_analysis":           {"type": "json", "required": False, "description": "Result of image_scan (if image was uploaded); folded into intake context"},
         "intake_options":           {"type": "json", "required": False, "description": "Aesthetic/mockup/product-shot signals from human_intake; folded into intake context"},

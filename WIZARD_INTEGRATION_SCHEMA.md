@@ -191,8 +191,9 @@ surfaced later in job listings/telemetry.
 
 ### Screen 6 — Payment (`human_payment`)
 `next-action`'s `context` gives `amount_cents` and a default `slide_count`.
-Let the user choose content-slide count (4–10; total deck = N + 2 for
-hero/close) if the commercial product exposes that as a pricing lever.
+Let the user choose content-slide count (4–24, per `MIN/MAX_SELF_SERVE_SLIDE_COUNT`
+in `prompts.py`; total deck = N + 2 for hero/close) if the commercial product
+exposes that as a pricing lever.
 
 **This is the integration point that needs replacing for a commercial
 build.** The only implementation today is a lab bypass:

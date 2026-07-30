@@ -1,129 +1,91 @@
 # Pitch Synthase v2 — Pipeline DAG
 
+This is the actual stage graph registered in `ribotome.py` via
+`register_stage()`, dispatched by `_advance()` off each job's
+`stage_states` map — not a linear script. Companion doc: `architecture.md`
+(component-level detail), `WIZARD_INTEGRATION_SCHEMA.md` (REST contract).
+
 ```mermaid
 flowchart TD
-    subgraph INTAKE ["Intake"]
-        A1([User: pitch text\naudience · conveys]) --> A2{Supporting image?}
-        A2 -- yes\npng/jpg/webp --> A3[(Save to\njobs/id/intake/)]
-        A2 -- no --> A4[ ]
-    end
+    A1([User: POST /api/jobs\nelevator_pitch · audience · conveys\nassociation_words · infer_prototype]) --> A2[design_refs_text\nworker · condition: has_prototype]
+    A1 --> A3[image_scan\nevent-triggered on image upload]
 
-    subgraph APPROACHES ["Phase 1 · Approach Drafting"]
-        B1[approach_drafter_worker] --> B2{Intake image\npresent?}
-        B2 -- yes --> B3[Attach as multimodal\nbrand reference input]
-        B2 -- no --> B4[Text-only input]
-        B3 & B4 --> B5["LLM · TEMPLATE_DRAFTER_MODEL
-approach_drafter_prompt
-→ 4 approach objects
-each: archetype_a × archetype_b
-label · pitch_angle
-key_differentiator · visual_direction"]
-        B5 --> B6{Validate
-4 distinct unordered
-archetype pairs
-no pair repeated}
-        B6 -- fail --> B7([error: job failed])
-        B6 -- pass --> B8[(approach_manifest.json
-status → approaches_ready)]
-    end
+    A2 --> B1[approach_draft\nworker\n→ 4 approach objects\narchetype_a × archetype_b pair each]
+    A2 --> A4[design_refs_images\nworker · condition: has_prototype\nrenders 1 reference image per design candidate]
 
-    subgraph DESIGNS ["Phase 2 · Design Drafting"]
-        C1[design_drafter_worker] --> C2{Supporting\nimage?}
-        C2 -- yes --> C3["CLASSIFY_MODEL · gpt-4.1-nano
-product / brand / neither"]
-        C3 -- product or brand --> C4[Store reference path
-+ design_reference_type
-on all 4 approaches
-→ early return, no gen]
-        C3 -- neither --> C5
-        C2 -- no --> C5["LLM · TEMPLATE_DRAFTER_MODEL
-design_drafter_prompt
-→ 4 design specs"]
-        C5 --> C6["Image gen × 4 · DECK_DRAFTER_MODEL
-image_generation_tool
-one design reference image per approach"]
-    end
+    B1 --> C1{{human_intake\nhuman gate\nPOST /intake-options}}
+    A3 --> C1
+    A4 --> C2{{human_prototype_selection\nhuman gate · condition: has_prototype\nPOST /select-prototype}}
 
-    subgraph PREVIEWS ["Phase 3 · Approach Previews (parallel × 4)"]
-        D1["single_slide_preview_worker × 4"] --> D2["LLM · TEMPLATE_DRAFTER_MODEL
-single_slide_drafter_prompt
-archetype_a + archetype_b blend
-→ slide text draft"]
-        D2 --> D3{design_reference_type}
-        D3 -- brand --> D4["Image gen · DECK_DRAFTER_MODEL
-label: BRAND VISUAL REFERENCE
-match palette · typography · aesthetic"]
-        D3 -- product --> D5["Image gen · DECK_DRAFTER_MODEL
-label: PRODUCT DESIGN REFERENCE
-replicate exact form factor"]
-        D4 & D5 --> D6([User views 4 approach previews])
-    end
+    B1 --> D1[previews\nworker\n1 preview slide per approach]
+    C1 --> D1
+    C2 --> D1
 
-    subgraph SELECTION ["User Decision"]
-        E1([Select approach]) --> E2([Payment gate])
-    end
+    D1 --> E1{{human_selection\nhuman gate\nPOST /select-approach}}
+    E1 --> E2{{human_payment\nhuman gate\nPOST /mock-payment/full — lab bypass only,\nsee WIZARD_INTEGRATION_SCHEMA.md for the\nreal Stripe integration point}}
 
-    subgraph GENERATION ["Phase 4 · Full Deck Generation"]
-        F1[generation_worker\nstatus: paid → rendering_slides]
-        F1 --> F2["Phase 4a · Anchor writer
-ANCHOR_MODEL
-anchor_writer_prompt
-→ deck_generation_prompt
-(pitch narrative all slides derive from)"]
-        F2 --> F3["Phase 4b · Deck builder storyboard
-DECK_DRAFTER_MODEL
-paid_deck_builder_prompt
-→ N-slide storyboard
-+ image_prompts per slide
-+ visual_grammar (deck-wide)"]
-        F3 --> F4["Phase 4c · Slide image gen × N
-DECK_DRAFTER_MODEL + image_generation_tool
-parallel · chunked · rate-limited
-50 img/min rolling window"]
-        F4 --> F5[(status → awaiting_review)]
-    end
+    E2 --> F1[generation\nworker]
+    F1 --> F1a["1 · Anchor writer — ANCHOR_MODEL\ninvents the context this pitch already won in"]
+    F1a --> F1b["2 · Visual Grammar Synthesizer\nMANDATORY — failure fails the whole stage"]
+    F1b --> F1c["3 · Deck builder storyboard\nN+2 slides · title/purpose/body_points/image_prompt\nextracts the locked visual grammar, does not invent one"]
+    F1c --> F1d["4 · Slide image gen × (N+2)\nchunked · rate-limited (50 img/min)"]
+    F1d --> G1{{human_review\nhuman gate\nPOST /complete-review}}
 
-    subgraph VERIFICATION ["Phase 5 · Verification & Finalization"]
-        G1["verification_worker
-status: review_received → finalizing"]
-        G1 --> G2["Per slide: _verify_and_finalize_slide
-judge against source + anchor narrative
-accept as-is or regenerate"]
-        G2 --> G3["Composite: text overlay
-+ speaker notes"]
-        G3 --> G4([Export
-PDF · PPTX · HTML · Markdown])
-    end
-
-    INTAKE --> APPROACHES
-    A3 --> B2
-    B8 --> DESIGNS
-    C4 & C6 --> PREVIEWS
-    D6 --> SELECTION
-    E2 --> GENERATION
-    F5 --> G1
+    G1 --> H1[verification\nworker]
+    H1 --> H2["Per flagged slide:\njudge → corrective_constraints\nsplice onto original image_prompt\n+ visual_grammar + anchor payload"]
+    H2 --> H3[Composite: text overlay + speaker notes]
+    H3 --> H4([Export: deck.pdf · deck.pptx\npreview.html · slides.md\nverification_report.json\npitch_deck_package.zip])
 ```
 
-## Job status state machine
+## Stage dependency table
+
+| stage | depends on | condition |
+|---|---|---|
+| `design_refs_text` | — | `has_prototype` |
+| `approach_draft` | `design_refs_text` | — |
+| `image_scan` | — (event-triggered) | — |
+| `human_intake` | `approach_draft` | — |
+| `design_refs_images` | `design_refs_text` | `has_prototype` |
+| `human_prototype_selection` | `design_refs_images` | `has_prototype` |
+| `previews` | `approach_draft`, `human_prototype_selection`, `human_intake` | — |
+| `human_selection` | `previews` | — |
+| `human_payment` | `human_selection` | — |
+| `generation` | `human_payment` | — |
+| `human_review` | `generation` | — |
+| `verification` | `human_review` | — |
+
+When `has_prototype` (the job's `infer_prototype` flag) is false,
+`design_refs_text`, `design_refs_images`, and `human_prototype_selection`
+are auto-skipped (`stage_states[id] = "skipped"`) rather than routed around
+— `previews` still fires once its other two dependencies clear.
+
+## Job status column (legacy layer, still written alongside `stage_states`)
+
+The `jobs.status` string column predates the stage-DAG rewrite and is still
+updated by workers as a human-readable summary, but it is not what the
+dispatcher reads — `stage_states` is authoritative. Observed values on the
+primary (SAWC) path:
 
 ```
 created
-  → approaches_ready        (approach_drafter_worker done)
-  → [design images stored]  (design_drafter_worker done — no dedicated status)
-  → paid                    (payment received)
-  → generating_plan
-  → plan_ready
-  → rendering_slides
-  → awaiting_review
-  → review_received         (user submits optional slide edits)
-  → finalizing
-  → complete
-  → failed                  (any unrecoverable error)
+  → approaches_ready       (approach_draft worker done)
+  → paid                   (human_payment gate satisfied)
+  → generating_plan        (generation worker started)
+  → rendering_slides       (storyboard complete, images rendering)
+  → awaiting_review        (all slides rendered)
+  → review_received        (human_review gate satisfied)
+  → complete               (verification worker done)
+  → stage_failed:{stage_id}  (any stage raises — includes the stage id)
 ```
 
-## Rate limits (Tier 3, July 2026)
+`candidate_ready`, `template_*` status values also exist in `workers.py`
+but belong to the legacy Path A workers (`template_worker`,
+`candidate_worker`, `convert_generation_worker`) — not reachable from the
+primary DAG above.
 
-| Call type        | Limit      | Enforced by              |
-|------------------|------------|--------------------------|
-| gpt-image-1/2    | 50 img/min | `_throttle_image_generation()` rolling window |
-| Text models      | 5 000 RPM  | not throttled (not a bottleneck) |
+## Rate limits
+
+| Call type | Limit | Enforced by |
+|---|---|---|
+| `gpt-image-2` | 50 img/min | `_throttle_image_generation()`, process-wide rolling window (`workers.py`, `_IMAGE_RATE_LIMIT = 50`) |
+| Text models | not throttled | not a bottleneck at current volume |

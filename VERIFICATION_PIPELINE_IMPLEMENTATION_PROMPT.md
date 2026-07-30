@@ -1,5 +1,23 @@
 # Implementation prompt — parallel per-slide verification pipeline
 
+> **Status note (2026-07-29):** the core mechanism below was implemented
+> faithfully and is exactly what runs in production today (`verification_worker`
+> in `workers.py`, the only path wired into the DAG — `finalization_worker`
+> still exists in the file but is unreachable dead code, not a live
+> side-by-side comparison as its own comment claims). Two absolute claims in
+> this prompt do **not** hold as implemented, and should not be trusted for
+> reasoning about isolation guarantees: the STATE section's "no shared state
+> is read or written across slides" is false — every slide's verifier/judge
+> call receives the deck-wide `reviewed_slides`/`canon_overrides`, i.e. every
+> other slide's user edits, by design. The CONTEXT section's "self-contained
+> per slide" claim is also false for the source-accuracy verifier, which
+> receives the entire deck's storyboard, not just its own slide's entry.
+> Additionally, regeneration prompts are code-spliced onto the verbatim
+> original `image_prompt`, not authored from scratch by the judge as this
+> prompt originally specified — a deliberate, considered divergence (a
+> from-scratch rewrite lost layout fidelity via paraphrase in practice), kept
+> here as an implementation note rather than an edit to the historical ask.
+
 Composed using the AI Runtime Field Manual's prompt grammar (§XVIII), stacked with the Boundary-State manual's authority/assurance layer. Source tokens cited inline.
 
 ---
