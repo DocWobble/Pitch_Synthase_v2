@@ -56,3 +56,5 @@ jobs:
           git add prompts.py workers.py
           git commit -m "Integrate Founder Narrative Synthesis stage"
           git push origin HEAD:FNS_test
+
+# Triggered explicitly after branch creation.
