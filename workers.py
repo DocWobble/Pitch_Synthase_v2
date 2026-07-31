@@ -933,6 +933,104 @@ def _anchor_payload(anchor_json: dict, *, focused_prompt: str | None = None, sli
     return payload
 
 
+
+async def _synthesize_anchor_expansions(
+    job_id: str,
+    *,
+    deck_generation_prompt: str,
+    user_inputs: dict,
+    selected_template: dict,
+    strategy_dir: Path,
+    stage_prefix: str,
+) -> tuple[str, dict, dict]:
+    """Run visual and founder narrative synthesis from the same anchor in parallel.
+
+    Both addenda are deterministic inputs to the Deck Builder. The original anchor
+    remains first, followed by visual production constraints and then founder voice
+    constraints so the verbal grammar is the final authorship instruction seen by
+    the storyboard call.
+    """
+    visual_grammar_prompt = prompts.visual_grammar_prompt(
+        deck_generation_prompt
+    )
+    founder_narrative_prompt = prompts.founder_narrative_synthesis_prompt(
+        deck_generation_prompt=deck_generation_prompt,
+        user_inputs=user_inputs,
+        selected_template=selected_template,
+    )
+
+    visual_grammar_response, founder_narrative_response = await asyncio.gather(
+        _responses_create(
+            job_id,
+            stage=f"{stage_prefix}_visual_grammar",
+            model=prompts.VISUAL_GRAMMAR_MODEL,
+            input=[{
+                "role": "user",
+                "content": [{
+                    "type": "input_text",
+                    "text": visual_grammar_prompt,
+                }],
+            }],
+        ),
+        _responses_create(
+            job_id,
+            stage=f"{stage_prefix}_founder_narrative",
+            model=prompts.FOUNDER_NARRATIVE_MODEL,
+            input=[{
+                "role": "user",
+                "content": [{
+                    "type": "input_text",
+                    "text": founder_narrative_prompt,
+                }],
+            }],
+        ),
+    )
+
+    visual_grammar_result = _parse_model_json(
+        _response_text(visual_grammar_response)
+    )
+    founder_narrative_result = _parse_model_json(
+        _response_text(founder_narrative_response)
+    )
+
+    visual_grammar_addendum = str(
+        visual_grammar_result.get("visual_grammar_addendum") or ""
+    ).strip()
+    founder_narrative_addendum = str(
+        founder_narrative_result.get("founder_narrative_addendum") or ""
+    ).strip()
+
+    if not visual_grammar_addendum:
+        raise RuntimeError(
+            "Visual Grammar Synthesizer returned no visual_grammar_addendum"
+        )
+    if not founder_narrative_addendum:
+        raise RuntimeError(
+            "Founder Narrative Synthesizer returned no founder_narrative_addendum"
+        )
+
+    expanded_prompt = "\n\n".join((
+        deck_generation_prompt.strip(),
+        visual_grammar_addendum,
+        founder_narrative_addendum,
+    ))
+
+    (strategy_dir / "visual_grammar_output.json").write_text(
+        json.dumps(visual_grammar_result, indent=2),
+        encoding="utf-8",
+    )
+    (strategy_dir / "founder_narrative_output.json").write_text(
+        json.dumps(founder_narrative_result, indent=2),
+        encoding="utf-8",
+    )
+
+    return (
+        expanded_prompt,
+        visual_grammar_result,
+        founder_narrative_result,
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1 — Candidate preview (Procedure 1A)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1968,30 +2066,46 @@ async def generation_worker(job_id: str):
         db.update_job(job_id, status="failed", error_message=f"Anchor writer failed: {e}")
         return
 
-    # Phase 1b: Visual Grammar Synthesizer — expands the creative director's toolchain
-    # and production process into specific, constraint-level visual direction for the
-    # deck builder. Mandatory: this is what locks in the art direction as a constraint
-    # rather than an open aesthetic mandate; a deck built without it has no coherent
-    # visual authority, so a failure here fails generation rather than proceeding silently.
+    # Phase 1b: parallel Visual Grammar and Founder Narrative synthesis.
+    # Both calls receive the untouched anchor narrative and run concurrently. Their
+    # outputs are then appended in a fixed order before the Deck Builder receives the
+    # prompt: anchor -> visual production grammar -> founder presentation grammar.
     try:
-        vg_prompt = prompts.visual_grammar_prompt(deck_generation_prompt)
-        vg_resp = await _responses_create(
+        (
+            deck_generation_prompt,
+            visual_grammar_result,
+            founder_narrative_result,
+        ) = await _synthesize_anchor_expansions(
             job_id,
-            stage="paid_visual_grammar",
-            model=prompts.VISUAL_GRAMMAR_MODEL,
-            input=[{"role": "user", "content": [{"type": "input_text", "text": vg_prompt}]}],
+            deck_generation_prompt=deck_generation_prompt,
+            user_inputs=user_inputs,
+            selected_template=selected_template,
+            strategy_dir=strategy_dir,
+            stage_prefix="paid",
         )
-        vg_result = _parse_model_json(_response_text(vg_resp))
-        addendum = (vg_result.get("visual_grammar_addendum") or "").strip()
-        if not addendum:
-            raise RuntimeError("Visual Grammar Synthesizer returned no visual_grammar_addendum")
-        deck_generation_prompt = deck_generation_prompt + "\n\n" + addendum
+
         anchor_json["deck_generation_prompt"] = deck_generation_prompt
-        (strategy_dir / "visual_grammar_output.json").write_text(json.dumps(vg_result, indent=2))
-        db.append_progress(job_id, "generation", "Visual grammar synthesized", pct=0.18)
+        db.append_progress(
+            job_id,
+            "generation",
+            "Visual and founder presentation grammars synthesized",
+            pct=0.18,
+        )
     except Exception as e:
-        append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_visual_grammar", "status": "failed", "error": str(e)[:500]})
-        db.update_job(job_id, status="failed", error_message=f"Visual Grammar Synthesizer failed: {e}")
+        append_telemetry(
+            job_id,
+            {
+                "event_type": "workflow",
+                "stage": "paid_anchor_expansion",
+                "status": "failed",
+                "error": str(e)[:500],
+            },
+        )
+        db.update_job(
+            job_id,
+            status="failed",
+            error_message=f"Anchor expansion synthesis failed: {e}",
+        )
         return
 
     # Phase 2: Deck builder storyboard — one text call that plans all N slides with

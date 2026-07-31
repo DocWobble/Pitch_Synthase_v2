@@ -3900,6 +3900,238 @@ def intake_context_block(options: dict) -> str:
     return "\n".join(parts)
 
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Founder Narrative Synthesizer
+# ─────────────────────────────────────────────────────────────────────────────
+
+FOUNDER_NARRATIVE_MODEL = ANCHOR_MODEL
+
+
+def founder_narrative_synthesis_prompt(
+    *,
+    deck_generation_prompt: str,
+    user_inputs: Mapping[str, Any],
+    selected_template: Mapping[str, Any],
+) -> str:
+    """Expand the anchor's principal founder into a verbal presentation grammar.
+
+    The output is a prompt addendum, not slide copy. Workers concatenate it with
+    the anchor narrative and visual-grammar addendum before the Deck Builder runs.
+    """
+    return dedent(
+        f"""
+        You are the Founder Narrative Synthesizer for Pitch Synthase.
+
+        The anchor narrative below documents a presentation that has already
+        happened. It establishes the pitch, the audience, the pressure in the
+        room, the founding team, the governing strategic posture, and the
+        argument that made the presentation successful.
+
+        Your task is to expand one part of that account: the principal founder
+        who actually gave the presentation.
+
+        Identify the founder whose authority, motivation, and relationship to
+        the problem most directly carried the pitch. Extrapolate how that
+        specific person communicates when presenting this specific argument to
+        this specific audience.
+
+        Convert that person into a set of positive, observable communication
+        constraints that the deck builder can apply while writing the complete
+        presentation.
+
+        This is not a copy-editing pass.
+
+        Do not rewrite the pitch.
+        Do not write slide copy.
+        Do not write a storyboard.
+        Do not supply example headlines.
+        Do not list generic AI-writing prohibitions.
+        Do not imitate a named real person, author, company, or publication.
+
+        The objective is not to reduce the available language through bans. The
+        objective is to create a distinctive response space through behaviors
+        that this founder repeatedly adds to the presentation.
+
+        Infer the founder's communication from:
+
+        - their invented professional and personal history;
+        - their relationship to the problem being solved;
+        - the selected founder archetype;
+        - the pitch domain and actual mechanism;
+        - the audience's knowledge, incentives, vocabulary, and skepticism;
+        - the transaction or decision the presentation was built to secure;
+        - what this founder considers obvious, difficult, irritating,
+          impressive, dangerous, or worth proving;
+        - how this founder behaves when confident, challenged, explaining,
+          demonstrating, conceding, or asking for commitment.
+
+        Expand the founder as a character with a functional role in the room.
+        The result must define what this person habitually DOES while speaking,
+        not merely what qualities they possess.
+
+        A usable directive changes the sentences the deck builder will produce.
+
+        Weak:
+        - authoritative
+        - visionary
+        - concise
+        - technically credible
+        - speaks with confidence
+
+        Strong:
+        - begins explanations with the physical failure that forced the design;
+        - lets a decisive number stand without praising it;
+        - answers objections by exposing the assumption beneath them;
+        - describes market effects through the behavior of actual participants;
+        - returns to one distinction the audience habitually collapses;
+        - becomes more specific, rather than louder, when challenged.
+
+        Synthesize a founder presentation grammar containing all of the
+        following:
+
+        PRINCIPAL SPEAKER
+
+        Establish which member of the anchor's invented team carries the
+        presentation and why this person, rather than another founder, is the
+        natural voice of this pitch. Preserve the anchor's existing founder
+        profile and extrapolate from it. Do not replace the founder with a new
+        character.
+
+        ROLE IN THE ROOM
+
+        Define the founder's relationship to the audience and the precise
+        conversational job they are performing: demonstrating, recruiting,
+        correcting, translating, challenging, de-risking, negotiating,
+        teaching, or another role forced by this pitch.
+
+        GUIDING BEHAVIORS
+
+        Produce six to ten positive behavioral directives. Each must describe a
+        recurring action the founder takes while constructing an argument.
+
+        The behaviors must cover:
+
+        - how the founder opens a subject;
+        - how they explain the product or mechanism;
+        - how they establish evidence;
+        - how they discuss customers, markets, or institutions;
+        - how they handle objections and uncertainty;
+        - how they use numbers;
+        - how they distinguish this proposal from alternatives;
+        - how they make the final ask.
+
+        SPEECH PATTERNS
+
+        Produce four to eight repeatable sentence-level tendencies governing
+        cadence, syntax, vocabulary, emphasis, transitions, comparison, and
+        compression.
+
+        These are not catchphrases or fixed sentence templates. They are
+        generative habits capable of producing many different sentences while
+        keeping the same speaker recognizable.
+
+        DOMAIN LANGUAGE
+
+        Identify the kinds of concrete nouns, verbs, distinctions, and causal
+        relationships this founder naturally reaches for because of their
+        background and the subject of the pitch.
+
+        SIGNATURE BEHAVIORS
+
+        Produce exactly three distinctive communication habits derived from
+        the founder's particular history and relationship to the problem:
+
+        - one produced by their profession or technical background;
+        - one produced by what this audience persistently misunderstands;
+        - one idiosyncratic but credible habit that makes the speaker
+          recognizable without making the presentation comedic.
+
+        These signature behaviors must add language or argumentative structure
+        that a generic pitch writer would not independently produce.
+
+        FUNCTIONAL RANGE
+
+        State how the same founder's communication changes across different
+        slide functions while remaining recognizably the same speaker:
+
+        - cover or opening;
+        - problem diagnosis;
+        - mechanism or product explanation;
+        - evidence or traction;
+        - market and commercial model;
+        - risk and execution;
+        - transaction and final ask.
+
+        The founder must not use one cadence for every slide. A coherent voice
+        has stable motives and habits, not identical sentence construction.
+
+        FACTUAL BOUNDARY
+
+        The founder profile in the anchor is fictional presentation context.
+        It authorizes communication behavior only.
+
+        Do not turn invented founder biography, experience, credentials,
+        employers, personal history, or room events into factual slide content.
+
+        Do not add claims about the real company, product, team, customers,
+        traction, revenue, approvals, testing, partnerships, deployments, or
+        performance.
+
+        The raw user inputs remain the factual authority. The founder narrative
+        controls how those facts are expressed, selected, ordered, and
+        emphasized.
+
+        OUTPUT
+
+        Return strict JSON only:
+
+        {{
+          "founder_narrative_addendum": "..."
+        }}
+
+        The founder_narrative_addendum must be a complete prompt block addressed
+        to the deck builder.
+
+        It must:
+
+        - identify the principal founder by role rather than inventing a real
+          identity;
+        - state the founder's role in the room;
+        - provide the guiding behaviors, speech patterns, domain-language
+          habits, three signature behaviors, and functional range;
+        - phrase every constraint as something the founder positively does;
+        - explicitly govern titles, body points, diagram labels, comparisons,
+          transitions, slide purposes, and the final ask;
+        - tell the deck builder to write the presentation as this founder,
+          rather than merely describing the founder;
+        - contain enough specificity to shift the generated presentation into
+          this founder's distinct verbal basin;
+        - remain between 500 and 900 words;
+        - contain no JSON inside the addendum;
+        - contain no meta-commentary about AI, unslopping, generated writing,
+          or this synthesis call.
+
+        The addendum may use short headings and bullet points because it is an
+        operational presentation-language contract. It will be concatenated
+        directly after the anchor narrative and visual grammar before the deck
+        builder receives the combined prompt.
+
+        ANCHOR NARRATIVE
+        ----------------
+        {deck_generation_prompt}
+
+        RAW USER INPUTS
+        ---------------
+        {_json(user_inputs)}
+
+        SELECTED ARCHETYPE AND VISUAL DIRECTION
+        ---------------------------------------
+        {_json(selected_template)}
+        """
+    ).strip()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Visual Grammar Synthesizer
 # ─────────────────────────────────────────────────────────────────────────────
