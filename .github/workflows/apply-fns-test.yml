@@ -1,0 +1,58 @@
+name: Apply FNS test integration
+
+on:
+  push:
+    branches:
+      - FNS_test
+    paths:
+      - .github/scripts/apply_fns_patch.py
+      - .github/workflows/apply-fns-test.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fns:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out FNS_test
+        uses: actions/checkout@v4
+        with:
+          ref: FNS_test
+          fetch-depth: 0
+
+      - name: Apply FNS integration
+        run: python .github/scripts/apply_fns_patch.py
+
+      - name: Validate Python syntax and workflow wiring
+        run: |
+          python -m py_compile prompts.py workers.py
+          python - <<'PY'
+          from pathlib import Path
+
+          prompts = Path('prompts.py').read_text(encoding='utf-8')
+          workers = Path('workers.py').read_text(encoding='utf-8')
+
+          assert 'def founder_narrative_synthesis_prompt(' in prompts
+          assert 'FOUNDER_NARRATIVE_MODEL = ANCHOR_MODEL' in prompts
+          assert 'async def _synthesize_anchor_expansions(' in workers
+          assert 'await asyncio.gather(' in workers
+          assert 'stage=f"{stage_prefix}_visual_grammar"' in workers
+          assert 'stage=f"{stage_prefix}_founder_narrative"' in workers
+          assert 'anchor_json["deck_generation_prompt"] = deck_generation_prompt' in workers
+          assert workers.index('visual_grammar_addendum,') < workers.index('founder_narrative_addendum,')
+          print('FNS workflow wiring validated.')
+          PY
+
+      - name: Commit integrated files
+        run: |
+          if git diff --quiet -- prompts.py workers.py; then
+            echo "FNS integration already present."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prompts.py workers.py
+          git commit -m "Integrate Founder Narrative Synthesis stage"
+          git push origin HEAD:FNS_test
