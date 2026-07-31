@@ -29,7 +29,18 @@ jobs:
           fetch-depth: 0
 
       - name: Apply FNS integration
-        run: python .github/scripts/apply_fns_patch.py
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/scripts/apply_fns_patch.py')
+          text = path.read_text(encoding='utf-8')
+          old = "        'stage=\"paid_anchor_expansion\"',"
+          new = "        '\"stage\": \"paid_anchor_expansion\"',"
+          if old in text:
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python .github/scripts/apply_fns_patch.py
 
       - name: Validate Python syntax and workflow wiring
         run: |
@@ -47,6 +58,7 @@ jobs:
           assert 'stage=f"{stage_prefix}_visual_grammar"' in workers
           assert 'stage=f"{stage_prefix}_founder_narrative"' in workers
           assert 'anchor_json["deck_generation_prompt"] = deck_generation_prompt' in workers
+          assert '"stage": "paid_anchor_expansion"' in workers
           assert workers.index('visual_grammar_addendum,') < workers.index('founder_narrative_addendum,')
           print('FNS workflow wiring validated.')
           PY
