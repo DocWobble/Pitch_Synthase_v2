@@ -7,6 +7,12 @@ on:
     paths:
       - .github/scripts/apply_fns_patch.py
       - .github/workflows/apply-fns-test.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/scripts/apply_fns_patch.py
+      - .github/workflows/apply-fns-test.yml
 
 permissions:
   contents: write
@@ -56,5 +62,3 @@ jobs:
           git add prompts.py workers.py
           git commit -m "Integrate Founder Narrative Synthesis stage"
           git push origin HEAD:FNS_test
-
-# Triggered explicitly after branch creation.
