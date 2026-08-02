@@ -195,3 +195,9 @@ class FounderSummaryRegisterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+"""Legacy prompt-register regression tests.
+
+Some cases below intentionally exercise pre-FNS compatibility prompt APIs. They
+are not current workflow/schema tests; active authority-chain coverage belongs
+in the generation-worker tests.
+"""

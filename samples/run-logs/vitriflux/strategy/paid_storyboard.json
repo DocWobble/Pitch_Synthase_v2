@@ -1,4 +1,6 @@
 {
+  "artifact_schema_version": "legacy-pre-fns",
+  "schema_authority": false,
   "visual_grammar": {
     "background": "full-bleed dark graphite to ceramic-black gradient with a subtle matte industrial texture, faint vignetting at the edges, and occasional low-contrast thermal-vector field overlays in cyan-to-deep-orange used only as restrained background structure",
     "foreground": "warm off-white engineering text and pale gray diagram strokes with high contrast against the dark field, never pure white, optimized for precise technical readability",

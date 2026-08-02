@@ -1,5 +1,13 @@
 # Implementation prompt — parallel per-slide verification pipeline
 
+> **Archived design input — not a current schema contract.** This file records
+> the original verification implementation request. The active FNS_test chain
+> now separates rhetorical planning, final visible copy, and visual direction
+> into Deck Builder, Ghostwriter, and Spirit Boarder authorities. Regeneration
+> preserves the Spirit Boarder prompt, recompiles the exact-copy contract from
+> final/reviewed copy, and restores actual references; it does not reopen Anchor
+> prose or ask the image model to infer copy. See `PITCH_SYNTHASE_V2_SPEC.md`.
+
 > **Status note (2026-07-29):** the core mechanism below was implemented
 > faithfully and is exactly what runs in production today (`verification_worker`
 > in `workers.py`, the only path wired into the DAG — `finalization_worker`

@@ -1,394 +1,268 @@
-# Pitch Synthase — Prototype v2 Engineering Spec
+# Pitch Synthase v2 — FNS_test Engineering Spec
 
 | Field | Value |
 |---|---|
-| Document ID | PS-V2-SPEC |
-| Version | 2.5.0 |
-| Status | Workshop-Validated — Not Merged to Production |
-| Owner | Workshop (isolated) |
-| Workshop path | `/home/director/pitch_synthase_archetype_workshop` |
-| Last Updated | 2026-07-29 |
+| Document ID | PS-V2-FNS-TEST |
+| Version | 3.0.0 |
+| Status | Branch contract — frontend-ready workflow candidate |
+| Branch | `FNS_test` |
+| Runtime | `ribotome.py` DAG dispatcher |
+| Last updated | 2026-08-02 |
 
-### Change history
+This document describes the active `FNS_test` workflow. Historical prompt-chain
+reports and checked-in run logs are evidence of earlier experiments, not schema
+authority. The frontend contract is `WIZARD_INTEGRATION_SCHEMA.md`; the executable
+stage and field declarations in `ribotome.py` remain the final runtime authority.
 
-| Version | Summary |
-|---|---|
-| 1.0.0 | Original spec (designed-HTML artifact, rev. 1) |
-| 1.1.0 | Corrections verified against OpenAI docs (rev. 2) |
-| 2.0.0 | Full rewrite to plain Markdown — export-oriented docs use Markdown/monospace, not designed HTML (rev. 3) |
-| 2.1.0 | Parallel verification pipeline replaces the single-batch finalization refiner; slide-count ceiling corrected 4–24; image rate limit corrected to 20/min; ambiguity-gate / evidence-standard / confidence-gate mechanisms documented; testing harness section added (rev. 4) |
-| 2.2.0 | Selective non-canon exceptions (`excepted_inference_elements` / `authorized_inferences` / `canon_overrides`) and the per-element inferred-content removal checkbox (`inferred_element_decisions`) documented; pre-finalization hard-block gate added; judge `corrective_constraints` normalized to always be a string after a live JSON-array regression was caught and fixed (rev. 5) |
-| 2.3.0 | Added `mockup_prototype_design` as an authorized inference element alongside pricing; validated on the SAWC Outcome Factory 10-slide generation (rev. 6) |
-| 2.4.0 | Added six tri-state Pitch Aspect controls (`OMIT` / `INFER` / `SOURCE`, default `INFER`); narrowed pricing inference to invented offer pricing and related unit economics (rev. 7) |
-| 2.5.0 | Reconciled the specification with the current input contract and worker implementation: independent raw-source transport, authoritative supporting-image handoff, N+1 title ownership, completed-image-only generation, Pitch Aspect policy propagation through refinement, current runtime versions, and explicit evidence boundaries (rev. 8) |
-| 2.6.0 | Corrected against the `ribotome.py` DAG-dispatcher rewrite that superseded the linear/status-driven pipeline described in rev. 8: replaced §04's dead 10-entry archetype catalog with the live 12-entry roster, documented the previously-unmentioned design-archetype/prototype-selection stages, marked three status-table stages as dead/unreachable code, fixed the image rate limit (50, not 20) and `python-pptx` install status, and replaced §12 (its referent, `run_ps_test_input.py`, no longer exists) with a pointer to `WIZARD_INTEGRATION_SCHEMA.md` (rev. 9) |
+## 1. Product flow
 
-> This spec documents the isolated workshop prototype only. Nothing described here has been merged into the real backend at `intelluric/tools/instant/pitch-deck/backend/` — that code has been read for reference and copied, never edited. Evidence is stated mechanism by mechanism: some behavior is code-enforced, some prompt-enforced, some live-validated, and the newest six-aspect refinement propagation is contract-validated without a fresh complete finalized-deck run. The exact current prompt composition and worker call graph are documented in `PROMPT_CHAIN_TECHNICAL_REPORT.txt`.
+1. Collect the complete pitch, audience, desired associations, optional source
+   documents/images, inference controls, and requested content-slide count.
+2. Draft four rhetorical/strategic approaches.
+3. Optionally draft prototype-design references when prototype inference is
+   explicitly enabled.
+4. Render one preview for each approach and let the user select one.
+5. After payment, generate the complete deck through the six-step authority
+   chain below.
+6. Let the user review visible text and request verification/regeneration.
+7. Export PDF, PPTX, HTML, Markdown, images, and the verification manifest.
 
-## Contents
+The requested content-slide count becomes `N+2` rendered slides: one opening,
+`N` content slides, and one close.
 
-00. [Pipeline overview](#00-pipeline-overview)
-01. [Stage-by-stage operation](#01-stage-by-stage-operation)
-02. [Job data model](#02-job-data-model)
-03. [Status state machine](#03-status-state-machine)
-04. [Founder archetype catalog](#04-founder-archetype-catalog)
-05. [Approach generation contract](#05-approach-generation-contract)
-06. [Visual grammar contract](#06-visual-grammar-contract)
-07. [Artifact modes & image generation contract](#07-artifact-modes--image-generation-contract)
-08. [Finalization & export](#08-finalization--export)
-09. [Dependencies](#09-dependencies)
-10. [Validated findings](#10-validated-findings)
-11. [Known staleness & open items](#11-known-staleness--open-items)
-12. [Testing harness](#12-testing-harness)
+## 2. Full-deck authority chain
 
----
+### 2.1 Canonical Anchor
 
-## 00. Pipeline overview
+The Canonical Anchor is a factual and rhetorical brief. It receives the selected
+approach plus all relevant source material and must preserve:
 
-Prototype v2 replaces the template-first funnel with a **full-pitch-first** design: the complete pitch is collected before any generation happens, four cheap strategic approaches are drafted in text only, one image is spent per approach as a single-slide preview, and only after the user picks an approach does the pipeline spend on a full paid deck.
+- material facts, ranges, caveats, statuses, and phase gates;
+- explicit absences, including no prototype, traction, partner, or validation;
+- the intended audience, transaction, argument, and evidence burden;
+- enough detail that downstream workers do not have to recover facts from hints.
 
-**Orchestration note (rev. 9):** the server is `ribotome.py`, not a linear script driving the status column below — it declares a DAG of 12 stages via `register_stage()` and dispatches eligible stages via `_advance()` based on each job's `stage_states` map. A startup audit (`_audit_pipeline()`) refuses to boot the server if any declared field has no producer or no consumer anywhere in the graph. The table below lists the stages roughly in the order a typical job reaches them, but dependency, not table order, determines actual execution — see `pipeline.md` for the exact dependency graph. Stages 02/03/05 below are defined in `workers.py` but are **dead code**: not registered in the DAG, not reachable via any endpoint. Stage 04a (design/prototype drafting) was previously undocumented in this spec entirely.
+It cannot invent founders, biographies, customers, partners, traction, room
+events, or a presentation that supposedly already happened. It is not slide
+copy, an image prompt, or visual direction.
 
-| # | Stage | What happens |
-|---|---|---|
-| 01 | Pitch intake | Audience, elevator pitch (problem/solution), what it should convey, optional archetype pin, optional supporting document/image, three `association_words`. |
-| 02 | Pitch quality gate *(dead code — see note above)* | Cheap text-only check: is there enough real content here to work with, or is the pitch too thin. |
-| 03 | Pitch elaborator *(dead code — see note above)* | Optional "write my whole pitch" button — ghostwrites a draft, never saved without explicit user approval. |
-| 04 | Approach drafting (`approach_draft`) | One text call → four distinct strategic approaches, each pairing two `FOUNDER_ARCHETYPES` entries (§04). |
-| 04a | Prototype design drafting (`design_refs_text` / `design_refs_images`, condition: `infer_prototype`) | Selects 4 candidates from `DESIGN_ARCHETYPES` (§04), text then rendered reference image per candidate; user picks one (`human_prototype_selection`). Entirely optional branch, skipped when no prototype was requested. |
-| 05 | Approach regeneration *(dead code — see note above)* | Optional — regenerate only the flagged approach(es), holding the rest fixed. |
-| 06 | Single-slide preview (`previews`) | One text + one image call per approach; user sees all 4 and picks one (`human_selection`). |
-| 07 | Payment (`human_payment`) | Currently a lab-only mock endpoint (`POST /mock-payment/{kind}`) — no live Stripe integration wired up yet; see `WIZARD_INTEGRATION_SCHEMA.md` for the real integration point. |
-| 08 | Full deck generation (`generation`) | Anchor Writer → mandatory Visual Grammar Synthesizer → Deck Builder storyboard (one title slide + requested content slides + close, one shared visual grammar) → per-slide image renders. |
-| 09 | Human review + finalization (`human_review` → `verification`) | User submits per-slide edits/regeneration requests; parallel per-slide verification pipeline: 3 independent verifiers → judge → conditional regeneration, universal + per-slide instructions, silent quality bar always applied. |
-| 10 | Export | Zip containing per-slide PNGs, PDF, PPTX, standalone HTML, and Markdown. |
+### 2.2 FNS and VGS
 
----
+The Founder Narrative Synthesizer and Visual Grammar Synthesizer run in parallel.
+Neither output is sent to Deck Builder.
 
-## 01. Stage-by-stage operation
+FNS returns one `ghostwriter_system_prompt`. It defines a speaker, not a list of
+abstract style rules: the founder's relevant backstory, temperament, recurring
+concerns, rhetorical habits, sentence behavior, judgment patterns, and factual
+boundaries. It addresses the model as the founder: `YOU are this founder...`.
+Invented character material controls voice only and can never become a company
+claim.
 
-### Pitch intake
+VGS returns one `spirit_boarder_system_prompt`. It defines the deck-specific art
+director: visual worldview, composition behavior, palette, typography, grids,
+negative space, diagram vocabulary, reference-image handling, and truth
+discipline. It never owns visible prose.
 
-A job is created with `db.create_job(problem_need, audience, association_words)` and then updated with the full-pitch-first fields: `elevator_pitch`, `conveys`, optional `doc_text`, optional `selected_archetype_id`. No generation happens at this stage — it only persists what the user typed.
+### 2.3 Rhetorical Deck Builder
 
-### Pitch quality gate — `pitch_quality_gate_worker` *(dead code, rev. 9)*
-
-Defined in `workers.py` but not registered as a DAG stage and not reachable from any endpoint — confirmed no call sites outside its own definition. Documented here for the mechanism, not as a live stage.
-
-A single cheap text call (`prompts.pitch_quality_gate_prompt`) asks the model whether the elevator pitch has enough real content to ground four distinct approaches, returning `{"is_real_pitch", "reason", "missing_elements"}`. This call mutates no job state beyond telemetry — the caller decides whether to block progress or offer the elaborator.
-
-### Pitch elaborator — `pitch_elaborator_worker` *(dead code, rev. 9)*
-
-Same status as the quality gate above — defined, not wired to any stage or endpoint.
-
-The "write my whole pitch" button. Ghostwrites a complete draft from whatever rough input currently sits in `elevator_pitch`, returning `{"is_nonsense", "elevator_pitch", "invented_elements", "conveys_suggestion", "reason_for_placeholder"}`. Critically, this worker **does not overwrite** `job.elevator_pitch` — the draft is shown to the user, who explicitly saves it or discards it. If the rough input is genuine nonsense, the elaborator writes a self-aware placeholder pitch about the meta-failure itself, not a generic unrelated joke.
-
-### Approach drafting ("template generation") — `approach_drafter_worker`
-
-One text call, grounded in the real elevator pitch (and optional document), returns exactly four strategic pitch approaches under a single founder archetype — fixed by the user, or auto-picked by the drafter from the catalog if none was specified. No images are generated at this stage.
-
-Output is validated by `_validate_approach_manifest`: exactly 4 approaches, IDs `approach_1`–`approach_4` in order, unique labels, all of `pitch_angle`/`key_differentiator`/`visual_direction` non-empty.
-
-| Allowed from | Claims | On success | On failure |
-|---|---|---|---|
-| `created`, `approaches_queued`, `approaches_failed` | `approaches_running` | `approaches_ready` | `approaches_failed` |
-
-### Approach regeneration — `approach_regenerate_worker` *(dead code, rev. 9)*
-
-Same status as the two stages above — defined, not wired to any stage or endpoint.
-
-Regenerates only the flagged `approach_id`(s), given the kept approaches as context so the replacement doesn't collide with what the user already liked on label, claim order, or visual doctrine.
-
-### Prototype design drafting — `design_drafter_text_worker` / `design_drafter_images_worker` *(rev. 9, previously undocumented)*
-
-Runs only when the job's `infer_prototype` flag is set (DAG condition `has_prototype`). `design_drafter_text_worker` selects 4 candidates from `DESIGN_ARCHETYPES` — a 6-entry pool of named industrial-design personas (Rams, Dyson, Eames, Mead, Fukasawa, Starck), a separate catalog from the founder archetypes in §04 with its own schema (`design_language`, `material_tendency`, `geometric_tendency`, `optimizes_for`, `sacrifices`) — each producing a `design_philosophy` and `physical_description`. `design_drafter_images_worker` then renders one reference image per candidate. The user picks one (`human_prototype_selection` gate) before preview generation runs. **Known open issue:** selection reliably collapses to Rams/Dyson/Eames regardless of product; Fukasawa has never been selected in testing. See `PROJECT_MANIFEST.md` open items.
-
-### Single-slide preview — `single_slide_preview_worker`
-
-Merges the roles of the old Anchor Writer and Template Drafter into one path per approach: one text call (`single_slide_drafter_prompt`) writes an `image_prompt` grounded in the real pitch and the chosen approach, then one image call renders it. In the workshop this intentionally runs **before** the paywall, for comparison purposes — in production this stage sits after preview checkout.
-
-### Full deck generation — `generation_worker`
-
-Claims status `paid` → `generating_plan`. Four sub-phases (rev. 9 adds the mandatory Visual Grammar Synthesizer step, previously undocumented as a distinct phase):
-
-1. **Anchor Writer** (`anchor_writer_prompt`, mode `PAID`) writes the fictional "successful pitch" narrative frame that everything downstream reads from — the sole fiction layer; it never writes slide copy, a storyboard, or per-slide prompts directly. Output feeds `deck_proof_plan` (bundled with the storyboard below), the field the finalization stage reads to ground every regeneration.
-2. **Visual Grammar Synthesizer** — a separate, **mandatory** text call that locks the deck's palette/typography/layout/production-tool system from the anchor's context before any slide is planned. A failure here fails the whole `generation` stage (was previously wrapped in a silently-swallowed try/except; that was a bug, fixed this cycle).
-3. **Deck Builder storyboard** (`paid_deck_builder_prompt`) — one text call that plans the complete deck. Per-slide fields: `slide_number`, `title`, `purpose`, `style_tags`, `body_points` (2-5 short on-slide bullet phrases, distinct from `image_prompt` — added this cycle; was previously absent from the schema and hardcoded empty by the worker), and `image_prompt`. The storyboard call *extracts* the grammar the synthesizer already locked in rather than inventing a competing one. The worker translates the requested *N* content slides into an *N+2* total (title + N content + close). The result is validated for exact count and sequential `slide_number`s before proceeding.
-4. **Rendering** — status moves to `rendering_slides`; every storyboard slide renders through the same numbered-slide path (bounded to 4 at a time via `_chunked_gather`), with each `image_prompt` passed through `paid_slide_image_prompt` and the shared `visual_grammar` spliced in by code. No separate bonus-hero call exists. A slide gets one retry on failure; the job only fails outright if more than 2 slides fail after retry.
-
-### Finalization — `verification_worker` (current mechanism, rev. 4)
-
-Claims `review_received`/`finalization_queued`/`awaiting_review` → `finalizing`. Replaces the original single-batch `finalization_worker` mechanism (still present in the codebase, unused by current test scripts, kept for A/B reference — see §08 for why it was replaced). Per slide, fully independently and in parallel across all slides:
-
-1. **Fan-out to 3 narrow verifiers** (`_run_slide_verifiers`) — spelling, source-accuracy, diagram-accuracy — each a single-purpose multimodal text call seeing only that slide's proof image plus its own relevant context (storyboard entry; source material for the source-accuracy verifier only).
-2. **Fan-in** — the three verifiers' issue lists are concatenated in code (`_judge_slide`'s caller), no model call spent combining them.
-3. **Judge/disposition call** (`_judge_slide`) — decides `pass` or `regenerate` by reading only the structured `actionable` boolean already set by each verifier, never by parsing free text.
-4. **Conditional regeneration** — only for slides the judge flags. A fresh text-to-image call (never I2I), built by splicing the corrections onto the *original, verbatim* `image_prompt` plus `visual_grammar`, wrapped through the same `_deck_drafter_input`/`_anchor_payload` context as the original generation (deck-wide narrative + `user_inputs`) — see §08 for why that wrapping is required.
-
-A slide that passes ships its existing clean proof unchanged — no new image call at all. Composited output feeds the same four export builders as before, plus a new `verification_report.json` acceptance-manifest artifact, zipped, and the job reaches `complete`.
-
----
-
-## 02. Job data model
-
-One SQLite table, `jobs`, holds the entire lifecycle. Fields below are grouped by the stage that owns them; JSON-typed columns are serialized on write and parsed back on read via `db._JSON_FIELDS`.
-
-| Field | Type | Owner stage | Purpose |
-|---|---|---|---|
-| `id, status, created_at, updated_at` | text | lifecycle | Primary key `pd_<hex16>` and the state-machine status field (§03). |
-| `audience, elevator_pitch, conveys, doc_text` | text | pitch intake | The full-pitch-first inputs. `conveys` replaces the old free-text "vibes" association words for this path. |
-| `problem_need, association_words` | text / json | legacy intake | Original production intake shape, still written by `create_job` for compatibility; unused by the full-pitch-first flow. |
-| `selected_archetype_id, selected_archetype_label` | text | approach drafting | Either user-pinned before drafting, or written back by the drafter after an auto-pick. |
-| `approach_candidates_json` | json | approach drafting | The four `{approach_id, label, pitch_angle, key_differentiator, visual_direction}` objects. |
-| `candidates_json, archetypes_json` | json | legacy template stage | Original production template-candidate shape; not written by the full-pitch-first path. |
-| `explicit_slide_count` | int | deck generation | User-chosen slide count, 4–24 inclusive (`MIN/MAX_SELF_SERVE_SLIDE_COUNT`) — raised from the original 4–10, which assumed rendering was a single `n=10` image call rather than N independent per-slide calls. |
-| `deck_proof_plan, slide_specs, expected_text_map` | json | deck generation | Plan snapshot and per-slide specs written once the storyboard is accepted, ahead of rendering. |
-| `reviewed_slides, universal_refinement_instruction` | json / text | finalization | Per-slide user edit requests, plus one optional deck-wide instruction applied on top of every slide. |
-| `quality_results, convert_keep_candidate_ids` | json | legacy / convert path | Carried over from production; convert path lets a user keep specific preview vertex images as the paid deck's style reference. |
-| `export_zip_path` | text | export | Path to the final deliverable zip once status reaches `complete`. |
-| `*_payment_intent_id, *_checkout_*, *_paid_at` | text / int | checkout | Preview and deck checkout/payment bookkeeping, mirrored from production; not exercised by workshop test scripts. |
-| `telemetry_context_json, error_message` | json / text | all stages | Structured context for the telemetry log, and the last fatal error if `status = failed`. |
-
----
-
-## 03. Status state machine
-
-**Rev. 9 note:** this `status` column is a legacy layer, still written by workers via `db.claim_job_status(job_id, allowed_from, next_status)` for human-readable summary purposes, but the DAG dispatcher (`_advance()` in `ribotome.py`) does not read it — it reads the per-stage `stage_states` map instead. Treat the table below as descriptive of what a worker announces about itself, not as the mechanism actually gating pipeline progress.
-
-Every worker that mutates job state does so through `db.claim_job_status(job_id, allowed_from, next_status)` — an atomic compare-and-set against the current status. A second concurrent call against the same job simply finds no matching row and no-ops; this is how duplicate task dispatch is made safe without a separate lock.
-
-| Status | Meaning | Set by |
-|---|---|---|
-| `created` | Job exists, pitch fields populated, nothing generated yet. | intake |
-| `approaches_running` → `approaches_ready` / `approaches_failed` | Template-generation stage in flight, then resolved. | `approach_drafter_worker` |
-| `paid` → `generating_plan` → `rendering_slides` → `plan_ready` | Full deck generation: anchor + storyboard, then concurrent rendering. | `generation_worker` |
-| `review_received` / `finalization_queued` / `awaiting_review` → `finalizing` → `complete` | User has reviewed proofs and requested finalization; export builds run; deliverable zip is ready. | `verification_worker` (current) or `finalization_worker` (superseded, kept for A/B reference) |
-| `failed` | Terminal — `error_message` holds the cause. Reachable from any stage. | any worker |
-
-Legacy statuses (`template_generation_running`, `template_prompt_running`, `preview_generation_started`, `candidate_ready`, `awaiting_review`) belong to the original production template-first flow and the convert path, both still present in the workshop copy for reference but not exercised by the full-pitch-first test scripts.
-
----
-
-## 04. Founder archetype catalog
-
-**Rev. 9 — full replacement.** The 10-entry Odysseus...Michelangelo catalog this section previously documented (`prompts.EXPERIMENT_FOUNDER_ARCHETYPES`) is now dead, commented-out code — superseded by a 12-entry roster (`prompts.FOUNDER_ARCHETYPES`) of historical figures. Each is a fixed `{archetype_id, label, role, posture, win_condition}` object. **Each approach pairs two archetypes** (`archetype_a`, `archetype_b` — see §05), not one archetype per batch as the old model assumed. `win_condition` was also rewritten this cycle: it now states a domain-agnostic *rhetorical proof strategy* — how that persona convinces a skeptical audience — rather than a business-mechanism description, so the same roster applies whether the pitch is deep tech or a toy.
-
-| Archetype | Role | Win condition |
-|---|---|---|
-| Buffett | The Compounding Proof Merchant | Shifts the burden of proof onto the skeptic: presents a trend so uninterrupted and already-observed that doubting its continuation becomes the position requiring justification. |
-| Edison | The Commercial Demonstrator | Proof through performance: the working demonstration itself is the argument; a skeptic who watches has no rebuttal left except to explain why what they just saw shouldn't count. |
-| Leonardo | The Patron-Oriented Synthesist | Dissolves the objection before it's raised: every component the skeptic would need to believe already exists in things they already individually accept. |
-| Franklin | The Practical System Reformer | Makes its conclusion feel self-derived: walks the skeptic through first principles so plainly they arrive at the idea themselves. |
-| Lauder | The Demonstrative Merchant | Skips the argument altogether: puts the thing directly into the skeptic's hands under conditions where trying it costs less than doubting it. |
-| Jobs | The Category Showman | Resets the standard the skeptic is judging against: once they've seen what the category could be, defending what it used to be becomes the position requiring justification. |
-| Barnum | The Attention Engineer | Proof through contagion: the claim is made so vivid and immediately shareable that skepticism feels like the isolated, out-of-step position. |
-| Chanel | The Aspirational Reframer | Inverts who's on the defensive: reframes the status quo itself as the dated, self-limiting choice. |
-| Rockefeller | The Value-Chain Consolidator | Proof through comparison: lays the coordinated whole next to every fragmented alternative and dares the skeptic to name one disorganized version that matched it. |
-| Ford | The Production Transformer | Proof the skeptic can verify themselves: mechanics shown plainly enough that the audience can check the new limits with their own arithmetic. |
-| Morgan | The Capital Coordinator | Proof through inevitability: shows every party who would need to agree already has independent reason to — the structure is already locking into place with or without them. |
-| Disney | The Commercial World Builder | Proof through immersion: places the skeptic inside a fully realized piece of it, so doubt requires consciously stepping back out of an experience they were already having. |
-
-**Known coverage gap (rev. 9):** every win_condition above is a rhetorical *proof* strategy; none argues from pure product desirability/joy/collectibility. A playful or toy-like pitch has no archetype whose native argument is "this is simply delightful" — see `PROJECT_MANIFEST.md` open items.
-
-### Design archetype catalog (separate system, previously undocumented)
-
-`prompts.DESIGN_ARCHETYPES` — a distinct, 6-entry pool of named industrial-design personas (Rams, Dyson, Eames, Mead, Fukasawa, Starck) used only by the optional prototype-design branch (§01, stage 04a), with its own schema (`design_language`, `material_tendency`, `geometric_tendency`, `optimizes_for`, `sacrifices`) unrelated to the founder-archetype fields above. **Known open issue:** selection reliably collapses to Rams/Dyson/Eames + one of {Mead, Starck}; Fukasawa has never been selected in testing regardless of product — see `PROJECT_MANIFEST.md`.
-
----
-
-## 05. Approach generation contract
-
-Every archetype produces the same output shape. This is what `approach_drafter_worker` validates before writing `approach_candidates_json`:
+Deck Builder receives the Canonical Anchor and selected approach. It owns only
+rhetorical organization. Its strict JSON response is:
 
 ```json
 {
-  "approaches": [
+  "rhetorical_storyboard": [
     {
-      "approach_id": "approach_1",
-      "label": "...",               // unique 2-3 word label, not a paraphrase of the archetype
-      "pitch_angle": "...",         // which claim leads, and why it wins for this audience
-      "key_differentiator": "...",  // what distinguishes this from the other three
-      "visual_direction": "...",    // artifact tradition, typography, material language, composition
-      "archetype_a": {"archetype_id": "<id from §04 catalog>", "label": "...", "role": "...", "posture": "...", "win_condition": "..."},
-      "archetype_b": {"archetype_id": "<id from §04 catalog>", "label": "...", "role": "...", "posture": "...", "win_condition": "..."}
+      "slide_number": 1,
+      "slide_role": "opening",
+      "argument_job": "...",
+      "required_points": ["..."],
+      "logical_relationships": ["..."],
+      "priority": "...",
+      "copy_capacity": {
+        "title_max_words": 8,
+        "body_point_count": 1,
+        "body_point_max_words": 14
+      }
     }
-    // x4, approach_1 - approach_4, in order, no two approaches sharing an archetype_a/archetype_b pair
   ]
 }
 ```
-(rev. 9: corrected to match `_validate_approach_manifest` — each approach carries its own archetype pair; there is no longer one shared top-level `archetype` for the whole batch. Placeholders used deliberately per the project's standing rule against concrete catalog values in JSON-shape examples — a real id here becomes the model's default answer.)
 
-All four approaches must stay strictly faithful to the real mechanism in the elevator pitch — they may differ in emphasis, evidence posture, and visual doctrine, never in the underlying facts. `_validate_approach_manifest` enforces exact count, sequential IDs, non-empty required fields, and label uniqueness *within the batch* (see §11 for the cross-batch gap).
+It writes no title, body copy, layout, typography, visual grammar, composition,
+or image prompt. Required points must be detailed enough that the Ghostwriter
+does not need to infer facts already present in source material.
+
+### 2.4 Ghostwriter
+
+The Ghostwriter receives:
+
+- FNS output as its **system prompt**;
+- a **user prompt** beginning with the instruction that the storyboards are the
+  rough draft for its presentation and it must rewrite all visible text as what
+  it would actually say;
+- the complete rhetorical storyboard;
+- the Canonical Anchor and authoritative source text.
+
+It is free to rewrite wholesale and exercise judgment. It cannot change facts,
+slide coverage, slide numbers, rhetorical jobs, or copy-capacity constraints.
+Its output is the sole visible-copy authority:
+
+```json
+{
+  "storyboard_copy": [
+    {
+      "slide_number": 1,
+      "title": "...",
+      "body_points": ["..."]
+    }
+  ]
+}
+```
+
+It receives no image references or image prompts because they do not improve
+copy and can bias the writing.
+
+### 2.5 Spirit Boarder
+
+The Spirit Boarder receives:
+
+- VGS output as its **system prompt**;
+- the rhetorical storyboard;
+- immutable Ghostwriter copy;
+- all applicable actual visual-reference images.
+
+It creates the only visual specification for each slide:
+
+```json
+{
+  "visual_storyboard": [
+    {
+      "slide_number": 1,
+      "composition_intent": "...",
+      "image_prompt": "..."
+    }
+  ],
+  "visual_reference_paths": ["..."]
+}
+```
+
+It may make wholesale visual judgments within the rhetorical job and VGS
+identity. It cannot add, quote, paraphrase, or rewrite visible prose in the image
+prompt. Actual references outrank prose about factual appearance.
+
+### 2.6 Image workers
+
+Each image worker receives exactly one completed slide package:
+
+- the Spirit Boarder's self-contained per-slide image prompt;
+- the final Ghostwriter title and body points;
+- an exhaustive exact-copy contract;
+- the applicable actual reference images.
+
+It does not receive the FNS prompt, VGS prompt, Canonical Anchor, raw source
+prose, or a competing earlier storyboard version. The Ghostwriter copy is the
+single visible-text authority. The renderer must reproduce it exactly and may
+not invent captions, labels, legends, annotations, interface microcopy, page
+numbers, or any other readable text.
+
+## 3. Persistence and frontend schema
+
+The internal strategy directory records each authority boundary:
+
+```text
+strategy/
+  anchor_writer_output.json
+  founder_narrative_output.json
+  visual_grammar_output.json
+  paid_storyboard.json
+  paid_storyboard_ghostwriter_output.json
+  paid_spirit_boarder_output.json
+  deck_proof_plan.json
+```
+
+The frontend-facing output remains intentionally stable:
+
+```json
+{
+  "slide_specs": [
+    {
+      "slide_index": 1,
+      "headline": "...",
+      "body_points": ["..."],
+      "speaker_note": "..."
+    }
+  ],
+  "deck_proof_plan": {
+    "anchor_writer_output": {},
+    "paid_storyboard": []
+  }
+}
+```
+
+`deck_proof_plan` also retains the completed rhetorical, copy, and Spirit
+Boarder authorities needed by review, verification, and regeneration. These
+internal substeps remain one `generation` DAG stage and one wizard screen; the
+frontend must not create extra human gates for them.
+
+## 4. Review and regeneration
+
+User-edited title/body text supersedes the original Ghostwriter copy for that
+slide. Verification compares the rendered proof with the slide's factual,
+rhetorical, copy, and visual authorities.
+
+When regeneration is required, the worker:
+
+1. preserves the original Spirit Boarder prompt;
+2. appends only the judge's corrective constraints;
+3. recompiles the exact-copy contract from reviewed or original final copy;
+4. restores applicable actual reference images;
+5. performs a fresh text-to-image call.
+
+Regeneration does not reopen the Anchor, raw source prose, FNS, or VGS. It does
+not ask a judge or renderer to restoryboard the slide.
+
+## 5. Truth and inference controls
+
+`pitch_aspect_modes` controls six content domains as `OMIT`, `INFER`, or
+`SOURCE`. Source facts take precedence. `OMIT` removes the domain. `SOURCE`
+allows only supplied material. `INFER` permits bounded reconstruction where the
+source is silent, subject to cross-slide consistency.
+
+`excepted_inference_elements` remains a narrower permission for supported
+elements such as proposed pricing and mockup prototype design. It cannot reopen
+an aspect marked `SOURCE` or `OMIT`, and it cannot convert a proposal into
+traction or validation. Planning values and conceptual designs must be labeled
+honestly.
+
+## 6. Validation invariants
+
+The worker rejects outputs that violate any of these boundaries:
+
+- wrong slide count, ordering, or coverage;
+- missing or duplicate slide numbers;
+- Deck Builder visible copy or visual instructions;
+- Ghostwriter copy exceeding the Deck Builder's capacity budget;
+- Ghostwriter changes to slide coverage;
+- Spirit Boarder missing a slide or inserting visible prose into image prompts;
+- missing title/body copy or image prompt at render time;
+- a renderer prompt without the exhaustive exact-copy contract.
+
+The DAG boot audit additionally rejects declared fields without producers or
+consumers. `WIZARD_INTEGRATION_SCHEMA.md` defines the public request/response
+contract and `architecture.md` describes the operational call graph.
+
+## 7. Legacy surfaces
+
+`anchor_writer_prompt`, `deck_builder_prompt`, `paid_deck_builder_prompt`,
+`preview_deck_builder_prompt`, `convert_deck_builder_prompt`, and
+`visual_grammar_prompt` remain as legacy compatibility/A-B helpers. They are not
+the active `generation_worker` authority chain. Tests that exercise those APIs
+must be labeled legacy and cannot be treated as end-to-end workflow validation.
+
+Checked-in `samples/run-logs/` artifacts predate the FNS/Ghostwriter/Spirit
+Boarder split and are retained only as historical render fixtures. They are not
+examples of the current schema.
 
 ---
 
-## 06. Visual grammar contract
-
-The single largest structural fix made to the Deck Builder this cycle. Every paid deck needs one coherent visual system across independently-generated slide images — a shared palette, typography, and diagram language. The naive approach asks the model to describe that system in prose and repeat it verbatim in every per-slide prompt; nothing enforces that repetition actually stays identical across separate model calls.
-
-**Before — prose contract:** One `"storyboard"` key. Each `image_prompt` is asked to restate a shared "visual-grammar paragraph" identically. Consistency depends on the model choosing to repeat itself faithfully, call after call.
-
-**Now — structured splice:** Two top-level keys: `visual_grammar` (chosen once) and `storyboard`. The object is rendered once by `format_visual_grammar_block` and spliced byte-identical into every slide's prompt by code — never re-typed by the model.
-
-### The eight fields
-
-| Field | Governs |
-|---|---|
-| `background` | Ground treatment — may be a gradient, texture, or imagery, not just a flat hex. |
-| `foreground` | Primary text and line color. |
-| `accent` | The single signal color and what it's reserved for. |
-| `typography` | Headline/body/label face register. |
-| `diagram_style` | How diagrams and shapes are drawn. |
-| `panel_style` | Callout/panel treatment — borders, corners, shadow. |
-| `grid_system` | Column structure and margins. |
-| `line_weight` | Stroke weights and what each weight is used for. |
-
-Values are deliberately **not** locked to hex codes — the model can describe a gradient or textured background — but every field must be filled with something precise enough to be repeatable. This loosening followed direct feedback that fixed hex values over-constrain a system that might legitimately want a background image or gradient; the fields stay mandatory, the values don't.
-
-### Validated by direct A/B test
-
-A same-pitch, same-archetype, 4-slide comparison (THGM / Firebringer, "Ground as Antenna") ran both mechanisms side by side. Neither deck broke visibly on that run — the naive condition happened to stay internally consistent (one dual-hue amber/red scheme, applied the same way across all 4 slides). But that consistency was emergent, not guaranteed: nothing in the naive prompt fixes accent count or polarity, so a looser or more ambiguous input could still reproduce the color-inversion bug that motivated this fix in the first place (see §10). The structured condition's consistency is structural — identical spliced block, every slide, by construction.
-
----
-
-## 07. Artifact modes & image generation contract
-
-| Setting | Value |
-|---|---|
-| Model | `gpt-image-2` |
-| Size | `2048x1152` (exact 16:9) |
-| Quality / format / background | medium / png / opaque |
-| Call path | Responses API `image_generation` tool (`prompts.image_generation_tool`) |
-| Rate limit | 50 calls per rolling 60-second window (rev. 9: raised again since the last account tier change; text-call limits are in the hundreds of thousands/minute and are not a bottleneck) — process-wide, shared across concurrent jobs, enforced by `_throttle_image_generation()` ahead of every image call |
-| Batch concurrency | Bounded to 4 simultaneous coroutines via `_chunked_gather` for image generation; verification-pipeline verifier/judge calls (text-only, no rate limit) are bounded to 6 concurrent slides at a time as an ordinary connection-limit safeguard, not a cost control |
-
-Text-model calls (Anchor Writer, Deck Builder, Approach Drafter, all verifiers, the judge) are hardcoded to the full `gpt-5.4` identifier in this workshop's `prompts.py`, ignoring any `-mini` variant the shared production env may configure — smaller-context mini variants carry a higher hallucination/incoherence risk across longer source material, which is exactly what this workshop tests against.
-
-### preview vs. paid
-
-**Preview** artifacts request a photographed slide from a live presentation — camera perspective, screen feel, presentation atmosphere are allowed, but no presenter notes, no presenter-view UI, no page number.
-
-**Paid** artifacts request a clean, full-bleed digital screenshot filling the frame edge-to-edge — no application chrome, browser UI, presenter-view panel, speaker-note sidebar, or navigation control of any kind, and explicitly no photographed/projected framing.
-
-> **Why paid mode has no chrome concept at all:** The first fix for a pagination bug ("1 of 20" baked into a slide image) kept asking for a "presenter-view screenshot" while separately instructing "no pagination" — a self-contradictory instruction, since presenter view inherently implies a page counter. The actual fix removed the presenter-view/chrome framing from paid mode entirely: slides are full-bleed exports with speaker notes delivered as separate text, never composited into the image.
-
----
-
-## 08. Finalization & export
-
-### Why the single-batch refiner was replaced
-
-The original mechanism (`finalization_worker`, still in the codebase for reference) sent every proof slide to one batch call (`finalize_refiner_prompt`) that returned one JSON blob covering all *N* slides at once, then ran each slide's I2I extraction independently. Two structural problems: a JSON parse failure on that one big blob zeroed out extraction prompts for the *entire* deck (observed multiple times), and any single slide's extraction outcome (including "nothing to fix, already clean") could hard-fail the whole job (observed live: a clean slide and the clean hero both failed a decode-and-strip step against nothing to strip).
-
-### The parallel verification pipeline (`verification_worker`, current)
-
-Per slide, independently:
-
-- **Spelling verifier**, **source-accuracy verifier**, **diagram-accuracy verifier** — three narrow, single-purpose calls, fanned out in parallel. Each returns `{"verifier", "issues": [{"location", "problem", "correction", "actionable": true|false}]}`.
-- The source-accuracy verifier is gated by an **ambiguity-gate**: it does not fire on mere non-verbatim wording, only on a **materiality test** — would this element, if untrue, produce a genuinely divergent claim, not just different phrasing of the same fact. Governed by an explicit **evidence-standard**: a contradicted number/name/proof-point clears the gate and is `"actionable": true`; a paraphrase, category label, or reasonable elaboration does not clear the gate at all. (Early version without this gate flagged 13–161 false-positive "issues" per slide on content that was actually correct; the gated version collapsed that to 0–6 per slide, mostly non-actionable, while still catching real defects, including one genuine factual contradiction the ungated version had never surfaced.)
-- **Judge/disposition call** — a **confidence-gate**: reads only the `actionable`-true issues (already gated upstream, not re-litigated), weighs the cost of one more image generation against the evidentiary weight of what was found. Zero actionable issues → `pass`, ship the existing proof unchanged. One or more → `regenerate`.
-- On `regenerate`, the judge writes **only** `corrective_constraints` — the fixes, not a full prompt. The caller splices those constraints onto the *original, verbatim* `image_prompt` plus `visual_grammar` (the same code-level splice discipline as §06), rather than asking the judge to reproduce composition from memory. (An earlier version asked the judge to write a complete replacement prompt; it correctly avoided the reported defects but silently reorganized the slide's layout — paraphrase is not preservation.)
-- The regeneration call is wrapped through the same `_deck_drafter_input`/`_anchor_payload(anchor_json, ...)` context the *original* per-slide generation used — carrying `deck_generation_prompt` and `user_inputs`, not just the bare slide text. Without this, a regeneration reasons about one slide's text in total isolation and can invent a different product concept from an underspecified line (observed: a console-style screenshot line, stripped of deck-wide narrative context, rendered as an unrelated GPS-navigation app instead of the AI companion console every other slide depicts — same literal prompt text, different sampled subject matter).
-
-### Refinement instructions (unchanged from rev. 3)
-
-- **Universal instruction** — `job.universal_refinement_instruction`, an optional deck-wide instruction adapted per slide, not pasted verbatim.
-- **Silent quality bar** — `"immaculate spelling, precise professional typography, and production-grade visual polish"`, appended regardless of what was requested.
-
-Page numbers are an explicit exception to "preserve legitimate content on the slide" — if a proof slide has one, it's treated as an upstream defect and removed, not preserved as intentional design.
-
-### Selective non-canon exceptions (`excepted_inference_elements` / `authorized_inferences` / `canon_overrides`)
-
-`pitch_aspect_modes` controls six content domains independently: customer/stakeholder/value; market/ecosystem/competition; commercialization/pricing/financials; proof/validation/defensibility; productization/execution/team/risk; and transaction/ask/use of proceeds. Each is `OMIT`, `INFER`, or `SOURCE`, defaulting to `INFER`. `OMIT` excludes that domain even when the source mentions it. `SOURCE` allows only user-provided material for that domain. `INFER` allows source-backed plus plausible reconstructed detail, with source precedence. The Deck Builder receives one grouped worker briefing containing only non-empty `SOURCE` and `INFER` clauses and an always-present `OMIT` clause; the latter always includes `generic fluff`, `pointless repetition`, and `typographical errors`.
-
-The same normalized mode map crosses the refinement seam. The source verifier receives the complete ordered storyboard as deck-wide comparison context. For `INFER`, source-backed values win whenever the source speaks; otherwise the earliest storyboard occurrence of a reconstructed concrete detail becomes canon and later uses must match it. For `SOURCE`, unsupported direct claims/examples/values are actionable and must be replaced from source or removed. For `OMIT`, any direct example, claim, number, named instance, diagram, or other substantive content from that aspect is actionable and must be removed. The disposition judge receives the identical policy, and conditional regeneration receives the normal worker briefing through `_deck_drafter_input`.
-
-The separate job-level field `excepted_inference_elements` (supported set: `["pricing", "mockup_prototype_design"]`) remains a narrower permission inside those modes. The `pricing` element controls only whether an explicit amount the pitch company charges for its own offer may be reconstructed; checked, it authorizes one proposed price/tier/package/licensing-fee and related unit-economics structure. Pitch Aspect modes are senior: a commercialization/financial aspect marked `SOURCE` or `OMIT` cannot be reopened by the pricing exception. `mockup_prototype_design` authorizes one proposed visual and interaction system; it does not authorize unsupported product, customer, pricing, commercial, or business-proof claims. These are **not** blanket exemptions from fact-checking: the deck builder decides each inferred value exactly once per deck (`authorized_inferences`, a structured value sibling to `visual_grammar`, spliced verbatim into every slide that touches it), and every slide referencing it must stay internally consistent with that one decided value.
-
-### Per-element inferred-content removal checkbox (`inferred_element_decisions`)
-
-A job-level `dict[str, bool]`, keyed by element name (e.g. `{"pricing": true}`), presented as a checkbox right before the refinement stage for any element also present in `excepted_inference_elements`. Three outcomes, in order of how the pipeline actually reaches them:
-
-- **Unchecked / absent (default)** — the inferred content is kept, values unchanged. The verifier still checks it against the decided `authorized_inferences` value as usual, but `_verify_and_finalize_slide` forces a standing relabel edit wherever the decided value actually appears on the slide: `"inferred <element>"` / `"not a source-verified fact"` wording softens to `"proposed <element>"` — content stays, only the disclosure wording changes.
-- **Checked, zero edits specified** — hard-blocked before any verifier/judge/image call runs. `_gate_check_inferred_element_decisions` (in `workers.py`, called at the top of `verification_worker`) finds every slide whose content actually carries the checked element's decided value and requires a real, non-blank `reviewed_slides` entry on each one; if any is missing, the job fails immediately with `"Blocked: Element '<element>' is checked for removal but slide <N> has no replacement specified..."`. Confirmed live: fires in 0.01s, zero model-call spend.
-- **Checked, with a real edit specified** — the element's decided value is withheld from that slide's verifier call, so the user's edit (`reviewed_slides` / `canon_overrides`) is the only thing that can settle the claim. Two sub-outcomes, both handled by the *existing* verifier/judge machinery (no new verdict type):
-  - The edit actually covers the element → verifier flags the mismatch against the override as an ordinary actionable correction, judge regenerates, **and** `_verify_and_finalize_slide` additionally strips the "inferred"/"proposed"/disclosure banner language entirely (not softened, removed) — the user specified this value directly, so it ships as a plain, unqualified fact. Confirmed live (job `pd_ed26cfd043e14b31`, slide 7): old tiered pricing fully replaced with the flat per-seat override, disclosure banner gone, no leftover figures.
-  - The edit doesn't actually address the element → the verifier's existing "no decided value to check against" rule fires (`actionable: false, authorized_inference: true, element: <name>`) exactly as it would for any other unverifiable claim; `_verify_and_finalize_slide` detects this specific combination and returns a `"drop"` verdict instead of calling the judge. The slide is omitted from the composited deliverables (PDF/PPTX/HTML/MD) via the existing `dropped_slides` mechanism, with the reason recorded in `verification_report.json`; the raw proof image is untouched in the archive — nothing is deleted, only the concatenated exports skip it.
-
-Live regression caught and fixed while validating this: the judge's `corrective_constraints` prompt wording ("a short, explicit list of the concrete fixes") let the model return a JSON array instead of a string, crashing the `.strip()` merge logic. Fixed both ways — prompt now says "ONE STRING (not a JSON array)", and `_verify_and_finalize_slide` normalizes whatever shape comes back immediately after the judge call, before either merge block touches it.
-
-### Acceptance manifest
-
-`verification_report.json` — per slide: which verifiers ran, every issue found (verifier, location, problem, correction, actionable), the judge's verdict and reasoning, and whether the shipped final image is the original proof or a regeneration. Traceable to a specific verifier and slide, unlike the old mechanism's one opaque batch decision.
-
-### Export builders (unchanged)
-
-Once every slide is finalized, four formats are built from the same composited slide set and zipped together: `_build_pdf` (reportlab), `_build_pptx` (python-pptx), `_build_html` (standalone, self-contained), `_build_markdown`. The zip is validated by `_validate_export_manifest` before the job is marked `complete`.
-
----
-
-## 09. Dependencies
-
-| Dependency | Version | Used for |
-|---|---|---|
-| `openai` | 2.46.0 | Responses API — all text and image generation calls |
-| `gpt-5.4` | model | Anchor Writer, Deck Builder, Template/Approach Drafter text calls |
-| `gpt-image-2` | model | All current numbered-slide image rendering; legacy paths still contain hero helpers |
-| `reportlab` | 5.0.0 | PDF export |
-| `python-pptx` | 1.0.2, installed (rev. 9: previously listed as declared-but-not-installed; confirmed installed matching `requirements.txt`'s pin) | PPTX export |
-| `pillow` | 12.3.0 | Image compositing ahead of PDF export |
-| `sqlite3` | stdlib | Job store (`db.py`) — single-file WAL-mode database |
-| `python-docx` | ad hoc | Used once outside the app to extract text from an uploaded `.docx` test fixture; not a standing runtime dependency of `workers.py` |
-
-Every model call runs through an OpenAI API key loaded read-only from `intelluric-site.env` at process start; nothing hardcodes or logs it.
-
-**Rev. 9 addition:** `model_gateway.py` defines a `ModelGateway`/`gateway` singleton (single OpenAI client + `MODEL_ROUTES` table + image-generation semaphore). A minority of call sites route through it; most still call the `prompts.py` model constants directly — both coexist today, the gateway has not fully replaced the constants.
-
----
-
-## 10. Validated findings
-
-- **Mechanism-fidelity hallucination.** Thin input causes confident mechanism hallucination regardless of whether archetype selection happens before or after template generation. Restructuring stage order alone does not fix this — mitigated (not solved) by the pitch quality gate and elaborator.
-
-- **Candidate divergence tracks input density.** How different four candidates end up looking depends on how much real content is in the input, not on which archetype mechanism generated them.
-
-- **Pagination / chrome bug — fixed.** Presenter-view framing inherently implies a page counter; the self-contradiction was structural, not a prompt-wording problem. Fixed by removing the chrome concept entirely from paid mode (§07).
-
-- **Cross-slide visual-grammar inconsistency — fixed.** Prose repetition across independent model calls is not guaranteed byte-identical. Fixed via the structured `visual_grammar` object + code-level splice (§06), confirmed by direct A/B test.
-
-- **Archetype label leak — fixed.** `_contains_casefold` originally matched "Architect" inside "architecture" as a false-positive leak. Fixed with a word-boundary regex.
-
-- **Archetype differentiation is real but uneven.** *(Finding predates the rev. 9 catalog swap — ran against the now-dead 10-entry Odysseus...Michelangelo roster; the underlying mechanism-level finding still holds against the current 12-entry roster, just not the specific archetype names below.)* Running all ten archetypes against one pitch produced genuinely distinct fingerprints where a facet has an obvious archetype-specific angle (Alexander's conquest framing, Gutenberg's "who gets empowered" angle). On facets with no obvious archetype-specific angle, multiple archetypes converge toward similar labels and framing — observed both at small scale (2 archetypes) and at full 10-archetype scale on a single pitch.
-
-- **Slide-count ceiling was never a technical limit — fixed.** Raised from 10 to 24 requested content slides. The Deck Builder receives *N+1* total slides because it owns the single title slide. Every slide is its own independent per-slide call, throttled by a shared rate limiter rather than by slide count.
-
-- **Batch refiner JSON fragility — fixed by architecture change, not a patch.** The single-batch finalization mechanism's one-big-JSON-blob failure mode (a parse error zeroing out the whole deck's extraction prompts) is structurally eliminated by the parallel verification pipeline (§08) — many small independent calls instead of one large one, each independently retriable.
-
-- **Finalization hard-failing on already-clean slides — fixed by the same architecture change.** The old mechanism's "any single slide's outcome can fail the whole deck" behavior no longer exists: a passing slide ships its proof unchanged, a regenerating slide is isolated to its own call, and nothing about one slide's outcome affects any other slide.
-
-- **Source-accuracy verification needed a materiality filter, not just source text — fixed.** An ungated verifier treated "not a verbatim quote" as equivalent to "contradicts the source," producing 13–161 false-positive issues per slide on content that was actually fine. Adding an explicit ambiguity-gate/evidence-standard (only flag genuine divergent-consequence claims) collapsed false positives to near-zero while preserving detection of real defects, including one genuine factual contradiction (a UI screenshot's displayed state contradicting the source's stated event log) the ungated version never caught.
-
-- **Full regeneration requires the same anchor context as original generation — fixed.** A regeneration call given only the corrected per-slide prompt, without the deck-wide `deck_generation_prompt`/`user_inputs` context the original generation call included, can independently sample a different product concept from the same underspecified line. Wrapping the regeneration call through the identical `_deck_drafter_input`/`_anchor_payload` context as the original fixed this.
-
----
-
-## 11. Known staleness & open items
-
-- **Stale docstrings/comments.** `paid_deck_builder_prompt`'s docstring still says "presenter-view screenshot" though the function body no longer requests one. The old `finalization_worker`'s comments still frame chrome-stripping as the primary job of the I2I extraction pass; that function is superseded by `verification_worker` (§08) but left in the codebase for A/B reference, so its stale comments remain, scoped to dead-for-current-purposes code. Cosmetic; no behavioral impact.
-
-- **Label uniqueness only enforced within a batch.** `_validate_approach_manifest` checks label uniqueness inside one 4-approach call, not across regenerations or across separate archetype runs. Duplicate labels ("Deterministic Chain," "Behavioral Truth," "Proof Cascade") have recurred across independent runs on the same pitch.
-
-- **Full regeneration doesn't guarantee pixel-level continuity.** Even with the anchor-context fix and verbatim-prompt splice, a fresh text-to-image regeneration is not an I2I edit — it can still shift exact composition details (panel arrangement, spacing) that an I2I patch would have held fixed, in exchange for speed and avoiding I2I's own fidelity loss on edits. Observed directly: a regenerated slide preserved theme, content, and visual grammar correctly but reorganized which UI panels appeared where, relative to its own proof. Accepted trade-off, not a bug, but worth knowing before assuming regenerated slides are visually identical to their proofs.
-
-- **Open business decisions, not engineering tasks.** Where the paywall sits relative to the four-approach / single-slide-preview stages, and whether a "reroll" loop is offered at all, are monetization and product decisions this workshop surfaces but does not resolve.
-
----
-
-## 12. Testing harness
-
-**Rev. 9 — removed.** `ps_test_input.schema.json`, `PS_TEST_INPUT_USAGE.md`, and the `run_ps_test_input.py` harness they described were built around a single-shot "run to `target_stage`" execution model that predates the gated DAG server. The harness script itself was already deleted before this correction pass; the schema and usage doc (which also carried the same dead 10-entry archetype enum as the old §04) were removed in the same pass as this spec correction, since their only reason to exist no longer does.
-
-The current pipeline is exercised through `ribotome.py`'s REST endpoints directly — there is no single-call "run to stage N" shortcut; each human gate requires its own endpoint call (`/select-approach`, `/select-prototype`, `/mock-payment/{kind}`, `/complete-review`). The full request/response contract for driving a job end-to-end is documented in `WIZARD_INTEGRATION_SCHEMA.md`. Ad hoc test scripts (`test_anchor_ab.py`, `test_deck_ab.py`) remain in the repo for specific A/B comparisons and call the live API directly against a running server.
-
----
-*Pitch Synthase — Prototype v2 · isolated workshop · rev. 9*
+*Pitch Synthase v2 — FNS_test branch contract · rev. 10*

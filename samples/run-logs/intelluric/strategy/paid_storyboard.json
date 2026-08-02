@@ -1,4 +1,6 @@
 {
+  "artifact_schema_version": "legacy-pre-fns",
+  "schema_authority": false,
   "visual_grammar": {
     "background": "full-bleed near-black charcoal field with a subtle blue-black gradient bloom at center, layered with faint paper-grain texture and sparse ghosted technical excerpt fragments at very low opacity near the edges only",
     "foreground": "warm ivory text and linework with high contrast against the dark field, using restrained metallic-stone highlights for key borders and separators",

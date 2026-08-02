@@ -11,6 +11,12 @@
 > never written for SAWC-path jobs) has since been fixed — `/api/jobs/{id}/select-approach`
 > writes it directly. For current architecture/endpoint reference, see `architecture.md`,
 > `pipeline.md`, and `WIZARD_INTEGRATION_SCHEMA.md`.
+>
+> **Additional correction (2026-08-02):** this handoff also predates the
+> `FNS_test` Canonical Anchor → parallel FNS/VGS → rhetorical Deck Builder →
+> Ghostwriter → Spirit Boarder chain. Its fictional-Anchor and copy-authoring
+> Deck Builder notes are historical only. Use `PITCH_SYNTHASE_V2_SPEC.md` for
+> current prompt and schema ownership.
 
 ---
 

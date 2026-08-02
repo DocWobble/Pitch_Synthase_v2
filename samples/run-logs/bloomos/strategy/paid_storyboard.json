@@ -1,4 +1,6 @@
 {
+  "artifact_schema_version": "legacy-pre-fns",
+  "schema_authority": false,
   "visual_grammar": {
     "background": "full-bleed matte near-black charcoal with a subtle deep-evergreen vertical gradient bloom from upper left to lower right, faint fine-grain paper texture, and occasional soft radial amber glow behind key diagrams only",
     "foreground": "warm bone text and cool pale-sage secondary text, with high-contrast white used only for key numeric callouts and device labels",

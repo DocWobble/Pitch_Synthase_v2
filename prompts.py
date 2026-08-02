@@ -1693,7 +1693,7 @@ def candidate_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Stage 2 — Anchor Writer
+# LEGACY COMPATIBILITY — fictional Anchor Writer (not used by generation_worker)
 # ---------------------------------------------------------------------------
 
 def anchor_writer_prompt(
@@ -1707,9 +1707,10 @@ def anchor_writer_prompt(
     design_philosophy: str | None = None,
 ) -> str:
     """
-    Prompt the Anchor Writer.
+    Prompt the legacy fictional Anchor Writer.
 
-    The Anchor Writer is the only fiction layer. It must not create slide copy,
+    This compatibility/A-B API is not the active Canonical Anchor. It must not
+    create slide copy,
     storyboard content, a deck outline, per-slide prompts, or a transcript. Its
     output schema is exactly {"user_inputs", "deck_generation_prompt"}.
     """
@@ -2173,7 +2174,7 @@ def deck_proof_plan_repair_prompt(plan_text: str, errors: Sequence[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Stage 3 — Deck Builder / image artifact prompt schema
+# LEGACY COMPATIBILITY — copy/image-authoring Deck Builder prompt schema
 # ---------------------------------------------------------------------------
 
 
@@ -2624,7 +2625,7 @@ def preview_deck_builder_prompt(
     slide_numbers: Sequence[int] = PREVIEW_EXPOSED_SLIDES,
 ) -> str:
     """
-    Compatibility wrapper for the preview storyboard call.
+    Legacy compatibility wrapper for the preview storyboard call.
 
     PREVIEW always exposes exactly 3 specific slides as photographed live
     presentation slide artifacts.
@@ -2647,7 +2648,7 @@ def paid_deck_builder_prompt(
     excepted_inference_elements: Sequence[str] | None = None,
 ) -> str:
     """
-    Compatibility wrapper for the paid storyboard call.
+    Legacy compatibility wrapper for the paid storyboard call.
 
     PAID always generates one clean full-bleed slide screenshot prompt per
     slide. The deck-generation logic is otherwise identical to PREVIEW.
@@ -2671,7 +2672,7 @@ def convert_deck_builder_prompt(
     kept_preview_count: int,
 ) -> str:
     """
-    Compatibility wrapper for the PREVIEW->PAID convert storyboard call.
+    Legacy compatibility wrapper for the PREVIEW->PAID convert storyboard call.
 
     CONVERT uses the same PAID presenter-view storyboard surface, but when kept
     preview slides are supplied it must explicitly map them into the full deck.
@@ -4554,7 +4555,7 @@ _PRODUCTION_TOOL_REFERENCE = """\
 
 
 def visual_grammar_prompt(deck_generation_prompt: str) -> str:
-    """Prompt for the Visual Grammar Synthesizer.
+    """Legacy VGS addendum prompt; not the Spirit Boarder system-prompt path.
 
     Takes the anchor writer's deck_generation_prompt and produces a production-level
     account of how the creative director built the deck — tool by tool, asset by asset.

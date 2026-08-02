@@ -1,4 +1,14 @@
-PITCH SYNTHASE V2 — CURRENT PROMPT AND WORKER ARCHITECTURE
+ARCHIVED HISTORICAL REPORT — NOT A CURRENT WORKFLOW OR SCHEMA CONTRACT
+======================================================================
+
+This report records the prompt chain before the FNS/Ghostwriter/Spirit Boarder
+authority split on branch FNS_test. In particular, its claims that Deck Builder
+receives visual grammar, owns visible copy/image prompts, or feeds renderers
+directly are obsolete. Use PITCH_SYNTHASE_V2_SPEC.md for the current authority
+chain, WIZARD_INTEGRATION_SCHEMA.md for the frontend contract, and ribotome.py
+plus workers.py for executable stage/field authority.
+
+PITCH SYNTHASE V2 — HISTORICAL PROMPT AND WORKER ARCHITECTURE
 ======================================================================
 
 Document ID   : PS-V2-PROMPTCHAIN

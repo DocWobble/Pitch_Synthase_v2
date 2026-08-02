@@ -147,10 +147,10 @@ The user picks one (`human_prototype_selection`) before preview generation.
 ### Previews (`previews` stage, one preview slide per approach, parallel)
 
 Renders one representative slide per approach so the human can compare
-strategic framings visually, not just as text. The winning approach's
-preview slide is later reused as a visual precedent when the full deck's
-storyboard call runs (see below) — the design/approach decisions the human
-already made are carried forward, not re-litigated by later stages.
+strategic framings visually, not just as text. The winning approach's preview
+slide is later supplied as a visual precedent to the Spirit Boarder and image
+renderer, never to the rhetorical Deck Builder. The human's visual selection is
+carried forward without contaminating rhetorical organization or slide copy.
 
 ### Full deck generation (`generation_worker`, fires once `human_payment` completes)
 

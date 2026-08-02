@@ -25,14 +25,16 @@ flowchart TD
     E1 --> E2{{human_payment\nhuman gate\nPOST /mock-payment/full — lab bypass only,\nsee WIZARD_INTEGRATION_SCHEMA.md for the\nreal Stripe integration point}}
 
     E2 --> F1[generation\nworker]
-    F1 --> F1a["1 · Anchor writer — ANCHOR_MODEL\ninvents the context this pitch already won in"]
-    F1a --> F1b["2 · Visual Grammar Synthesizer\nMANDATORY — failure fails the whole stage"]
-    F1b --> F1c["3 · Deck builder storyboard\nN+2 slides · title/purpose/body_points/image_prompt\nextracts the locked visual grammar, does not invent one"]
-    F1c --> F1d["4 · Slide image gen × (N+2)\nchunked · rate-limited (50 img/min)"]
-    F1d --> G1{{human_review\nhuman gate\nPOST /complete-review}}
+    F1 --> F1a["1 · Canonical Anchor\nfactual rhetorical authority"]
+    F1a --> F1b["2 · FNS + VGS in parallel\nGhostwriter + Spirit Boarder system prompts"]
+    F1b --> F1c["3 · Rhetorical Deck Builder\nN+2 argument jobs · no copy or visuals"]
+    F1c --> F1d["4 · Ghostwriter\nsole final title/body copy"]
+    F1d --> F1e["5 · Spirit Boarder\nsole composition/image specifications\nreceives actual visual references"]
+    F1e --> F1f["6 · Slide image gen × (N+2)\nexact-copy contract · chunked · rate-limited"]
+    F1f --> G1{{human_review\nhuman gate\nPOST /complete-review}}
 
     G1 --> H1[verification\nworker]
-    H1 --> H2["Per flagged slide:\njudge → corrective_constraints\nsplice onto original image_prompt\n+ visual_grammar + anchor payload"]
+    H1 --> H2["Per flagged slide:\njudge → corrective_constraints\nsplice onto Spirit Boarder prompt\n+ reviewed exact-copy contract + references"]
     H2 --> H3[Composite: text overlay + speaker notes]
     H3 --> H4([Export: deck.pdf · deck.pptx\npreview.html · slides.md\nverification_report.json\npitch_deck_package.zip])
 ```

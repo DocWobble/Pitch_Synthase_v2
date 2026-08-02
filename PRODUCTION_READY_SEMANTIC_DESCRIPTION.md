@@ -1,5 +1,13 @@
 # Pitch Synthase v2 — Production-Ready Semantic Description
 
+> **Archived readiness analysis — not current workflow or schema authority.**
+> This 2026-07-30 assessment predates the `FNS_test` authority split and retains
+> its original conclusions as historical evidence. Its Anchor → VGS →
+> copy/image-authoring Deck Builder description is obsolete. Current behavior is
+> defined by `PITCH_SYNTHASE_V2_SPEC.md`, `architecture.md`,
+> `WIZARD_INTEGRATION_SCHEMA.md`, and the executable declarations in
+> `ribotome.py`/`workers.py`.
+
 | Field | Value |
 |---|---|
 | Source | Five-Manual Token Stack Analysis |

@@ -1,4 +1,6 @@
 {
+  "artifact_schema_version": "legacy-pre-fns",
+  "schema_authority": false,
   "visual_grammar": {
     "background": "full-bleed hypercolor backdrop built from a deep electric-blue to violet radial gradient with blown-out white flash bloom zones, subtle disposable-camera film grain, faint halftone speckle, and occasional neon-yellow sticker shapes tucked into corners; never clean corporate white, always high-energy and flash-burned",
     "foreground": "bright white primary text and keyline treatment with occasional reversed-out black text inside loud sticker bursts; all content must read like toy packaging and captured evidence, not consulting slides",

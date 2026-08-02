@@ -1,4 +1,6 @@
 """
+LEGACY A/B HARNESS — not an end-to-end test of the active FNS_test workflow.
+
 Deck A/B test: slides from OLD vs NEW anchor writer.
 
 Uses pre-computed anchor DGPs from /tmp/anchor_ab/luxury_{old,new}.json.
@@ -7,6 +9,11 @@ approach candidates, and vibe_semantics are identical — the only variable is
 the anchor output passed to VGS + deck builder + image gen.
 
 Output: /tmp/deck_ab/old/slide_NN.png, /tmp/deck_ab/new/slide_NN.png
+
+This intentionally exercises the retired fictional-Anchor -> VGS -> copy/image-
+authoring Deck Builder path. Current workflow validation must use
+generation_worker's Canonical Anchor -> parallel FNS/VGS -> rhetorical Deck
+Builder -> Ghostwriter -> Spirit Boarder -> exact-copy renderer chain.
 """
 
 import asyncio

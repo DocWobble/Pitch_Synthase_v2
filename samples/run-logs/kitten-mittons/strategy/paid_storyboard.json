@@ -1,4 +1,6 @@
 {
+  "artifact_schema_version": "legacy-pre-fns",
+  "schema_authority": false,
   "visual_grammar": {
     "background": "warm off-white paper base with a subtle low-budget TV-studio grain overlay, plus occasional split-screen fields of muted olive-green and dark charcoal blocks used to stage problem-versus-solution contrast; no glossy gradients",
     "foreground": "near-black text and linework with occasional reversed white text on dark blocks for headline impact",

@@ -1,112 +1,99 @@
-# Pitch Synthase Workshop — Project Manifest
+# Pitch Synthase FNS_test — Project Manifest
 
 | Field | Value |
 |---|---|
-| Document ID | PS-V2-MANIFEST |
-| Version | 1.0 (living — see note) |
-| Status | Living — Updated Continuously, Not a Point-in-Time Release |
-| Owner | Workshop (isolated) |
-| Last Updated | 2026-07-29 |
+| Document ID | PS-V2-FNS-MANIFEST |
+| Status | Living branch status |
+| Branch | `FNS_test` |
+| Last updated | 2026-08-02 |
 
-The single place to check "what's actually true right now" about this workshop. Other docs describe the system as designed (`PITCH_SYNTHASE_V2_SPEC.md`, PS-V2-SPEC) or exactly how it mechanically works (`PROMPT_CHAIN_TECHNICAL_REPORT.txt`, PS-V2-PROMPTCHAIN). This file tracks *status*: what's fixed, what's validated, what's still open, and what's been deliberately deferred. Update this whenever something in that status changes — don't let findings live only in chat history. Unlike the spec (versioned releases with a change history), this document does not carry a change log — it is pruned and rewritten in place, so "Last Updated" is the only temporal marker that matters.
+This is the current status surface for `FNS_test`. The engineering contract is
+`PITCH_SYNTHASE_V2_SPEC.md`; the wizard contract is
+`WIZARD_INTEGRATION_SCHEMA.md`; executable authority lives in `ribotome.py` and
+`workers.py`. Archived reports and `samples/run-logs` are not current schemas.
 
-**Workshop path:** `/home/director/pitch_synthase_archetype_workshop`
-**Workshop repo:** `github.com/DocWobble/Pitch_Synthase_v2` (private, `main`) — local-only, no integration PR against production yet, see below.
-**Real backend (read-only reference, never edited):** `/home/director/intelluric/tools/instant/pitch-deck/backend/`
+## Status
 
----
-
-## Status at a glance
-
-| Item | Status | Notes |
+| Item | Status | Current mechanism |
 |---|---|---|
-| Full-pitch-first pipeline (12 registered DAG stages, via `ribotome.py`) | ✅ Working | Server rewritten around `register_stage`/`_advance` dispatcher + `stage_states`; `workshop_lab.py` is now just an import shim. See `architecture.md`/`pipeline.md` |
-| Startup schema audit (`_audit_pipeline`) | ✅ Fixed & hardened (2026-07-28/29) | Now checks both provenance AND destination for every declared field, no `required`-only escape hatch; server refuses to boot on any unconnected field |
-| 12-archetype `FOUNDER_ARCHETYPES` catalog (Buffett...Disney) | ✅ Working | Superseded the 10-entry Odysseus...Michelangelo set (`arch_odysseus` etc. are now dead/commented-out code in `prompts.py`). `win_condition` per archetype rewritten this cycle from business-mechanism language to a domain-agnostic rhetorical proof strategy (how that persona convinces a skeptic) |
-| `DESIGN_ARCHETYPES` catalog (Rams/Dyson/Eames/Mead/Fukasawa/Starck) | 🔶 Working, selection collapse open | See item 4 in Open section below |
-| `deck_proof_plan` / `body_points` field wiring | ✅ Fixed (2026-07-28) | Both were previously undeclared/hardcoded-empty; now properly produced by `generation` and consumed by `verification` |
-| Visual Grammar Synthesizer mandatory | ✅ Fixed (2026-07-28) | Was silently swallowed in a try/except; a failure now fails the whole `generation` stage |
-| `association_words` entry-point wiring | ✅ Fixed (2026-07-28) | `POST /api/jobs` previously hardcoded `association_words=[]`, discarding client input before the pipeline ever ran |
-| Visual grammar structured splice | ✅ Fixed & validated | A/B tested directly against old prose-contract mechanism |
-| Pagination/chrome removal (paid mode) | ✅ Fixed & validated | Root-caused, chrome concept removed entirely |
-| Slide-count cap (was 10, now 24) | ✅ Fixed & validated | 16-slide real deck ran clean, ~8 min wall-clock |
-| Single title-slide ownership | ✅ Fixed & live-validated | Requested N content slides become one N+1 Deck Builder storyboard; Vitriflux 13→14 run produced one cover, no separate hero, and no visible pagination |
-| Lossless source-material handoff | ✅ Fixed & live-validated | Deck Builder now receives the raw founder narrative, specification, and reference image independently of Anchor Writer output; fresh Vitriflux job `pd_bde4a05ca82b4deb` restored the source-backed product-envelope values |
-| Partial image generation | ✅ Explicitly disabled | Responses image-tool declarations set `partial_images: 0`; Pitch Synthase consumes only completed proof images |
-| Model config (mini → full gpt-5.4) | ✅ Fixed | Hardcoded in workshop `prompts.py`, ignores shared env |
-| Parallel verification pipeline (`verification_worker`) | ✅ Fixed & validated | Replaces `finalization_worker` (kept in codebase for A/B reference only, not current). Fan-out 3 narrow verifiers + judge, per slide. See spec §08 |
-| Six tri-state Pitch Aspect controls | ✅ Implemented end-to-end | Customer/value; market/competition; commercialization/financials; proof/defensibility; execution/team/risk; and transaction/ask each support `OMIT` / `INFER` / `SOURCE`, default `INFER`; modes reach generation, verification, judging, and regeneration |
-| Selective non-canon inference exceptions (`excepted_inference_elements` / `authorized_inferences` / `canon_overrides`) | ✅ Fixed | Pricing remains a narrow explicit-price permission inside the senior Pitch Aspect mode; mockup/prototype design remains separately scoped |
-| Inferred-element removal checkbox (`inferred_element_decisions`) | ✅ Fixed & validated | All 4 paths confirmed live: unchecked→relabel "proposed", checked+no-edit→hard block (0.01s, zero spend), checked+valid-edit→regenerate + strip disclosure entirely, checked+invalid-edit→drop from composited exports only |
-| Judge `corrective_constraints` string/array bug | ✅ Fixed | Prompt wording let the model emit a JSON array instead of a string, crashing the merge; fixed prompt + defensive normalization |
-| Source-material adherence check (refiner) | 🔶 Superseded, ceiling finding still holds | This applied to the old `finalization_worker`'s single-batch refiner (now reference-only). The underlying ceiling finding (checklist has no leverage over generic invented text with no source ground truth) is architecture-independent and still true of the new verifiers |
-| Batch refiner JSON fragility | ✅ Resolved (architecturally) | Not fixed via Structured Outputs on the same mechanism — resolved by replacing the single big-blob call with `verification_worker`'s small independent per-verifier/per-slide calls, which structurally can't zero out the whole deck on one parse failure |
-| Cross-batch approach-label uniqueness | ❌ Open | Only enforced within one 4-approach call. Unchanged by the verification-pipeline work |
-| Per-slide A/B seed variants (n=2) | ⏸ Deferred | Explicitly deprioritized as a "luxury," not a correctness fix |
-| Workshop ↔ production integration | ⚠️ Converged independently, no PR | No PR ever proposed a workshop mechanism into the real backend, but production shipped its own `V2_ARCHETYPES` (10-entry, Odysseus...Michelangelo, identical ids/labels) and `verification_worker` directly to `master` on 2026-07-15 (`64f8090`, `118d224`) — this table previously said these "don't exist" in production; that was wrong as of the date below. The workshop's copy of `prompts.py`/`workers.py` still predates and has drifted from what actually shipped |
+| DAG orchestration | Working | `ribotome.py` stage graph and boot-time producer/consumer audit |
+| Approach workshop | Working | Four rhetorical approaches and one preview per approach |
+| Optional prototype references | Working | Conditional design-reference branch |
+| Canonical Anchor | Implemented | Factual/rhetorical authority; no fictional founders, traction, or room events |
+| Founder voice | Implemented | FNS creates the Ghostwriter system prompt defining a speaker |
+| Visual identity | Implemented | VGS creates the Spirit Boarder system prompt |
+| Rhetorical organization | Implemented | Deck Builder writes argument jobs and capacity constraints only |
+| Human-sounding copy | Implemented | Ghostwriter authors the sole final title/body copy |
+| Visual specification | Implemented | Spirit Boarder sees final copy and actual references, then authors image prompts |
+| Exact-copy rendering | Implemented and manually proven on one slide | Renderers receive one final copy authority and may not invent prose |
+| Review/regeneration integrity | Implemented | Preserves Spirit Boarder prompt, reviewed copy contract, and references |
+| Frontend contract | Updated | Extra calls remain internal to one Generation screen |
+| Fresh complete rendered/exported deck on this revision | Not yet claimed | A one-slide render is not a full delivery proof |
+| Live payment/auth/deployment | Outside this workshop proof | Separate production integration work |
+
+## Current authority chain
+
+```text
+source material + selected approach
+  -> Canonical Anchor
+  -> FNS and VGS in parallel
+  -> rhetorical Deck Builder
+  -> Ghostwriter final visible copy
+  -> Spirit Boarder visual specifications + actual references
+  -> per-slide image workers with exhaustive exact-copy contracts
+  -> review / verification / constrained regeneration
+  -> exports
+```
+
+No renderer receives two versions of slide copy. Deck Builder never receives FNS
+or VGS output. Ghostwriter receives no visual references. Spirit Boarder cannot
+rewrite copy. Image workers do not reopen Anchor/source prose.
+
+## Validation completed
+
+- Worker handoffs retain the Anchor, raw authoritative sources, selected
+  approach, final copy, and applicable images at the stages that require them.
+- FNS output is the Ghostwriter **system prompt**; rewrite instructions and
+  source/storyboard material are the **user prompt**.
+- VGS output is the Spirit Boarder **system prompt**.
+- Ghostwriter may rewrite wholesale while slide coverage, facts, and capacity
+  budgets remain enforced.
+- Spirit Boarder receives actual visual-reference images but does not embed
+  visible copy in its image prompts.
+- Renderer prompts contain the exhaustive final-copy contract and prohibit all
+  additional readable prose.
+- One RunReady slide rendered through the repaired final package with exact
+  visible text and usable negative space.
+- Prompt/worker/runtime modules compile, the DAG audit passes, and the wizard
+  retains the frontend-facing `slide_specs` and `deck_proof_plan` fields.
+
+## Remaining proof boundary
+
+Do not call this production-deployed merely because its contracts and one render
+work. The remaining meaningful validation is one fresh complete paid deck
+through review and export on the exact revision, followed by the separate
+frontend/payment/deployment integration. That proof should verify:
+
+- every slide uses Ghostwriter copy verbatim;
+- no image contains invented labels or prose;
+- slide density stays within declared copy budgets;
+- Spirit Boarder maintains visual identity and reference fidelity;
+- review edits survive regeneration without reopening earlier authorities;
+- PDF, PPTX, HTML, Markdown, and manifest agree on slide coverage.
+
+## Explicit legacy surfaces
+
+The old fictional `anchor_writer_prompt`, combined `deck_builder_prompt`, paid /
+preview / convert wrappers, and `visual_grammar_prompt` remain compatibility and
+A/B APIs only. `test_deck_ab.py` and relevant cases in
+`test_fns_summary_register.py` are labeled legacy and cannot validate the active
+workflow.
+
+`PROMPT_CHAIN_TECHNICAL_REPORT.txt`,
+`VERIFICATION_PIPELINE_IMPLEMENTATION_PROMPT.md`, and
+`PRODUCTION_READY_SEMANTIC_DESCRIPTION.md` are archived historical records.
+Their old schemas are preserved behind prominent non-authority notices.
 
 ---
 
-## Fixed & validated
-
-- **Visual grammar structured splice.** `visual_grammar` object chosen once by the Deck Builder, spliced byte-identical into every slide's prompt by code (`format_visual_grammar_block`), instead of asking the model to repeat a prose paragraph across independent calls. Validated via direct A/B test (`compare_style_contract.py`): the old mechanism's consistency was emergent/lucky, the new one's is structural.
-- **Pagination/chrome removal.** Root cause was structural (presenter-view framing inherently implies a page counter), not a wording problem. Fixed by removing the presenter-view/chrome concept from paid mode entirely — full-bleed screenshots, speaker notes delivered as separate text.
-- **Archetype label leak.** `_contains_casefold` word-boundary regex fix (was matching "Architect" inside "architecture").
-- **Slide-count and title ownership.** `MAX_SELF_SERVE_SLIDE_COUNT` is 24 requested content slides. The worker hands the Deck Builder *N+1* total slides, requires slide 1 to be the sole title/hero, and renders every slide through one numbered path. This removes the former separate `hero_proof.png` call that could duplicate a title-like slide 1. Live validation on Vitriflux job `pd_f3a00c24868f4289`: 13 requested content slides produced a 14-entry storyboard and exactly 14 numbered proof files, slide 1 was the sole title, `hero_proof.png` was absent, no `hero_slide` model call occurred, and all 14 canvases were free of slide-number/pagination chrome.
-- **Lossless source-material handoff.** `_deck_drafter_input` now appends an authoritative source packet containing the user's raw founder narrative and supporting specification, plus the reference image as a direct image input. The Anchor Writer owns framing rather than source transport, so its omissions cannot erase source-backed facts before schema generation. Fresh Vitriflux job `pd_bde4a05ca82b4deb` generated a new 14-entry schema from the retained “Thermal Switch” approach and restored the nominal envelope values: approximately 500 × 350 mm, less than 12 mm, 256–1,024 cells, 2–4 coolant interfaces, below 100 ms, and below 2%. The render completed at `awaiting_review` with 14 proofs, one title slide, no separate hero, and no visible pagination.
-- **Completed-image-only calls.** `image_generation_tool` explicitly sets `partial_images: 0`. The existing calls were already non-streaming and therefore defaulted to zero partials; the explicit field prevents SDK/default drift in future runs.
-- **Model configuration.** `ANCHOR_MODEL`/`TEMPLATE_DRAFTER_MODEL`/`DECK_DRAFTER_MODEL` hardcoded to `"gpt-5.4"` in workshop `prompts.py`, ignoring the shared `intelluric-site.env`'s `-mini` overrides. Reasoning: smaller context on the "-mini" variants raises hallucination/incoherence risk across longer source material, which is exactly what this workshop is now testing against (16-slide real outlines, multi-page supporting docs). Shared env file itself was not touched.
-- **Parallel verification pipeline.** `verification_worker` replaces `finalization_worker` end-to-end: per-slide fan-out (spelling / source-accuracy / diagram-accuracy verifiers) → judge/disposition → conditional regeneration, spliced onto the verbatim original prompt rather than judge-rewritten. Iteratively debugged through real live rounds: false-positive over-triggering (fixed via ambiguity-gate/evidence-standard), layout drift on regeneration (fixed via corrective-constraints-only splice), product-concept drift on regeneration (fixed by wrapping regen calls through the same anchor-context wrapping as original generation). See spec §08 for full detail.
-- **Six tri-state Pitch Aspect controls.** `pitch_aspect_modes` gives each content domain an independent `OMIT`, `INFER`, or `SOURCE` state, defaulting to `INFER`. One shared worker-briefing seam groups the category labels by state, omits empty SOURCE/INFER clauses, and always emits an OMIT clause ending in `generic fluff`, `pointless repetition`, and `typographical errors`. The refinement source verifier receives the same modes plus the complete ordered storyboard: `INFER` permits unsourced details but enforces source precedence and deck-wide first-use consistency; `SOURCE` requires source support or removal; `OMIT` treats any direct substantive presence as actionable. The judge and regeneration path receive the same policy. Pitch Aspect modes are senior to narrower exceptions.
-- **Selective non-canon inference exceptions.** `excepted_inference_elements`/`authorized_inferences`/`canon_overrides` — pricing controls only whether the deck may invent an explicit amount charged for the pitch company's own offer and related unit economics, and cannot reopen a commercialization/financial aspect marked `SOURCE` or `OMIT`. When pricing inference is authorized within an `INFER` aspect, the deck builder decides one proposed value exactly once and every slide referencing it is checked for consistency.
-- **Mockup/prototype-design inference exception.** `mockup_prototype_design` is a second authorized inference element alongside `pricing`. It lets the deck builder establish one proposed visual and interaction system when source material supplies architecture but no product mockup, then uses that decision as deck-wide canon. Validated on SAWC Outcome Factory job `pd_9af763f74a2342a1`: the builder chose one RTS-inspired AI-operations console and applied it with a single dark-titanium/cyan visual grammar across a 10-slide deck plus hero.
-- **Inferred-element removal checkbox.** `inferred_element_decisions` — per-element checkbox gating whether inferred content is kept (default, relabeled "proposed") or must be replaced. Hard-blocks before any spend if checked with no edit; drops the slide from composited exports (not the archive) if an edit is supplied but doesn't resolve the claim; strips the "inferred"/disclosure wording entirely and ships the user's value as plain fact if the edit does resolve it. All four paths validated live against real model calls (job `pd_ed26cfd043e14b31`, Newton archetype).
-- **Judge `corrective_constraints` type bug.** The disposition prompt's wording ("a short, explicit list of the concrete fixes") let the model return a JSON array instead of a string, crashing the `.strip()` merge the moment a second consumer touched it. Fixed the prompt wording ("ONE STRING, not a JSON array") and added defensive normalization in `_verify_and_finalize_slide` immediately after the judge call.
-
-## Open (correctness/reliability, blocking "production ready")
-
-1. **Cross-batch approach-label uniqueness.** `_validate_approach_manifest` only checks uniqueness within one 4-approach call. Duplicate labels ("Deterministic Chain," "Behavioral Truth," "Proof Cascade") have recurred across independent runs/archetypes on the same pitch. No code enforcement across batches. Unchanged by the verification-pipeline work.
-2. **Source-material adherence has a real ceiling, not just a tuning problem.** Originally found against `finalization_worker`'s single-batch refiner (now reference-only), but the finding is architecture-independent: a checklist can only fix drift on *source-verifiable* terms (real terms from the mockup/outline) — it has no leverage over the base per-call transcription-fidelity of arbitrary generated slide text with no ground truth anywhere in `elevator_pitch`/`doc_text` to check it against (e.g. invented UI filler dialogue). This is a ceiling on the technique, still true of the new verifiers, not a defect to iterate away.
-3. **Full regeneration doesn't guarantee pixel-level continuity.** A fresh text-to-image regeneration (not an I2I edit) can shift exact composition details relative to its own proof even with the anchor-context and verbatim-prompt-splice fixes. Accepted trade-off for speed and avoiding I2I's own fidelity loss, not a bug — see spec §11.
-4. **Design-archetype selection collapse.** `design_drafter_text_worker`'s 4-of-6 pick from `DESIGN_ARCHETYPES` reliably lands on Rams/Dyson/Eames + one of {Mead, Starck}; Fukasawa has never been selected across repeated runs regardless of product. Stripping a concrete catalog value out of the prompt's own JSON-shape example (it was anchoring on `"design_rams"`) measurably helped the 4th slot vary but did not fix the Rams/Dyson/Eames lock-in — this needs a structural fix (derive optimization axes from the product spec itself, not a fixed named-designer menu), not further prompt hygiene.
-5. **No "intrinsic delight" founder archetype.** All 12 `FOUNDER_ARCHETYPES` win_conditions are rhetorical *proof* strategies; none argues via pure product desirability/joy/collectibility. Toy/playful pitches (e.g. a gacha-mechanic product) never get a genuinely fun-reading approach as a result — a coverage gap, not a selection bug, and expanding the roster would directly help here (unlike item 4).
-
-## Workshop ↔ production integration — converged independently, no PR ever filed
-
-**Correction (2026-07-25):** the "not started" framing below was wrong about production's actual state. No PR from *this workshop's* git history has ever landed in the real backend — that part holds — but production independently shipped a design that matches this workshop's on the two mechanisms that mattered most, and had already done so *before* this manifest's "Last Updated: 2026-07-24" stamp:
-
-- `tools/instant/pitch-deck/backend/prompts.py` on `master` already has a `V2_ARCHETYPES` catalog with the exact same 10 entries, ids, and order as this workshop's replacement catalog (`arch_odysseus`...`arch_michelangelo`). Shipped in `118d224` ("Promote Pitch Synthase v2 approach workflow", 2026-07-15).
-- `tools/instant/pitch-deck/backend/workers.py` on `master` already has `verification_worker`, dispatched by `main.py`'s `/finalize` route via `workers.verification_worker if _v2_enabled() else workers.finalization_worker` (flag: `PITCH_SYNTHASE_V2_ENABLED`, default on). Shipped in `64f8090` ("Ship Pitch Synthase v2 and complete competence surface (#20)", 2026-07-15).
-- The `fix/pitch-synthase-hero-slide-and-team-fabrication-2026-07-08` branch referenced below as having "uncommitted local changes" is now fully merged into `master` — nothing on it is still uncommitted.
-- The legacy `FOUNDER_ARCHETYPES` catalog has 6 entries (Liberator, Architect, Operator, Steward, Seer, Catalyst) in current `master`, not 8, and already carries the "motivated by X" per-archetype language. Production also carries a second, separate 10-entry catalog, `EXPERIMENT_FOUNDER_ARCHETYPES`, with labels identical to `V2_ARCHETYPES` — the relationship between these two 10-entry catalogs (why both exist) hasn't been chased down and is worth checking before assuming either is authoritative.
-
-Net: don't trust this file's status table for "does X exist in production" without re-checking `git log` against current `master` — it has gone stale on exactly that question once already. The original narrative below is kept for its still-accurate details (PR #16 content, the drift explanation) but its "not started" / "doesn't exist yet" conclusions no longer hold.
-
-**Second correction (2026-07-29):** the archetype-catalog alignment claimed above ("identical ids/labels" between this workshop and production's `V2_ARCHETYPES`) is now also stale from the other direction — this workshop's own `FOUNDER_ARCHETYPES` has since moved on to a different 12-entry roster (Buffett...Disney; see status table above), so the two are no longer the same catalog even if production hasn't changed at all. This section needs a fresh side-by-side diff against current production `master` before anyone relies on it — not attempted as part of this doc-audit pass, since that requires review of a separate repository's current (possibly in-progress) state, out of scope for a pass scoped to this workshop repo.
-
-- Production merged PR #16 ("Add free hero/title slide; stop laundering anchor-writer fiction into team slides") on 2026-07-15 — a free, uncounted hero slide generated concurrently with the numbered-slide fan-out, plus a sourcing-authority rule stopping the Anchor Writer's invented "supergroup" narrative from being cited as literal team-slide fact. This is conceptually adjacent to (but independent of and differently solved from) this workshop's own anchor-writer/deck-builder framing addition (graphic-designer-not-AI reminder).
-
-## Deferred (deliberately, not forgotten)
-
-- **Per-slide A/B seed variants.** Run each full-deck slide's image call as `n=2` with different seeds so the user picks between two candidates per slide. Mechanically trivial (`image_request_params` already takes `n`); deferred because it roughly doubles image spend for a quality-of-life win, not a correctness fix. Revisit once the four open items above are closed.
-
-## Design principles established this cycle (apply elsewhere, not yet done everywhere)
-
-- **Structured fields beat prose repetition** when consistency across independent model calls matters. Applied to `visual_grammar`. **Not yet applied to:** `visual_direction` in `approach_drafter_prompt`/`single_slide_drafter_prompt`, which is still a free-prose ask.
-- **Concrete, itemized checklists beat abstract instructions** when exhaustive scrutiny matters ("be more concrete" is itself ambiguous — the fix has to be the concrete instruction, not a request for more concreteness). Applied to the finalize-refiner source-check (v2). Same principle validated externally by the user-provided Protea persona-generation prompt, which forces named-dimension enumeration (literal, chromatic, thematic, tonal, emotional, cultural, historical, archetypal...) before synthesis rather than a generic "analyze the image."
-- **Per-slide independence is real and should be exploited, not fought.** Every image_generation call is a one-off from the model's point of view with no shared state — this justified both the slide-count cap removal (§ above) and the failure-isolation fix (one slide's outcome must never cascade into failing the others).
-- **A supporting reference image is not automatically consumed everywhere it's provided.** Approach drafting and single-slide preview are text-only by design (cost control); only the paid Anchor Writer stage currently accepts an image. Confirmed directly on the PetNavi UI-mockup test: folding the image into a text description let 3 of 4 independent calls reconstruct the real hardware specs exactly, but the 4th hallucinated different ones anyway — same mechanism-fidelity finding as everywhere else in this workshop, not solved by having the fact in-context.
-
-## Test registry (jobs run, for reference)
-
-| Job ID | Pitch | Archetype | Furthest stage reached | Notes |
-|---|---|---|---|---|
-| `pd_5e121a3bd64f4a61` | guiclid | Architect (fixed) | Full deck + finalization, multiple re-runs | Pagination bug, color-inversion bug both found & fixed here |
-| `pd_b39004eeefac463f` | THGM (DoD SBIR) | Firebringer (fixed) | Single-slide previews; used as basis for style-contract A/B test | 4 approaches drafted, not taken to full deck |
-| — (ephemeral, not persisted) | THGM "Ground as Antenna" | Firebringer | 4-slide full deck, both conditions | Style-contract A/B test only (`compare_style_contract.py`) |
-| `pd_5072b5fa2fdb4ab2` | PetNavi (real 16-slide investor outline + UI mockup) | Copernicus (auto-picked) | Full 16-slide deck + finalization (x2, testing refiner checklist v1 vs v2) | First test past the old 10-slide cap; first test of source-adherence refiner checklist |
-| (10 ephemeral jobs) | guiclid | All 10 catalog archetypes | Approach drafting only | Full-catalog comparison on one pitch |
-| (5 ephemeral jobs) | 8 untested archetypes total (2 batches) | Commander/Oracle/Alchemist/Healer/Steward (old catalog) | Approach drafting only | Predates the old→new catalog swap |
-
----
-*Update this file as status changes. It is the answer to "where do things actually stand," not a historical log — prune completed/superseded entries rather than letting it grow forever.*
+*Update this file when branch behavior or validation status changes.*
