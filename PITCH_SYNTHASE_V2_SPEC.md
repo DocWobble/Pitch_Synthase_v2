@@ -263,6 +263,37 @@ Checked-in `samples/run-logs/` artifacts predate the FNS/Ghostwriter/Spirit
 Boarder split and are retained only as historical render fixtures. They are not
 examples of the current schema.
 
+## 8. RiboTome range runner
+
+The authorship chain is addressable outside the wizard through the same typed
+graph used by the internal graph endpoints:
+
+```bash
+python ribotome.py validate
+python ribotome.py steps
+python ribotome.py plan --from prepare_pitch --to spirit_boarder
+python ribotome.py run --from prepare_pitch --to spirit_boarder --inputs pitch.json
+python ribotome.py run --from ghostwriter --to spirit_boarder --inputs intermediates.json
+```
+
+`plan` never calls a model. It reports execution waves, required and optional
+external inputs, and terminal outputs. `run` first compiles the same plan and
+fails before execution on missing, undeclared, or wrongly typed external ports.
+Every node receives only its declared mapping and must return exactly its
+declared outputs. Starting mid-graph therefore requires the earlier artifacts
+explicitly; they cannot be recovered through hidden implicit calls.
+
+Decision nodes are ordinary typed ports. For example, `selected_approach_id`
+may be supplied in the initial input object, allowing approach drafting through
+Spirit Boarder to run uninterrupted. If it is not supplied, `plan` reports it
+under `preconfigurable_decisions`; the wizard adapter may continue to satisfy
+the same decision interactively through its existing human gate.
+
+Use `spirit_boarder` as the terminal node for storyboard-only work. Select
+`render_slides` only when image calls are wanted. The corresponding internal
+HTTP adapters are `GET /api/graph/steps`, `GET /api/graph/plan`, and
+`POST /api/graph/run`; the CLI remains the primary operator surface.
+
 ---
 
 *Pitch Synthase v2 — FNS_test branch contract · rev. 10*

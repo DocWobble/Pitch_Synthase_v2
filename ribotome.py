@@ -48,6 +48,8 @@ sys.path.insert(0, str(_HERE))
 import db as _db
 import workers as _workers
 import prompts as _prompts
+from pitch_ribotome import PITCH_GRAPH as _RIBOTOME_GRAPH
+from ribotome_graph import GraphError as _RibotomeGraphError
 
 _db.init_db()
 
@@ -569,6 +571,7 @@ def _advance(job_id: str) -> None:
 @app.on_event("startup")
 def resume_incomplete_jobs():
     """On restart: audit field graph, reset in_progress stages to pending, re-dispatch."""
+    _RIBOTOME_GRAPH.validate()  # typed node ports and runner interfaces
     _audit_pipeline()  # [preflight-check]: abort startup if field graph has gaps
     for job in _db.get_jobs_needing_resume():
         jid = job["id"]
@@ -893,6 +896,38 @@ def list_steps():
             entry["satisfied_by"] = _ACTION_MAP.get(stage["id"], stage["id"])
         out.append(entry)
     return out
+
+
+@app.get("/api/graph/steps")
+def graph_steps():
+    """Return the addressable typed nodes used by the CLI and range runner."""
+    return _RIBOTOME_GRAPH.describe()
+
+
+@app.get("/api/graph/plan")
+def graph_plan(start: str, end: str):
+    """Compile a bounded graph range and report its external input cut."""
+    try:
+        return _RIBOTOME_GRAPH.plan(start, end).as_dict()
+    except _RibotomeGraphError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.post("/api/graph/run")
+async def graph_run(request: Request):
+    """Execute the same bounded plan used by the CLI.
+
+    Body: {"from": "prepare_run", "to": "spirit_boarder", "inputs": {...}}
+    The call is deliberately synchronous so the response is the bounded range's
+    actual terminal outputs, not merely a background-thread acknowledgement.
+    """
+    body = await request.json()
+    try:
+        plan = _RIBOTOME_GRAPH.plan(str(body.get("from") or ""), str(body.get("to") or ""))
+        result = await _RIBOTOME_GRAPH.run_async(plan, body.get("inputs") or {})
+        return result.serializable()
+    except (_RibotomeGraphError, ValueError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
 
 
 @app.get("/api/steps/{step_id}")
@@ -1975,6 +2010,9 @@ def ui():
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] in {"validate", "steps", "plan", "run", "resume"}:
+        from ribotome_cli import main as cli_main
+        raise SystemExit(cli_main(sys.argv[1:]))
     import signal
     import socket
 

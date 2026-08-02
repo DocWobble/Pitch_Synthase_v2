@@ -14,6 +14,27 @@ state, the stage graph, and dispatch — it is the canonical entry point.
 
 ## Components
 
+### `ribotome_graph.py` / `pitch_ribotome.py` — typed graph compiler and pitch adapters
+
+`ribotome_graph.py` is the framework-neutral execution module. Its interface is
+`Graph.validate()`, `Graph.plan(start, end)`, and `Graph.run(plan, inputs)`.
+Planning computes the bounded subgraph, parallel execution waves, external input
+cut, and terminal outputs before any model call. Initialization rejects cycles,
+unknown dependencies/types, duplicate output producers, non-upstream links, and
+node runners whose interface is not exactly one input mapping. Execution rejects
+missing, undeclared, wrongly typed, dropped, or extra ports.
+
+`pitch_ribotome.py` declares the real approach and paid-generation nodes:
+`prepare_pitch`, `approach_draft`, `select_approach`, `prepare_paid`,
+`canonical_anchor`, parallel `founder_narrative` /
+`visual_grammar` / `rhetorical_storyboard`, `ghostwriter`, `spirit_boarder`, and
+optional `render_slides`. These adapters use the same prompt/worker helpers as
+the web workflow.
+
+`ribotome_cli.py` and `/api/graph/*` are adapters over this same module. The
+older stage dispatcher remains for wizard compatibility while the frontend is
+wired; it is no longer the only way to execute the authorship workflow.
+
 ### `ribotome.py` — HTTP server + DAG dispatcher
 FastAPI server running on port 8793. Pipeline stages are declared with
 `register_stage({...})` (one call per stage, near the top of the file) into

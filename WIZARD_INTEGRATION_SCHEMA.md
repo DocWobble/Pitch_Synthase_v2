@@ -404,3 +404,9 @@ source tree. Never expose these to an end-user-facing build. Same for
 of the DAG, not part of any user-facing flow. `GET /api/gallery/previews`
 and `GET /api/jobs/by-label/{label}` are internal lab/QA lookups, not part of
 the wizard's own flow.
+
+The typed range-runner endpoints (`GET /api/graph/steps`,
+`GET /api/graph/plan`, `POST /api/graph/run`) are likewise operator/development
+surfaces, not wizard screens. They are HTTP adapters over the same compiler used
+by `ribotome_cli.py`; frontend integration should continue to use the gated job
+workflow above.
