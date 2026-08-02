@@ -112,7 +112,7 @@ current stage list, not an approximation:
 | `previews` | `approach_draft`, `human_prototype_selection`, `human_intake` | — | renders one preview slide per approach |
 | `human_selection` | `previews` | — | human gate: pick one approach |
 | `human_payment` | `human_selection` | — | human gate: pay, set slide count |
-| `generation` | `human_payment` | — | full deck: anchor → visual grammar → storyboard → N slide images |
+| `generation` | `human_payment` | — | full deck: factual Anchor → parallel FNS/VGS → rhetorical storyboard → Ghostwriter → Spirit Boarder → N slide images |
 | `human_review` | `generation` | — | human gate: per-slide edits/regeneration requests |
 | `verification` | `human_review` | — | judge/regenerate per slide, composite, export |
 
@@ -154,32 +154,34 @@ already made are carried forward, not re-litigated by later stages.
 
 ### Full deck generation (`generation_worker`, fires once `human_payment` completes)
 
-Three mandatory sequential sub-phases:
+Six internal sub-phases (still one DAG stage and one wizard screen):
 
-1. **Anchor writer** (`ANCHOR_MODEL`): produces the deck's authoritative
-   narrative — invents the context in which this specific pitch was already
-   successful, using the user's materials, the chosen approach's archetype
-   pair, and the chosen preview slide as inputs. This is the single most
-   load-bearing text call in the pipeline; everything downstream is grounded
-   in it.
-2. **Visual Grammar Synthesizer**: extracts and locks a single coherent
-   visual grammar (palette, typography, layout system, named production
-   tools) from the anchor's context. This call is **mandatory** — a failure
-   here fails the whole `generation` stage rather than proceeding silently
-   with an invented, inconsistent grammar per slide.
-3. **Deck builder storyboard**: plans all N content slides plus hero/close
-   (N+2 total). Each slide entry has `slide_number`, `title`, `purpose`,
-   `style_tags`, `body_points` (2-5 short on-slide bullet phrases — distinct
-   from `image_prompt`), and `image_prompt`. The storyboard call *extracts*
-   the visual grammar the synthesizer already locked in rather than
-   inventing a competing one.
-4. **Slide image generation × (N+2)**, chunked and rate-limited, combining
-   the anchor narrative + locked visual grammar + per-slide `image_prompt`.
+1. **Canonical Anchor** (`ANCHOR_MODEL`): produces a complete, source-grounded
+   rhetorical brief. It preserves material facts, ranges, caveats, statuses,
+   phase gates, and absences. It cannot invent founders, team biographies,
+   traction, room events, or a presentation that supposedly happened.
+2. **FNS and VGS**, in parallel: FNS produces the direct system prompt for the
+   founder Ghostwriter; VGS produces the direct system prompt for the Spirit
+   Boarder. Neither output reaches Deck Builder.
+3. **Rhetorical Deck Builder**: plans all N+2 slide jobs, detailed required
+   propositions, logical relationships, priorities, and capacity constraints.
+   It writes no visible copy, layout, visual grammar, or image prompt.
+4. **Ghostwriter**: receives the FNS system prompt, rhetorical storyboard, and
+   authoritative source text. It authors the only final title/body copy. It
+   receives no image prompts or visual references.
+5. **Spirit Boarder**: receives the VGS system prompt, rhetorical storyboard,
+   immutable final copy, and all applicable actual image references. It authors
+   the only per-slide composition intent and self-contained image prompt, but
+   cannot add or rewrite visible prose.
+6. **Slide image generation × (N+2)**, chunked and rate-limited. Each renderer
+   receives only the self-contained Spirit Boarder specification, exhaustive
+   exact-copy contract, and applicable actual images. Anchor/source prose is not
+   redundantly reopened.
 
-Output fields: `slide_specs` (per-slide headline/body_points/speaker_note)
-and `deck_proof_plan` (bundles the anchor narrative + full storyboard —
-required input to `verification`, since it's what grounds every
-human-requested regeneration).
+Output fields remain unchanged for frontend compatibility: `slide_specs`
+(per-slide headline/body_points/speaker_note) and `deck_proof_plan` (bundles
+the canonical Anchor plus the completed rhetorical, copy, and Spirit Boarder
+authorities used by verification and regeneration).
 
 ### Human review & verification (`human_review` → `verification_worker`)
 
@@ -190,9 +192,10 @@ for re-verification (or none, or all). Per flagged slide:
    storyboard intent, source materials, and any user review notes/edits.
    Accepts as-is, or emits `corrective_constraints` for regeneration.
 2. **Regenerate if needed** (`_verify_and_finalize_slide`): splices the
-   judge's corrective constraints onto the original stored `image_prompt` +
-   visual grammar + anchor payload — deliberately not a from-scratch
-   rewritten prompt, since paraphrasing lost layout fidelity in practice.
+   judge's corrective constraints onto the original Spirit Boarder prompt,
+   recompiles the exact-copy contract from any reviewed headline/body text,
+   and restores applicable actual image references. It does not reopen Anchor
+   or raw-source prose.
 3. **Composite**: overlays text regions and speaker notes.
 4. **Export**: `deck.pdf`, `deck.pptx`, `preview.html`, `slides.md`,
    `manifest.json`, `verification_report.json`, bundled into
@@ -217,8 +220,10 @@ local_state/jobs/{job_id}/
   approaches/             approach_manifest.json, approach prompt/response logs
   design_references/      prototype design candidates + reference images (has_prototype only)
   single_slide_previews/  one preview image per approach
-  strategy/               anchor_writer_output.json, visual_grammar_output.json,
-                           paid_storyboard.json, deck_proof_plan.json
+  strategy/               anchor_writer_output.json, founder_narrative_output.json,
+                           visual_grammar_output.json, paid_storyboard.json,
+                           paid_storyboard_ghostwriter_output.json,
+                           paid_spirit_boarder_output.json, deck_proof_plan.json
   slides/                 slide_NN_proof.png (as-generated, pre-verification)
   export/
     slides/               composited final slide images

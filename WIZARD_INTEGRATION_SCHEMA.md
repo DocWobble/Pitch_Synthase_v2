@@ -227,10 +227,38 @@ call.
 
 ### Screen 7 — Generation (no user action)
 `generation` fires automatically once payment completes. This is the
-expensive, multi-minute step (anchor writer → mandatory Visual Grammar
-Synthesizer → storyboard → N+2 slide image renders). Use the SSE stream
-(§5) here — polling `next-action` alone gives no progress detail, just
-`"processing"`.
+expensive, multi-minute step. It now contains these internal substeps:
+
+1. Canonical Anchor — produces the complete source-grounded argument.
+2. FNS and VGS in parallel — produce the Ghostwriter and Spirit Boarder
+   system prompts. Neither output is sent to Deck Builder.
+3. Deck Builder — produces rhetorical organization only.
+4. Ghostwriter — authors the sole final title/body copy from the rhetorical
+   storyboard, FNS identity, and authoritative text sources.
+5. Spirit Boarder — produces the sole per-slide visual specifications from
+   the VGS identity, completed copy, rhetorical storyboard, and all applicable
+   actual visual references.
+6. N+2 image renders — receive the self-contained visual specification, exact
+   copy contract, and applicable images; they do not reopen Anchor/source prose.
+
+These are progress checkpoints inside the existing `generation` worker, not
+new DAG stages or human gates. The frontend must not add screens or POST
+actions for them. Continue to show one Generation screen and use the SSE stream
+(§5); polling `next-action` alone still reports only `"processing"`.
+
+Current progress messages, in order, are:
+
+- `Canonical argument locked — source-grounded Anchor complete`
+- `Founder voice and visual identity synthesized in parallel`
+- `Argument organized — {N}-slide rhetorical storyboard complete`
+- `Founder voice applied — final visible copy complete`
+- `Art direction complete — Spirit Boarder render specifications locked`
+- `Render package complete — starting {N} slide renders`
+- `Slide {i} of {N} rendered`
+- `All slides rendered — ready for review`
+
+Treat message text as display copy, not as a routing enum. Route by the SSE
+event's `stage: "generation"` and `pct` fields.
 
 ### Screen 8 — Review (`human_review`)
 Fetch the job; `slide_specs` is a list of:
@@ -355,9 +383,9 @@ Common causes worth distinct UI copy for:
 - A required field was missing when a stage tried to dispatch (pre-dispatch
   check fires before any API spend) — the `error` string names the missing
   field(s) directly, safe to surface close to verbatim.
-- The Visual Grammar Synthesizer or any generation-stage sub-call raised —
-  this is a hard failure now (not silently skipped), surfaces as
-  `stage_failed:generation`.
+- The Anchor, FNS, VGS, rhetorical Deck Builder, Ghostwriter, Spirit Boarder,
+  or any generation-stage render call raised — these are hard failures, surfaced
+  through the existing `stage_failed:generation` contract.
 
 There is currently no retry/resume endpoint exposed to the wizard for a
 failed job short of `reset-verification` (which only rewinds

@@ -20,8 +20,100 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from textwrap import dedent
 from typing import Any, Literal, Mapping, Sequence, TypedDict
+
+
+MAX_SLIDE_TITLE_WORDS = 10
+MAX_BODY_POINTS = 3
+MAX_BODY_POINT_WORDS = 12
+MAX_CONTENT_VISIBLE_WORDS = 40
+MAX_EDGE_VISIBLE_WORDS = 15
+
+
+def _visible_word_count(value: Any) -> int:
+    """Count words a viewer must read, without treating punctuation as content."""
+    return len(re.findall(r"\b[\w%$]+(?:[-'][\w%$]+)*\b", str(value or "")))
+
+
+def storyboard_copy_errors(
+    storyboard: Sequence[Mapping[str, Any]], *, total_slide_count: int
+) -> list[str]:
+    """Return deterministic copy-density violations before images are rendered."""
+    errors: list[str] = []
+    for position, slide in enumerate(storyboard, start=1):
+        try:
+            slide_number = int(slide.get("slide_number") or position)
+        except (TypeError, ValueError):
+            slide_number = position
+        title = str(slide.get("title") or "").strip()
+        points = [
+            str(point).strip()
+            for point in (slide.get("body_points") or [])
+            if str(point).strip()
+        ]
+        title_words = _visible_word_count(title)
+        point_words = [_visible_word_count(point) for point in points]
+        visible_words = title_words + sum(point_words)
+        edge_slide = slide_number in {1, total_slide_count}
+
+        if title_words > MAX_SLIDE_TITLE_WORDS:
+            errors.append(
+                f"Slide {slide_number} title has {title_words} words; maximum is "
+                f"{MAX_SLIDE_TITLE_WORDS}."
+            )
+        if edge_slide:
+            if len(points) > 1:
+                errors.append(
+                    f"Slide {slide_number} body_points has {len(points)} items; "
+                    "cover and closing slides allow at most 1."
+                )
+            if visible_words > MAX_EDGE_VISIBLE_WORDS:
+                errors.append(
+                    f"Slide {slide_number} has {visible_words} visible words; cover and "
+                    f"closing slides allow at most {MAX_EDGE_VISIBLE_WORDS}."
+                )
+            continue
+
+        if not 1 <= len(points) <= MAX_BODY_POINTS:
+            errors.append(
+                f"Slide {slide_number} body_points has {len(points)} items; content "
+                f"slides require 1-{MAX_BODY_POINTS}."
+            )
+        for point_index, word_count in enumerate(point_words, start=1):
+            if word_count > MAX_BODY_POINT_WORDS:
+                errors.append(
+                    f"Slide {slide_number} body_points[{point_index}] has {word_count} "
+                    f"words; maximum is {MAX_BODY_POINT_WORDS}."
+                )
+        if visible_words > MAX_CONTENT_VISIBLE_WORDS:
+            errors.append(
+                f"Slide {slide_number} has {visible_words} visible words; maximum is "
+                f"{MAX_CONTENT_VISIBLE_WORDS}."
+            )
+    return errors
+
+
+def storyboard_embedded_copy_errors(
+    storyboard: Sequence[Mapping[str, Any]],
+) -> list[str]:
+    """Reject Deck Builder image prompts that duplicate visible storyboard copy."""
+    errors: list[str] = []
+    for position, slide in enumerate(storyboard, start=1):
+        slide_number = int(slide.get("slide_number") or position)
+        image_prompt = str(slide.get("image_prompt") or "").casefold()
+        visible_copy = [str(slide.get("title") or "").strip()]
+        visible_copy.extend(
+            str(point).strip() for point in (slide.get("body_points") or [])
+        )
+        for text_value in visible_copy:
+            if text_value and text_value.casefold() in image_prompt:
+                errors.append(
+                    f"Slide {slide_number} image_prompt embeds visible storyboard "
+                    f"copy: {text_value!r}."
+                )
+    return errors
 
 # ---------------------------------------------------------------------------
 # Model and image parameter defaults
@@ -2410,6 +2502,33 @@ def deck_builder_prompt(
         create separate aesthetics; the visual_grammar object is what prevents
         that, not repeated prose.
 
+        COPY AND SPACE BUDGET — binding production constraint:
+        Write the fewest words that preserve the argument. A slide is a visual
+        claim with spoken support, not a document page.
+
+        - Every title is at most 10 visible words.
+        - Content slides use 1-3 body_points. Each is at most 12 visible words.
+        - A content slide has no more than 40 visible words across its title and
+          body_points.
+        - The hero and closing may have no body_points. Each has at most 15
+          visible words across title and body_points.
+        - Reserve at least 35% of every content slide as intentional negative
+          space; reserve at least 50% on the hero and closing.
+        - Use no more than three content regions or panels on one slide. Prefer
+          one dominant visual relationship over a dashboard, dense matrix,
+          paragraph cards, or exhaustive list.
+        - A diagram or table may position a body_point as a terse label instead
+          of a bullet, but image_prompt must refer to it only as a body-point text
+          slot; it may not quote the wording.
+        - image_prompt contains no visible prose. Do not quote, restate, or embed
+          title or body_points inside it. Do not ask the image model to invent
+          annotations, captions, callouts, legends, microcopy, or panel copy.
+        - Every image_prompt must state the negative-space allocation and must
+          describe where the separately supplied title and body-point text slots
+          belong without naming their contents. If the argument does not fit,
+          split the thought across slides or omit secondary material; never
+          shrink type or fill the canvas.
+
         PAGINATION REQUIREMENT — do not let slides number themselves:
         Each slide's image_prompt is sent to the image generator as an independent
         call; that model has no visibility into the other slides in this deck, so
@@ -2436,16 +2555,18 @@ def deck_builder_prompt(
         - The slide_number values must be exactly {_json(numbers)}.
         - Each storyboard object must have slide_number, title, purpose,
           style_tags, body_points, and image_prompt.
-        - body_points is a list of 2-5 short phrases: the actual on-slide bullet
+        - body_points is a list of 1-3 short phrases on content slides and zero
+          or one short phrase on the hero and closing: the actual on-slide bullet
           copy for this slide (the real words a viewer reading the slide would
           see as supporting text under the headline). This is separate from
           image_prompt -- image_prompt describes how the slide should look and
           render; body_points is the literal text content the calling application
           uses for the deck's exported text layer (PPTX/HTML/Markdown exports),
-          independent of how the image renders it. Every slide must have at least
-          one body_point; do not leave this empty.
+          independent of how the image renders it. Empty body_points are valid
+          for the hero and closing only.
         - image_prompt must be a complete, self-contained description of THIS
-          slide's specific content and layout only. Do not restate the visual
+          slide's specific visual content and layout only. It must not contain or
+          repeat any visible wording from title or body_points. Do not restate the visual
           grammar inside image_prompt -- that is supplied separately by
           "visual_grammar" and spliced in by the calling application, in code,
           identically for every slide.
@@ -2730,20 +2851,65 @@ def format_visual_grammar_block(visual_grammar: Mapping[str, Any]) -> str:
     ).strip() + "\n" + "\n".join(lines)
 
 
-def preview_slide_image_prompt(image_prompt: str, visual_grammar: Mapping[str, Any] | None = None) -> str:
+def format_storyboard_text_contract(
+    title: str, body_points: Sequence[str] | None = None
+) -> str:
+    """Bind an image call to the storyboard's complete visible prose."""
+    approved = [str(title).strip()]
+    approved.extend(
+        str(point).strip() for point in (body_points or []) if str(point).strip()
+    )
+    approved = [text for text in approved if text]
+    return dedent(
+        f"""
+        STORYBOARD TEXT CONTRACT — VERBATIM AND EXHAUSTIVE:
+        The storyboard is the sole authority for visible prose on this slide.
+        Render only these exact strings, preserving every word, spelling mark,
+        punctuation mark, number, capitalization choice, and order:
+        {_json(approved)}
+
+        Do not compose, paraphrase, shorten, expand, correct, repeat, or decorate
+        this text. Do not add any other visible words or characters: no tagline,
+        subtitle, caption, annotation, callout, axis text, legend, diagram label,
+        table text, footer, logo lettering, watermark, or placeholder glyphs.
+        If a visual element would normally require a label not listed above,
+        leave it unlabeled. Text rendering is execution, not authorship.
+        """
+    ).strip()
+
+
+def preview_slide_image_prompt(
+    image_prompt: str,
+    visual_grammar: Mapping[str, Any] | None = None,
+    *,
+    title: str,
+    body_points: Sequence[str] | None = None,
+) -> str:
     """Compatibility wrapper for one PREVIEW image generation call."""
     grammar_block = format_visual_grammar_block(visual_grammar) if visual_grammar else ""
-    full_prompt = f"{image_prompt}\n\n{grammar_block}".strip() if grammar_block else image_prompt
+    text_contract = format_storyboard_text_contract(title, body_points)
+    full_prompt = "\n\n".join(
+        part for part in (image_prompt, grammar_block, text_contract) if part
+    )
     return slide_image_prompt(
         image_prompt=full_prompt,
         artifact_mode="preview",
     )
 
 
-def paid_slide_image_prompt(image_prompt: str, visual_grammar: Mapping[str, Any] | None = None) -> str:
+def paid_slide_image_prompt(
+    image_prompt: str,
+    visual_grammar: Mapping[str, Any] | None = None,
+    *,
+    title: str,
+    body_points: Sequence[str] | None = None,
+) -> str:
     """Compatibility wrapper for one PAID raw image generation call."""
     grammar_block = format_visual_grammar_block(visual_grammar) if visual_grammar else ""
-    full_prompt = f"{image_prompt}\n\n{grammar_block}".strip() if grammar_block else image_prompt
+    text_contract = format_storyboard_text_contract(title, body_points)
+    full_prompt = "\n\n".join(
+        part for part in (image_prompt, grammar_block, text_contract) if part
+    )
     return slide_image_prompt(
         image_prompt=full_prompt,
         artifact_mode="paid",
@@ -2851,6 +3017,8 @@ def preserved_preview_to_paid_slide_image_prompt(
     *,
     image_prompt: str,
     source_preview_index: int,
+    title: str,
+    body_points: Sequence[str] | None = None,
 ) -> str:
     """
     Prompt for converting one kept preview slide into its PAID presenter-view form.
@@ -2860,22 +3028,22 @@ def preserved_preview_to_paid_slide_image_prompt(
 
     return dedent(
         f"""
-        {paid_slide_image_prompt(image_prompt)}
+        {paid_slide_image_prompt(image_prompt, title=title, body_points=body_points)}
 
         PRESERVED PREVIEW SLIDE CONTRACT:
         - The provided input image is kept preview slide {source_preview_index} from
           this same pitch deck.
-        - Preserve that slide's on-canvas content, layout, hierarchy, wording,
-          diagram structure, palette, typography, and visual balance as faithfully
-          as possible.
+        - Preserve that slide's layout, hierarchy, diagram structure, palette,
+          typography, material treatment, and visual balance as faithfully as
+          possible. Its old visible wording is not authoritative.
         - Do not redesign the slide.
         - Do not reinterpret the slide topic.
         - Do not substitute a different composition.
         - Convert artifact surface only: output a presenter-view screenshot of that
           same slide, with speaker notes visible outside the slide canvas.
         - Speaker notes must not appear on the slide canvas itself.
-        - If any instruction conflicts with the provided kept preview image, the
-          kept preview image wins.
+        - The STORYBOARD TEXT CONTRACT is the sole authority for every visible
+          character. Remove or replace all source-image prose not authorized by it.
         """
     ).strip()
 
@@ -3906,6 +4074,251 @@ def intake_context_block(options: dict) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 FOUNDER_NARRATIVE_MODEL = ANCHOR_MODEL
+STORYBOARD_GHOSTWRITER_MODEL = FOUNDER_NARRATIVE_MODEL
+SPIRIT_BOARDER_MODEL = ANCHOR_MODEL
+
+
+def canonical_anchor_writer_prompt(
+    *,
+    mode: str,
+    user_inputs: Mapping[str, Any],
+    selected_template: Mapping[str, Any],
+    paid_slide_count_value: int | None = None,
+    supporting_document: Any | None = None,
+    supporting_image: Any | None = None,
+    design_philosophy: str | None = None,
+) -> str:
+    """Build the lossless factual/rhetorical authority consumed downstream."""
+    mode = normalize_mode(mode)
+    slide_context = (
+        f"The eventual paid presentation contains {deck_builder_slide_count(explicit_slide_count=paid_slide_count_value)} slides."
+        if mode in {"PAID", "CONVERT"} and paid_slide_count_value is not None
+        else f"The eventual presentation has {PREVIEW_LATENT_SLIDE_COUNT} latent slides; preview exposes only selected positions."
+    )
+    return dedent(f"""
+        You are the Anchor Writer for Pitch Synthase. Produce the canonical,
+        lossless rhetorical brief from which the presentation can be organized.
+
+        This output is factual authority, not a fictional scene. Do not invent a
+        founder, team member, biography, credential, employer, customer, partner,
+        approval, traction, result, prototype, room event, audience reaction, or
+        presentation that supposedly already happened. Do not describe a creative
+        director or production history. Character invention belongs exclusively to
+        the later Founder Narrative Synthesizer and can never become a company fact.
+
+        Preserve every material source detail needed to make the pitch without
+        reopening the raw files: names, quantities, ranges, units, statuses,
+        caveats, hypotheses, phase gates, requested capital, uses of funds,
+        commercial actors, mechanisms, proof requirements, and explicit absences.
+        Distinguish observed facts from plans, estimates, proposals, and targets.
+        Do not summarize away a detail merely because it may not appear visibly on
+        a slide; the Deck Builder must be able to decide that itself.
+
+        Organize the brief around audience conversion: current belief, required
+        belief changes, strongest supported argument, objections, proof sequence,
+        investment posture, and the finite model this raise is intended to prove.
+        Association words and the selected archetype may influence rhetorical
+        posture and composition, but never authorize vocabulary, biography, facts,
+        or visual production decisions.
+
+        Do not write slide titles, body copy, a slide list, layouts, image prompts,
+        visual grammar, or render instructions. {slide_context}
+
+        Return strict JSON only with exactly:
+        {{"user_inputs": <the input object reproduced exactly>,
+          "deck_generation_prompt": "<complete factual rhetorical brief>"}}
+
+        RAW USER INPUTS
+        ---------------
+        {_json(user_inputs)}
+
+        SUPPORTING DOCUMENT TEXT
+        ------------------------
+        {str(supporting_document or "[none]")}
+
+        SUPPORTING IMAGE PRESENT
+        ------------------------
+        {bool(supporting_image)}
+
+        SELECTED RHETORICAL / AESTHETIC POSTURE
+        ---------------------------------------
+        {_json(selected_template)}
+
+        DESIGN PHILOSOPHY, IF PROVIDED
+        -------------------------------
+        {str(design_philosophy or "[none]")}
+    """).strip()
+
+
+def rhetorical_deck_builder_prompt(
+    *,
+    deck_generation_prompt: str,
+    slide_numbers: Sequence[int],
+    total_slide_count: int,
+    allow_source_preview_index: bool = False,
+    kept_preview_count: int = 0,
+    kept_preview_manifest: Sequence[Mapping[str, Any]] | None = None,
+) -> str:
+    """Plan slide rhetoric without authoring copy or visual direction."""
+    numbers = [int(number) for number in slide_numbers]
+    preview_field = (
+        f"Also return source_preview_index as an integer 1-{kept_preview_count} or null. "
+        "Assign each supplied kept-preview index exactly once according to its described rhetorical content."
+        if allow_source_preview_index
+        else "Do not return source_preview_index."
+    )
+    return dedent(f"""
+        You are the Deck Builder. Organize the presentation argument for slide
+        positions {_json(numbers)} within a {total_slide_count}-slide deck.
+
+        You own rhetorical organization only. Decide the precise job of each
+        slide, the detailed source-grounded propositions it must carry, how those
+        propositions form one argument, and what survives compression.
+
+        Do not write titles, body copy, slogans, captions, visual style, palette,
+        typography, layout concepts, image prompts, visual grammar, or render
+        instructions. Do not invent facts. The Anchor brief below is complete
+        factual and rhetorical authority. A later founder Ghostwriter authors all
+        visible prose; a separate Spirit Boarder authors all visual specifications.
+
+        Preserve material detail in required_points so the Ghostwriter never has
+        to infer information available to you. Include exact quantities, ranges,
+        units, status, caveats, development targets, and phase gates where relevant.
+        Detailed required_points are planning content, not visible slide copy.
+
+        Return strict JSON only with exactly one top-level key,
+        "rhetorical_storyboard". Return the requested slides in the requested
+        order. Each object contains exactly:
+        - slide_number
+        - rhetorical_job
+        - required_points
+        - logical_relationship
+        - information_priority
+        - density: "edge", "low", or "moderate"
+        - layout_constraints with title_max_words, body_points_max,
+          body_point_max_words, total_visible_words_max, and
+          negative_space_min_percent
+        {('- source_preview_index' if allow_source_preview_index else '')}
+
+        Slides 1 and {total_slide_count} use density "edge", at most one body
+        point, 15 total visible words, and at least 50% negative space. Other
+        slides use at most three body points, 40 total visible words, and at least
+        35% negative space. Every title is at most 10 words and every body point
+        at most 12 words. {preview_field}
+
+        CANONICAL ANCHOR BRIEF
+        ----------------------
+        {deck_generation_prompt}
+
+        KEPT PREVIEW RHETORICAL CONTENT, IF ANY
+        ---------------------------------------
+        {_json(list(kept_preview_manifest or []))}
+    """).strip()
+
+
+def spirit_boarder_user_prompt(
+    *,
+    rhetorical_storyboard: Sequence[Mapping[str, Any]],
+    storyboard_copy: Sequence[Mapping[str, Any]],
+) -> str:
+    """Ask the visual counterpart of the Ghostwriter for render specifications."""
+    return dedent(f"""
+        These slides have already been rhetorically organized and written.
+        Art-direct each slide so its composition expresses the visual identity
+        installed in your system prompt.
+
+        You own per-slide visual interpretation only. Preserve every rhetorical
+        job, required relationship, layout constraint, and any source_preview_index.
+        Treat supplied title and body_points as immutable text slots whose lengths
+        and hierarchy determine composition. Do not quote, restate, edit,
+        paraphrase, shorten, expand, or add visible prose. Do not invent captions,
+        labels, legends, annotations, axis text, logo lettering, or pagination.
+
+        Actual images attached to this call are visual evidence. Use their real
+        appearance, materials, proportions, spatial behavior, and established deck
+        language where relevant. Ignore and never reproduce words visible inside
+        reference images. Written source facts do not override an actual supplied
+        product or design reference's appearance.
+
+        Every image_prompt must be self-contained because it will be sent to an
+        image worker without your system prompt. Restate the concrete palette,
+        typography, material, grid, subject, composition, hierarchy, negative
+        space, and placement of separately supplied text slots required for that
+        slide. It must contain no visible prose.
+
+        Return strict JSON only with exactly one top-level key,
+        "visual_storyboard". Return one object per slide containing exactly
+        slide_number, composition_intent, and image_prompt.
+
+        RHETORICAL STORYBOARD
+        ---------------------
+        {_json(list(rhetorical_storyboard))}
+
+        FINAL VISIBLE COPY — IMMUTABLE
+        ------------------------------
+        {_json(list(storyboard_copy))}
+    """).strip()
+
+
+def storyboard_ghostwriter_user_prompt(
+    *,
+    storyboard: Sequence[Mapping[str, Any]],
+    total_slide_count: int,
+) -> str:
+    """Compile the user prompt for the isolated post-storyboard rewrite."""
+    rough_storyboard: list[dict[str, Any]] = []
+    for item in storyboard:
+        slide_number = int(item.get("slide_number") or 0)
+        edge_slide = slide_number in {1, total_slide_count}
+        rough_slide = dict(item)
+        # Visual direction is consumed later by the image worker. It is neither
+        # an authority for visible copy nor useful context for this text-only
+        # rewrite, and can pull the ghostwriter toward visual metaphors.
+        rough_slide.pop("image_prompt", None)
+        rough_storyboard.append({
+            **rough_slide,
+            "visible_text_capacity": {
+                "title_max_words": MAX_SLIDE_TITLE_WORDS,
+                "body_points_min": 0 if edge_slide else 1,
+                "body_points_max": 1 if edge_slide else MAX_BODY_POINTS,
+                "body_point_max_words": MAX_BODY_POINT_WORDS,
+                "total_visible_words_max": (
+                    MAX_EDGE_VISIBLE_WORDS
+                    if edge_slide
+                    else MAX_CONTENT_VISIBLE_WORDS
+                ),
+            },
+        })
+    return dedent(
+        f"""
+        The storyboards are the rough draft for your presentation. Your task is
+        to rewrite all the visible text they'll contain to align with what you
+        would say if you wrote these yourself.
+
+        Return strict JSON only with exactly one top-level key,
+        "storyboard_copy". Return one object per slide containing exactly
+        slide_number, title, and body_points. Do not return purpose, style_tags,
+        image_prompt, visual grammar, commentary, or markdown.
+
+        COMPLETED STORYBOARD
+        --------------------
+        {_json(rough_storyboard)}
+        """
+    ).strip()
+
+
+def storyboard_ghostwriter_prompt(
+    *,
+    founder_voice: str,
+    storyboard: Sequence[Mapping[str, Any]],
+    total_slide_count: int,
+) -> str:
+    """Inspectable rendering of the two real API messages."""
+    user_prompt = storyboard_ghostwriter_user_prompt(
+        storyboard=storyboard,
+        total_slide_count=total_slide_count,
+    )
+    return f"SYSTEM PROMPT\n{founder_voice}\n\nUSER PROMPT\n{user_prompt}"
 
 
 def founder_narrative_synthesis_prompt(
@@ -3914,208 +4327,141 @@ def founder_narrative_synthesis_prompt(
     user_inputs: Mapping[str, Any],
     selected_template: Mapping[str, Any],
 ) -> str:
-    """Expand the anchor's principal founder into a verbal presentation grammar.
-
-    The output is a prompt addendum, not slide copy. Workers concatenate it with
-    the anchor narrative and visual-grammar addendum before the Deck Builder runs.
-    """
+    """Create the roleplay-character prompt used only by the ghostwriter."""
     return dedent(
         f"""
         You are the Founder Narrative Synthesizer for Pitch Synthase.
 
-        The anchor narrative below documents a presentation that has already
-        happened. It establishes the pitch, the audience, the pressure in the
-        room, the founding team, the governing strategic posture, and the
-        argument that made the presentation successful.
+        The Anchor is the canonical factual and rhetorical brief for a
+        presentation. Construct the complete character prompt needed for another
+        model to inhabit the most credible founder for this argument while
+        writing the slides.
 
-        Your task is to expand one part of that account: the principal founder
-        who actually gave the presentation.
+        Infer a communication identity from the problem, domain, stakes, evidence,
+        and audience. Any backstory you invent exists only to generate voice; it
+        is never a claim about the actual company or team. Define observable behaviors,
+        generative speech habits, domain language, priorities, irritations,
+        standards of proof, and changes under pressure. Build a roleplay
+        character AI, not a sample passage and not a summary of the pitch.
 
-        Identify the founder whose authority, motivation, and relationship to
-        the problem most directly carried the pitch. Extrapolate how that
-        specific person communicates when presenting this specific argument to
-        this specific audience.
+        The target is a person, not an optimized presenter. Recover the language
+        this founder would use with a trusted colleague while trying to make the
+        case clear: ordinary words, contractions where natural, uneven sentence
+        lengths, assumptions they leave unstated, details they cannot resist
+        specifying, and phrases they would never choose. Preserve competence
+        without turning it into professionalized pitch rhetoric.
 
-        Convert that person into a set of positive, observable communication
-        constraints that the deck builder can apply while writing the complete
-        presentation.
+        Do not make the founder speak in consultancy abstractions, brand
+        strategy language, startup slogans, category-theory language, or
+        symmetrical contrast formulas unless the invented background makes one
+        of those genuinely personal. Do not prescribe a rhetorical device as the
+        speaker's main transition pattern. Do not make every title reframe a
+        category, every sentence land like a thesis, or every slide sound equally
+        composed. Association words govern aesthetic posture; they are not a
+        vocabulary list for the founder.
 
-        This is not a copy-editing pass.
+        Do not write slide copy, a storyboard, example headlines, a transcript,
+        or a biography detached from rhetorical behavior. Do not imitate a named
+        real person. Use invented founder context to govern communication only;
+        raw user inputs remain the factual authority.
 
-        Do not rewrite the pitch.
-        Do not write slide copy.
-        Do not write a storyboard.
-        Do not supply example headlines.
-        Do not list generic AI-writing prohibitions.
-        Do not imitate a named real person, author, company, or publication.
+        The founder character prompt must contain these sections. They define a
+        speaker, not a presentation method:
 
-        The objective is not to reduce the available language through bans. The
-        objective is to create a distinctive response space through behaviors
-        that this founder repeatedly adds to the presentation.
+        YOU ARE
+        Begin "You are...". Install the anchor's principal founder by role,
+        temperament, relationship to the problem, and reason this pitch matters
+        personally. Preserve the anchor's profile.
 
-        Infer the founder's communication from:
+        WHAT SHAPED YOU
+        Give a concrete invented backstory for voice only: the working settings,
+        recurring encounters, formative frustrations, and two or three specific
+        remembered situations that taught you how this problem actually behaves.
+        Include what you once believed and later stopped believing. Do not turn
+        this context into company facts or slide claims.
 
-        - their invented professional and personal history;
-        - their relationship to the problem being solved;
-        - the selected founder archetype;
-        - the pitch domain and actual mechanism;
-        - the audience's knowledge, incentives, vocabulary, and skepticism;
-        - the transaction or decision the presentation was built to secure;
-        - what this founder considers obvious, difficult, irritating,
-          impressive, dangerous, or worth proving;
-        - how this founder behaves when confident, challenged, explaining,
-          demonstrating, conceding, or asking for commitment.
+        WHAT YOU NOTICE
+        State what catches your attention before other people notice it, what
+        details you remember, what makes you impatient, what earns your trust,
+        and what you tend to dismiss too quickly. Include preferences and biases,
+        not just virtues.
 
-        Expand the founder as a character with a functional role in the room.
-        The result must define what this person habitually DOES while speaking,
-        not merely what qualities they possess.
+        HOW YOU THINK
+        Describe your private reasoning habits: the questions you ask yourself,
+        how you trace cause and effect, where you look for examples, what kind of
+        analogy occurs to you, and how you decide that a claim is good enough.
+        Make this an internal point of view rather than advice about presenting.
 
-        A usable directive changes the sentences the deck builder will produce.
+        HOW YOU TALK
+        Define your actual verbal texture: ordinary vocabulary, contractions,
+        fragments, sentence lengths, pacing, qualifications, transitions,
+        recurring grammatical shapes, and where fluency breaks because you are
+        searching for a more exact word. Include where you become blunt, where
+        you ramble briefly, and where you stop early. Avoid polished symmetry.
 
-        Weak:
-        - authoritative
-        - visionary
-        - concise
-        - technically credible
-        - speaks with confidence
+        WORDS YOU USE
+        Give the small set of domain terms you genuinely use, the common words
+        you prefer around them, and the pitch jargon or abstractions that sound
+        unnatural in your mouth. Vocabulary must follow from backstory.
 
-        Strong:
-        - begins explanations with the physical failure that forced the design;
-        - lets a decisive number stand without praising it;
-        - answers objections by exposing the assumption beneath them;
-        - describes market effects through the behavior of actual participants;
-        - returns to one distinction the audience habitually collapses;
-        - becomes more specific, rather than louder, when challenged.
+        YOUR RHETORICAL HABITS
+        Describe four to six recognizable moves rooted in this person's history:
+        how you recall an example, answer doubt, qualify a number, explain a
+        mechanism, or ask for commitment. Do not make one device govern every
+        move. Do not prescribe binary contrasts, category resets, slogan forms,
+        or thesis-like endings as a default pattern.
 
-        Synthesize a founder presentation grammar containing all of the
-        following:
+        WHEN YOU ARE PUSHED
+        State how your wording changes when challenged, uncertain, excited,
+        irritated, or asking for money. Include at least one imperfect but
+        credible reaction rather than making every response optimally persuasive.
 
-        PRINCIPAL SPEAKER
+        WHEN YOU WRITE THESE SLIDES
+        Explain how you compress your spoken thinking onto the page. Titles and
+        body points must sound like things you would write, with different slide
+        functions allowed different temperatures. Do not require every title to
+        reframe, contrast, correct, persuade, or summarize. Some titles can be
+        literal. Some body points can simply name the relevant fact.
 
-        Establish which member of the anchor's invented team carries the
-        presentation and why this person, rather than another founder, is the
-        natural voice of this pitch. Preserve the anchor's existing founder
-        profile and extrapolate from it. Do not replace the founder with a new
-        character.
-
-        ROLE IN THE ROOM
-
-        Define the founder's relationship to the audience and the precise
-        conversational job they are performing: demonstrating, recruiting,
-        correcting, translating, challenging, de-risking, negotiating,
-        teaching, or another role forced by this pitch.
-
-        GUIDING BEHAVIORS
-
-        Produce six to ten positive behavioral directives. Each must describe a
-        recurring action the founder takes while constructing an argument.
-
-        The behaviors must cover:
-
-        - how the founder opens a subject;
-        - how they explain the product or mechanism;
-        - how they establish evidence;
-        - how they discuss customers, markets, or institutions;
-        - how they handle objections and uncertainty;
-        - how they use numbers;
-        - how they distinguish this proposal from alternatives;
-        - how they make the final ask.
-
-        SPEECH PATTERNS
-
-        Produce four to eight repeatable sentence-level tendencies governing
-        cadence, syntax, vocabulary, emphasis, transitions, comparison, and
-        compression.
-
-        These are not catchphrases or fixed sentence templates. They are
-        generative habits capable of producing many different sentences while
-        keeping the same speaker recognizable.
-
-        DOMAIN LANGUAGE
-
-        Identify the kinds of concrete nouns, verbs, distinctions, and causal
-        relationships this founder naturally reaches for because of their
-        background and the subject of the pitch.
-
-        SIGNATURE BEHAVIORS
-
-        Produce exactly three distinctive communication habits derived from
-        the founder's particular history and relationship to the problem:
-
-        - one produced by their profession or technical background;
-        - one produced by what this audience persistently misunderstands;
-        - one idiosyncratic but credible habit that makes the speaker
-          recognizable without making the presentation comedic.
-
-        These signature behaviors must add language or argumentative structure
-        that a generic pitch writer would not independently produce.
-
-        FUNCTIONAL RANGE
-
-        State how the same founder's communication changes across different
-        slide functions while remaining recognizably the same speaker:
-
-        - cover or opening;
-        - problem diagnosis;
-        - mechanism or product explanation;
-        - evidence or traction;
-        - market and commercial model;
-        - risk and execution;
-        - transaction and final ask.
-
-        The founder must not use one cadence for every slide. A coherent voice
-        has stable motives and habits, not identical sentence construction.
+        Define how you handle somebody else's rough draft: you read it for facts,
+        purpose, and constraints, then write the page again from a blank page.
+        You do not preserve a phrase just because it is already present. You keep
+        wording only when it is independently something you would naturally say.
+        This is a habitual authorship behavior, not a one-time rewrite command.
 
         FACTUAL BOUNDARY
-
-        The founder profile in the anchor is fictional presentation context.
-        It authorizes communication behavior only.
-
-        Do not turn invented founder biography, experience, credentials,
-        employers, personal history, or room events into factual slide content.
-
-        Do not add claims about the real company, product, team, customers,
-        traction, revenue, approvals, testing, partnerships, deployments, or
-        performance.
-
-        The raw user inputs remain the factual authority. The founder narrative
-        controls how those facts are expressed, selected, ordered, and
-        emphasized.
-
-        OUTPUT
+        Invented biography, experience, credentials, employers, personal history,
+        and room events authorize character behavior only. They never become
+        claims about the real company, product, team, customers, traction,
+        revenue, approvals, testing, partnerships, deployments, or performance.
 
         Return strict JSON only:
 
         {{
-          "founder_narrative_addendum": "..."
+          "ghostwriter_system_prompt": "..."
         }}
 
-        The founder_narrative_addendum must be a complete prompt block addressed
-        to the deck builder.
+        The ghostwriter_system_prompt must be a complete roleplay character
+        prompt addressed to the dedicated storyboard ghostwriter. Its length and
+        prose polish are not evaluation targets; include whatever specificity is
+        required to make the downstream storyboard writing sound like this
+        founder. Write the entire system prompt in direct second person. It must
+        open with "You are..." and maintain that subject position throughout:
+        "You notice...", "You believe...", "You reach for...", "When challenged,
+        you...". Never describe "the founder", "the speaker", "this person", or
+        the character from an outside analytical viewpoint. The system prompt installs an identity; it does not explain one.
 
-        It must:
+        It must tell that model to be this founder while rewriting slides, not
+        to describe or imitate the founder from outside. It must include all
+        required sections, govern titles and body
+        points, and contain enough specificity to place the ghostwriter in this
+        founder's distinct verbal and argumentative basin. It must contain no
+        slide copy, JSON, or meta-commentary about AI generation. This output is
+        used only as the system prompt for the ghostwriter after the Deck Builder finishes. The Deck Builder never receives it.
 
-        - identify the principal founder by role rather than inventing a real
-          identity;
-        - state the founder's role in the room;
-        - provide the guiding behaviors, speech patterns, domain-language
-          habits, three signature behaviors, and functional range;
-        - phrase every constraint as something the founder positively does;
-        - explicitly govern titles, body points, diagram labels, comparisons,
-          transitions, slide purposes, and the final ask;
-        - tell the deck builder to write the presentation as this founder,
-          rather than merely describing the founder;
-        - contain enough specificity to shift the generated presentation into
-          this founder's distinct verbal basin;
-        - remain between 500 and 900 words;
-        - contain no JSON inside the addendum;
-        - contain no meta-commentary about AI, unslopping, generated writing,
-          or this synthesis call.
-
-        The addendum may use short headings and bullet points because it is an
-        operational presentation-language contract. It will be concatenated
-        directly after the anchor narrative and visual grammar before the deck
-        builder receives the combined prompt.
+        Before returning, read the system prompt as dialogue. If it sounds like
+        a strategist describing an ideal pitch voice rather than a recognizable
+        person speaking, rewrite it. The ghostwriter should inherit a human subjectivity, not a rhetorical framework.
 
         ANCHOR NARRATIVE
         ----------------
@@ -4125,9 +4471,9 @@ def founder_narrative_synthesis_prompt(
         ---------------
         {_json(user_inputs)}
 
-        SELECTED ARCHETYPE AND VISUAL DIRECTION
-        ---------------------------------------
-        {_json(selected_template)}
+        The founder voice is derived from the factual/rhetorical Anchor and raw
+        user material only. Do not use visual style, template language, palette,
+        association words, or art direction to determine how this person talks.
         """
     ).strip()
 
@@ -4313,4 +4659,54 @@ def visual_grammar_prompt(deck_generation_prompt: str) -> str:
         must be specific enough that a deck builder can use it to determine what an
         individual slide should look like — not to describe a general aesthetic mood but
         to constrain actual layout and image decisions.
+    """).strip()
+
+
+def spirit_boarder_system_synthesis_prompt(
+    *, deck_generation_prompt: str, selected_template: Mapping[str, Any]
+) -> str:
+    """Create the system prompt for the dedicated per-slide art director."""
+    return dedent(f"""
+        You are the Visual Grammar Synthesizer for Pitch Synthase. Convert the
+        canonical Anchor brief and selected visual posture into the complete
+        system prompt needed for a dedicated Spirit Boarder: an art director that
+        receives rhetorically planned, fully written slides and turns them into
+        self-contained per-slide image specifications.
+
+        Define a coherent visual subjectivity, not a mood-board adjective list.
+        Establish what this art director notices, values, rejects, and repeatedly
+        does when converting an argument into composition. Specify concrete
+        palette, foreground and accent treatment, typography, grid, negative-space
+        behavior, panel and diagram language, line weight, photographic or
+        illustrative treatment, material character, hierarchy, and variation
+        across slide functions. Explain how actual reference images govern product
+        appearance and existing deck language.
+
+        The Spirit Boarder is not a copywriter. It must treat supplied title and
+        body points as immutable text slots, never quote them into image prompts,
+        and never invent captions, labels, annotations, legends, axis text,
+        pagination, or any other visible prose. Its per-slide specifications must
+        be self-contained because image workers will not receive this system
+        prompt. It may exercise broad artistic judgment within the rhetorical and
+        factual boundaries of each slide.
+
+        Do not invent company facts, evidence, prototypes, people, partners, or
+        results. Generated visuals representing proposed or conceptual things must
+        be framed honestly. Actual supplied images outrank prose about their visual
+        appearance.
+
+        Return strict JSON only:
+        {{"spirit_boarder_system_prompt": "..."}}
+
+        The system prompt must be addressed directly to the art director in second
+        person, open with "You are...", and be complete enough to govern the full
+        deck without access to this synthesis request.
+
+        CANONICAL ANCHOR BRIEF
+        ----------------------
+        {deck_generation_prompt}
+
+        SELECTED VISUAL POSTURE
+        -----------------------
+        {_json(selected_template)}
     """).strip()

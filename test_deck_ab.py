@@ -189,7 +189,16 @@ async def run_phases_1b_2_3(job_id: str, anchor_json: dict, label: str) -> None:
     slides_dir.mkdir(parents=True, exist_ok=True)
 
     async def _gen_slide(slide_num: int):
-        img_prompt = prompts.paid_slide_image_prompt(image_prompts.get(slide_num, ""), visual_grammar)
+        storyboard_item = next(
+            item for item in paid_storyboard
+            if int(item.get("slide_number") or 0) == slide_num
+        )
+        img_prompt = prompts.paid_slide_image_prompt(
+            image_prompts.get(slide_num, ""),
+            visual_grammar,
+            title=str(storyboard_item.get("title") or ""),
+            body_points=storyboard_item.get("body_points") or [],
+        )
         out_path   = slides_dir / f"slide_{slide_num:02d}.png"
         await _throttle_image_generation()
         resp = await _responses_create(

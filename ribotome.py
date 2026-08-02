@@ -482,7 +482,7 @@ register_stage({
     "input_schema": {
         "slide_specs":      {"type": "json", "required": True,  "description": "Generated slide specifications"},
         "reviewed_slides":  {"type": "json", "required": True,  "description": "Per-slide review instructions from human_review"},
-        "deck_proof_plan":  {"type": "json", "required": True,  "description": "Deck title, storyboard, and anchor narrative from generation — grounds every regeneration"},
+        "deck_proof_plan":  {"type": "json", "required": True,  "description": "Deck title plus completed rhetorical, copy, and Spirit Boarder authorities — grounds every regeneration"},
     },
     "output_fields": [],
 })

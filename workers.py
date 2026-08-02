@@ -648,7 +648,7 @@ def _preview_vertex_paths(job_id: str) -> list[Path]:
 
 
 def _authoritative_source_materials_block(job: dict) -> str:
-    """Build the lossless factual source packet for Deck Builder calls.
+    """Build the lossless factual source packet for the dedicated Ghostwriter.
 
     The Anchor Writer owns framing, not source transport. Raw user materials
     cross this seam independently so an omission or paraphrase in the anchor
@@ -677,9 +677,9 @@ def _authoritative_source_materials_block(job: dict) -> str:
     return (
         "The pitch content was based on the following user-provided materials.\n"
         "These materials are the primary factual authority for the deck. The "
-        "Anchor Writer's presentation context controls framing, posture, and "
-        "narrative pressure only; it must not replace, summarize away, or "
-        "override this source content. Preserve concrete source-backed names, "
+        "The canonical Anchor brief controls rhetorical framing and sequencing, "
+        "but it must not replace, summarize away, or override this source content. "
+        "Preserve concrete source-backed names, "
         "quantities, units, ranges, statuses, caveats, development targets, and "
         "phase gates wherever they materially strengthen the pitch. Never convert "
         "a stated target or hypothesis into a validated result.\n\n"
@@ -834,23 +834,102 @@ def _deck_drafter_input(
     return [{"role": "user", "content": content}]
 
 
-def _preview_slide_image_input(image_prompt: str, job_id: str):
-    """Content list for a single per-slide image generation call in the preview Deck Builder."""
+def _rhetorical_deck_builder_input(anchor_json: dict, focused_prompt: str, job_id: str):
+    """Give the rhetorical planner only the canonical Anchor authority."""
     job = db.get_job(job_id) or {}
-    content = [{"type": "input_text", "text": prompts.preview_slide_image_prompt(image_prompt)}]
-    tmpl_path = _selected_template_image(job, job_id)
-    if tmpl_path:
+    content = [{
+        "type": "input_text",
+        "text": json.dumps(
+            _anchor_payload(anchor_json, focused_prompt=focused_prompt),
+            ensure_ascii=False,
+            indent=2,
+        ),
+    }]
+    content.append({
+        "type": "input_text",
+        "text": prompts.pitch_aspect_worker_briefing(job.get("pitch_aspect_modes")),
+    })
+    return [{"role": "user", "content": content}]
+
+
+def _visual_reference_paths(
+    job_id: str, *, vertex_images: list[Path] | None = None
+) -> list[Path]:
+    """Collect actual images useful to the single deck art-direction call."""
+    job = db.get_job(job_id) or {}
+    intake_images: list[Path] = []
+    intake_dir = job_dir(job_id) / "intake"
+    for suffix in ("*.png", "*.jpg", "*.jpeg", "*.webp"):
+        intake_images.extend(sorted(intake_dir.glob(suffix)))
+    selected_approach = next(
+        (
+            approach
+            for approach in (job.get("approach_candidates_json") or [])
+            if approach.get("approach_id") == job.get("selected_candidate_id")
+        ),
+        {},
+    )
+    approach_preview_value = selected_approach.get("preview_image_path")
+    approach_preview = Path(approach_preview_value) if approach_preview_value else None
+    candidates = [
+        _selected_template_image(job, job_id),
+        _design_reference_image(job, job_id),
+        approach_preview,
+        *intake_images,
+        *(vertex_images or []),
+    ]
+    unique: list[Path] = []
+    for candidate in candidates:
+        if candidate and candidate.exists() and candidate not in unique:
+            unique.append(candidate)
+    return unique
+
+
+def _render_input(
+    prompt_text: str,
+    job_id: str,
+    *,
+    vertex_images: list[Path] | None = None,
+    vertex_instruction: str | None = None,
+):
+    """Give an image worker only its final render spec, exact copy, and images."""
+    content = [{"type": "input_text", "text": prompt_text}]
+    base_references = _visual_reference_paths(job_id)
+    if base_references:
         content.append({
             "type": "input_text",
             "text": (
-                "Selected template image — mandatory visual style anchor. "
-                "Palette, typographic register, layout conventions, and overall "
-                "visual posture must be derived from this image. "
-                "If the text prompt above conflicts with this image, the image wins."
+                "Actual visual references for appearance only. Preserve relevant "
+                "product form and deck language; ignore any visible reference-image "
+                "words because the storyboard text contract is the sole copy authority."
             ),
         })
-        content.append(_image_content(tmpl_path))
+        content.extend(_image_content(path) for path in base_references)
+    vertex_references = [
+        path for path in (vertex_images or [])
+        if path.exists() and path not in base_references
+    ]
+    if vertex_references:
+        content.append({
+            "type": "input_text",
+            "text": vertex_instruction or (
+                "These are kept preview slides from this presentation. Use their "
+                "appearance as the governing deck-language reference while obeying "
+                "the exact storyboard text contract."
+            ),
+        })
+        content.extend(_image_content(path) for path in vertex_references)
     return [{"role": "user", "content": content}]
+
+
+def _preview_slide_image_input(storyboard_entry: dict, job_id: str):
+    """Compile one non-authoring preview render call."""
+    prompt_text = prompts.preview_slide_image_prompt(
+        str(storyboard_entry.get("image_prompt") or ""),
+        title=str(storyboard_entry.get("title") or ""),
+        body_points=storyboard_entry.get("body_points") or [],
+    )
+    return _render_input(prompt_text, job_id)
 
 
 def _raw_user_inputs(job: dict) -> dict:
@@ -882,6 +961,14 @@ def _selected_template_payload(job: dict) -> dict:
         if candidate.get("candidate_id") == selected_id:
             selected = candidate
             break
+    selected_approach = next(
+        (
+            approach
+            for approach in (job.get("approach_candidates_json") or [])
+            if approach.get("approach_id") == selected_id
+        ),
+        None,
+    )
     archetype_id = job.get("selected_archetype_id") or ""
     archetype_label = job.get("selected_archetype_label") or ""
     archetype_posture = ""
@@ -896,6 +983,7 @@ def _selected_template_payload(job: dict) -> dict:
         "style_label": job.get("selected_candidate_label") or (selected or {}).get("style_label") or "",
         "style_tags": (selected or {}).get("style_tags") or [],
         "template_manifest": selected or None,
+        "approach": selected_approach,
         "archetype": {
             "archetype_id": archetype_id,
             "label": archetype_label,
@@ -906,24 +994,8 @@ def _selected_template_payload(job: dict) -> dict:
 
 def _anchor_payload(anchor_json: dict, *, focused_prompt: str | None = None, slide_number: int | None = None) -> dict:
     anchor_narrative = anchor_json.get("deck_generation_prompt", "")
-    wrapped_narrative = (
-        f"{anchor_narrative}\n\n"
-        "Sourcing rule: only user_inputs and the supplied supporting "
-        "document/image are authoritative for real facts about this "
-        "company's actual founders, team, or personnel -- names, job "
-        "titles, credentials, years of experience, and past employers. "
-        "The presentation context above establishes tone, posture, and "
-        "narrative pressure; it is not itself a source for who the real "
-        "team is. Do not construct a 'team,' 'founders,' or 'who we are' "
-        "slide using person-level specifics drawn from the presentation "
-        "context unless the same specifics are also present in user_inputs "
-        "or the supporting materials. Where the user's own materials do not "
-        "supply real team specifics, present the needed competencies as "
-        "team requirements, an operator profile, capabilities needed, or a "
-        "diligence checklist rather than as named individuals."
-    ) if anchor_narrative else anchor_narrative
     payload = {
-        "deck_generation_prompt": wrapped_narrative,
+        "deck_generation_prompt": anchor_narrative,
         "user_inputs": anchor_json.get("user_inputs") or {},
     }
     if focused_prompt:
@@ -931,6 +1003,21 @@ def _anchor_payload(anchor_json: dict, *, focused_prompt: str | None = None, sli
     if slide_number is not None:
         payload["slide_number"] = slide_number
     return payload
+
+
+def _validate_canonical_anchor_output(
+    anchor_json: dict, expected_user_inputs: dict
+) -> dict:
+    """Reject an Anchor that mutates transport data or drops its canonical brief."""
+    if set(anchor_json.keys()) != {"user_inputs", "deck_generation_prompt"}:
+        raise RuntimeError(
+            "Canonical Anchor must return exactly user_inputs and deck_generation_prompt"
+        )
+    if anchor_json.get("user_inputs") != expected_user_inputs:
+        raise RuntimeError("Canonical Anchor changed raw user_inputs")
+    if not str(anchor_json.get("deck_generation_prompt") or "").strip():
+        raise RuntimeError("Canonical Anchor returned an empty rhetorical brief")
+    return anchor_json
 
 
 
@@ -943,15 +1030,14 @@ async def _synthesize_anchor_expansions(
     strategy_dir: Path,
     stage_prefix: str,
 ) -> tuple[str, dict, dict]:
-    """Run visual and founder narrative synthesis from the same anchor in parallel.
+    """Run parallel system-prompt synthesis for the two downstream specialists.
 
-    Both addenda are deterministic inputs to the Deck Builder. The original anchor
-    remains first, followed by visual production constraints and then founder voice
-    constraints so the verbal grammar is the final authorship instruction seen by
-    the storyboard call.
+    FNS becomes the Ghostwriter system prompt; VGS becomes the Spirit Boarder
+    system prompt. Neither output is sent to the rhetorical Deck Builder.
     """
-    visual_grammar_prompt = prompts.visual_grammar_prompt(
-        deck_generation_prompt
+    visual_grammar_prompt = prompts.spirit_boarder_system_synthesis_prompt(
+        deck_generation_prompt=deck_generation_prompt,
+        selected_template=selected_template,
     )
     founder_narrative_prompt = prompts.founder_narrative_synthesis_prompt(
         deck_generation_prompt=deck_generation_prompt,
@@ -993,27 +1079,25 @@ async def _synthesize_anchor_expansions(
         _response_text(founder_narrative_response)
     )
 
-    visual_grammar_addendum = str(
-        visual_grammar_result.get("visual_grammar_addendum") or ""
+    spirit_boarder_system_prompt = str(
+        visual_grammar_result.get("spirit_boarder_system_prompt")
+        or visual_grammar_result.get("visual_grammar_addendum")
+        or ""
     ).strip()
-    founder_narrative_addendum = str(
-        founder_narrative_result.get("founder_narrative_addendum") or ""
+    ghostwriter_system_prompt = str(
+        founder_narrative_result.get("ghostwriter_system_prompt")
+        or founder_narrative_result.get("founder_narrative_addendum")
+        or ""
     ).strip()
 
-    if not visual_grammar_addendum:
+    if not spirit_boarder_system_prompt:
         raise RuntimeError(
-            "Visual Grammar Synthesizer returned no visual_grammar_addendum"
+            "Visual Grammar Synthesizer returned no spirit_boarder_system_prompt"
         )
-    if not founder_narrative_addendum:
+    if not ghostwriter_system_prompt:
         raise RuntimeError(
-            "Founder Narrative Synthesizer returned no founder_narrative_addendum"
+            "Founder Narrative Synthesizer returned no ghostwriter_system_prompt"
         )
-
-    expanded_prompt = "\n\n".join((
-        deck_generation_prompt.strip(),
-        visual_grammar_addendum,
-        founder_narrative_addendum,
-    ))
 
     (strategy_dir / "visual_grammar_output.json").write_text(
         json.dumps(visual_grammar_result, indent=2),
@@ -1025,10 +1109,280 @@ async def _synthesize_anchor_expansions(
     )
 
     return (
-        expanded_prompt,
+        deck_generation_prompt,
         visual_grammar_result,
         founder_narrative_result,
     )
+
+
+async def _ghostwrite_storyboard_copy(
+    job_id: str,
+    *,
+    storyboard: list[dict],
+    founder_narrative_result: dict,
+    total_slide_count: int,
+    strategy_dir: Path,
+    stage_prefix: str,
+) -> list[dict]:
+    """Rewrite visible storyboard copy in the FNS voice without replanning slides."""
+    founder_voice = str(
+        founder_narrative_result.get("ghostwriter_system_prompt")
+        or founder_narrative_result.get("founder_narrative_addendum")
+        or ""
+    ).strip()
+    if not founder_voice:
+        raise RuntimeError("Storyboard ghostwriter received no founder voice baseline")
+
+    ghostwriter_user_prompt = prompts.storyboard_ghostwriter_user_prompt(
+        storyboard=storyboard,
+        total_slide_count=total_slide_count,
+    )
+    authoritative_sources = _authoritative_source_materials_block(
+        db.get_job(job_id) or {}
+    )
+    ghostwriter_user_content = [
+        {"type": "input_text", "text": ghostwriter_user_prompt}
+    ]
+    if authoritative_sources:
+        ghostwriter_user_content.append({
+            "type": "input_text",
+            "text": authoritative_sources,
+        })
+    response = await _responses_create(
+        job_id,
+        stage=f"{stage_prefix}_storyboard_ghostwriter",
+        model=prompts.STORYBOARD_GHOSTWRITER_MODEL,
+        input=[
+            {
+                "role": "system",
+                "content": [{"type": "input_text", "text": founder_voice}],
+            },
+            {
+                "role": "user",
+                "content": ghostwriter_user_content,
+            },
+        ],
+        output_path=(strategy_dir / f"{stage_prefix}_storyboard_ghostwriter").relative_to(
+            job_dir(job_id)
+        ),
+    )
+    result = _parse_model_json(_response_text(response))
+    rewritten = result.get("storyboard_copy") or []
+    expected_numbers = [int(item.get("slide_number") or 0) for item in storyboard]
+    actual_numbers = [int(item.get("slide_number") or 0) for item in rewritten]
+    if actual_numbers != expected_numbers:
+        raise RuntimeError(
+            "Storyboard ghostwriter changed slide coverage; "
+            f"expected {expected_numbers}, got {actual_numbers}"
+        )
+
+    rewritten_by_number = {
+        int(item["slide_number"]): item for item in rewritten
+    }
+    merged: list[dict] = []
+    for original in storyboard:
+        slide_number = int(original["slide_number"])
+        copy = rewritten_by_number[slide_number]
+        title = str(copy.get("title") or "").strip()
+        body_points = [
+            str(point).strip()
+            for point in (copy.get("body_points") or [])
+            if str(point).strip()
+        ]
+        if not title:
+            raise RuntimeError(
+                f"Storyboard ghostwriter returned no title for slide {slide_number}"
+            )
+        merged.append({
+            **original,
+            "title": title,
+            "body_points": body_points,
+        })
+
+    copy_errors = prompts.storyboard_copy_errors(
+        merged,
+        total_slide_count=total_slide_count,
+    )
+    if copy_errors:
+        correction_response = await _responses_create(
+            job_id,
+            stage=f"{stage_prefix}_storyboard_ghostwriter_capacity_correction",
+            model=prompts.STORYBOARD_GHOSTWRITER_MODEL,
+            input=[
+                {
+                    "role": "system",
+                    "content": [{"type": "input_text", "text": founder_voice}],
+                },
+                {
+                    "role": "user",
+                    "content": [{
+                        "type": "input_text",
+                        "text": (
+                            "Your completed visible copy exceeded its mechanical text "
+                            "capacity. Correct only the listed violations while preserving "
+                            "your authorship, factual meaning, slide numbers, and all "
+                            "compliant slides. Return the same strict storyboard_copy JSON "
+                            "schema. The source packet is not repeated because this is only "
+                            "a constrained compression of your immediately previous output.\n\n"
+                            "VIOLATIONS\n" + "\n".join(copy_errors) +
+                            "\n\nYOUR PREVIOUS OUTPUT\n" + json.dumps(result, indent=2)
+                        ),
+                    }],
+                },
+            ],
+            output_path=(
+                strategy_dir /
+                f"{stage_prefix}_storyboard_ghostwriter_capacity_correction"
+            ).relative_to(job_dir(job_id)),
+        )
+        result = _parse_model_json(_response_text(correction_response))
+        rewritten = result.get("storyboard_copy") or []
+        actual_numbers = [int(item.get("slide_number") or 0) for item in rewritten]
+        if actual_numbers != expected_numbers:
+            raise RuntimeError(
+                "Storyboard ghostwriter capacity correction changed slide coverage; "
+                f"expected {expected_numbers}, got {actual_numbers}"
+            )
+        rewritten_by_number = {int(item["slide_number"]): item for item in rewritten}
+        merged = []
+        for original in storyboard:
+            slide_number = int(original["slide_number"])
+            copy = rewritten_by_number[slide_number]
+            merged.append({
+                **original,
+                "title": str(copy.get("title") or "").strip(),
+                "body_points": [
+                    str(point).strip()
+                    for point in (copy.get("body_points") or [])
+                    if str(point).strip()
+                ],
+            })
+        copy_errors = prompts.storyboard_copy_errors(
+            merged, total_slide_count=total_slide_count
+        )
+        if copy_errors:
+            raise RuntimeError(
+                "Storyboard ghostwriter corrected copy still violates budgets: "
+                + " | ".join(copy_errors)
+            )
+
+    (strategy_dir / f"{stage_prefix}_storyboard_ghostwriter_output.json").write_text(
+        json.dumps(result, indent=2),
+        encoding="utf-8",
+    )
+    return merged
+
+
+async def _spirit_board_storyboard(
+    job_id: str,
+    *,
+    rhetorical_storyboard: list[dict],
+    ghostwritten_storyboard: list[dict],
+    visual_grammar_result: dict,
+    strategy_dir: Path,
+    stage_prefix: str,
+    vertex_images: list[Path] | None = None,
+) -> list[dict]:
+    """Art-direct the completed slides without granting another copy authority."""
+    spirit_system = str(
+        visual_grammar_result.get("spirit_boarder_system_prompt")
+        or visual_grammar_result.get("visual_grammar_addendum")
+        or ""
+    ).strip()
+    if not spirit_system:
+        raise RuntimeError("Spirit Boarder received no visual system prompt")
+
+    final_copy = [{
+        "slide_number": int(item.get("slide_number") or 0),
+        "title": str(item.get("title") or ""),
+        "body_points": [
+            str(point) for point in (item.get("body_points") or [])
+            if str(point).strip()
+        ],
+    } for item in ghostwritten_storyboard]
+    user_content = [{
+        "type": "input_text",
+        "text": prompts.spirit_boarder_user_prompt(
+            rhetorical_storyboard=rhetorical_storyboard,
+            storyboard_copy=final_copy,
+        ),
+    }]
+    reference_paths = _visual_reference_paths(
+        job_id, vertex_images=vertex_images
+    )
+    if reference_paths:
+        user_content.append({
+            "type": "input_text",
+            "text": (
+                "The following are the actual available visual references for this "
+                "presentation. Use appearance only. Ignore and do not reproduce any "
+                "visible words inside them."
+            ),
+        })
+        user_content.extend(_image_content(path) for path in reference_paths)
+
+    response = await _responses_create(
+        job_id,
+        stage=f"{stage_prefix}_spirit_boarder",
+        model=prompts.SPIRIT_BOARDER_MODEL,
+        input=[
+            {
+                "role": "system",
+                "content": [{"type": "input_text", "text": spirit_system}],
+            },
+            {"role": "user", "content": user_content},
+        ],
+        output_path=(strategy_dir / f"{stage_prefix}_spirit_boarder").relative_to(
+            job_dir(job_id)
+        ),
+    )
+    result = _parse_model_json(_response_text(response))
+    visual_storyboard = result.get("visual_storyboard") or []
+    expected_numbers = [
+        int(item.get("slide_number") or 0) for item in rhetorical_storyboard
+    ]
+    actual_numbers = [
+        int(item.get("slide_number") or 0) for item in visual_storyboard
+    ]
+    if actual_numbers != expected_numbers:
+        raise RuntimeError(
+            "Spirit Boarder changed slide coverage; "
+            f"expected {expected_numbers}, got {actual_numbers}"
+        )
+    visuals_by_number = {
+        int(item["slide_number"]): item for item in visual_storyboard
+    }
+    merged = []
+    for item in ghostwritten_storyboard:
+        slide_number = int(item["slide_number"])
+        visual = visuals_by_number[slide_number]
+        image_prompt = str(visual.get("image_prompt") or "").strip()
+        if not image_prompt:
+            raise RuntimeError(
+                f"Spirit Boarder returned no image_prompt for slide {slide_number}"
+            )
+        merged.append({
+            **item,
+            "composition_intent": str(
+                visual.get("composition_intent") or ""
+            ).strip(),
+            "image_prompt": image_prompt,
+        })
+
+    embedded = prompts.storyboard_embedded_copy_errors(merged)
+    if embedded:
+        raise RuntimeError(
+            "Spirit Boarder embedded final visible copy inside image_prompt: "
+            + " | ".join(embedded)
+        )
+    (strategy_dir / f"{stage_prefix}_spirit_boarder_output.json").write_text(
+        json.dumps({
+            **result,
+            "visual_reference_paths": [str(path) for path in reference_paths],
+        }, indent=2),
+        encoding="utf-8",
+    )
+    return merged
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1885,7 +2239,7 @@ async def candidate_worker(job_id: str):
     cand_dir.mkdir(exist_ok=True)
     append_telemetry(job_id, {"event_type": "workflow", "stage": "preview", "status": "started"})
 
-    anchor_prompt = prompts.anchor_writer_prompt(
+    anchor_prompt = prompts.canonical_anchor_writer_prompt(
         mode="PREVIEW",
         user_inputs=user_inputs,
         selected_template=selected_template,
@@ -1901,7 +2255,9 @@ async def candidate_worker(job_id: str):
             input=_anchor_input(anchor_prompt, job_id),
         )
         anchor_text = _response_text(anchor_resp)
-        anchor_json = _parse_model_json(anchor_text)
+        anchor_json = _validate_canonical_anchor_output(
+            _parse_model_json(anchor_text), user_inputs
+        )
         deck_generation_prompt = anchor_json["deck_generation_prompt"]
         (cand_dir / "anchor_writer_output.json").write_text(json.dumps(anchor_json, indent=2))
     except Exception as e:
@@ -1909,12 +2265,29 @@ async def candidate_worker(job_id: str):
         db.update_job(job_id, status="preview_generation_failed", error_message=f"Anchor writer failed: {e}")
         return
 
+    try:
+        (
+            deck_generation_prompt,
+            visual_grammar_result,
+            founder_narrative_result,
+        ) = await _synthesize_anchor_expansions(
+            job_id,
+            deck_generation_prompt=deck_generation_prompt,
+            user_inputs=user_inputs,
+            selected_template=selected_template,
+            strategy_dir=cand_dir,
+            stage_prefix="preview",
+        )
+    except Exception as e:
+        append_telemetry(job_id, {"event_type": "workflow", "stage": "preview", "status": "failed", "error": str(e)[:500]})
+        db.update_job(job_id, status="preview_generation_failed", error_message=f"Anchor expansion failed: {e}")
+        return
+
     preview_slide_numbers = list(prompts.PREVIEW_EXPOSED_SLIDES)
-    preview_prompt = prompts.preview_deck_builder_prompt(
+    preview_prompt = prompts.rhetorical_deck_builder_prompt(
         deck_generation_prompt=deck_generation_prompt,
-        user_inputs=user_inputs,
-        selected_template=selected_template,
         slide_numbers=preview_slide_numbers,
+        total_slide_count=prompts.PREVIEW_LATENT_SLIDE_COUNT,
     )
     try:
         # Phase 1: text-only storyboard call — no images generated yet
@@ -1922,26 +2295,46 @@ async def candidate_worker(job_id: str):
             job_id,
             stage="preview_storyboard",
             model=prompts.DECK_DRAFTER_MODEL,
-            input=_deck_drafter_input(
-                _anchor_payload(anchor_json, focused_prompt=preview_prompt),
-                job_id,
-            ),
+            input=_rhetorical_deck_builder_input(anchor_json, preview_prompt, job_id),
             output_path=(cand_dir / "preview_storyboard").relative_to(job_dir(job_id)),
         )
         storyboard_text = _response_text(storyboard_resp)
         storyboard_json = _parse_model_json(storyboard_text)
-        preview_storyboard = storyboard_json.get("storyboard") or []
+        rhetorical_storyboard = storyboard_json.get("rhetorical_storyboard") or []
 
         # Validate structure before spending on image generation
-        if len(preview_storyboard) != 3:
-            raise RuntimeError(f"Deck Builder returned {len(preview_storyboard)} storyboard entries; expected 3")
-        actual_slide_numbers = [int(item.get("slide_number") or 0) for item in preview_storyboard]
+        if len(rhetorical_storyboard) != 3:
+            raise RuntimeError(f"Deck Builder returned {len(rhetorical_storyboard)} storyboard entries; expected 3")
+        actual_slide_numbers = [int(item.get("slide_number") or 0) for item in rhetorical_storyboard]
         if actual_slide_numbers != preview_slide_numbers:
             raise RuntimeError(f"Deck Builder storyboard slides must be {preview_slide_numbers}; got {actual_slide_numbers}")
-        for item in preview_storyboard:
-            if not str(item.get("image_prompt") or "").strip():
-                raise RuntimeError(f"Deck Builder storyboard entry for slide {item.get('slide_number')} is missing image_prompt")
+        ghostwritten_storyboard = await _ghostwrite_storyboard_copy(
+            job_id,
+            storyboard=rhetorical_storyboard,
+            founder_narrative_result=founder_narrative_result,
+            total_slide_count=prompts.PREVIEW_LATENT_SLIDE_COUNT,
+            strategy_dir=cand_dir,
+            stage_prefix="preview",
+        )
+        preview_storyboard = await _spirit_board_storyboard(
+            job_id,
+            rhetorical_storyboard=rhetorical_storyboard,
+            ghostwritten_storyboard=ghostwritten_storyboard,
+            visual_grammar_result=visual_grammar_result,
+            strategy_dir=cand_dir,
+            stage_prefix="preview",
+        )
+        copy_errors = prompts.storyboard_copy_errors(
+            preview_storyboard,
+            total_slide_count=prompts.PREVIEW_LATENT_SLIDE_COUNT,
+        )
+        if copy_errors:
+            raise RuntimeError(
+                "Deck Builder storyboard copy budget violations: "
+                + " | ".join(copy_errors)
+            )
 
+        storyboard_json["storyboard"] = preview_storyboard
         (cand_dir / "deck_builder_output.json").write_text(json.dumps(storyboard_json, indent=2))
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "preview", "status": "failed", "error": str(e)[:500]})
@@ -1957,7 +2350,7 @@ async def candidate_worker(job_id: str):
                 job_id,
                 stage=f"preview_slide_{slide_num}",
                 model=prompts.DECK_DRAFTER_MODEL,
-                input=_preview_slide_image_input(entry["image_prompt"], job_id),
+                input=_preview_slide_image_input(entry, job_id),
                 tools=[prompts.image_generation_tool(stage="preview")],
                 output_path=(cand_dir / f"cand_{i}.png").relative_to(job_dir(job_id)),
             )
@@ -2040,7 +2433,7 @@ async def generation_worker(job_id: str):
         slide_count = prompts.deck_builder_slide_count(
             explicit_slide_count=job.get("explicit_slide_count")
         )
-        anchor_prompt = prompts.anchor_writer_prompt(
+        anchor_prompt = prompts.canonical_anchor_writer_prompt(
             mode="PAID",
             user_inputs=user_inputs,
             selected_template=selected_template,
@@ -2055,21 +2448,21 @@ async def generation_worker(job_id: str):
             model=prompts.ANCHOR_MODEL,
             input=_anchor_input(anchor_prompt, job_id),
         )
-        anchor_json = _parse_model_json(_response_text(anchor_resp))
+        anchor_json = _validate_canonical_anchor_output(
+            _parse_model_json(_response_text(anchor_resp)), user_inputs
+        )
         deck_generation_prompt = anchor_json["deck_generation_prompt"]
         strategy_dir = job_dir(job_id) / "strategy"
         strategy_dir.mkdir(exist_ok=True)
         (strategy_dir / "anchor_writer_output.json").write_text(json.dumps(anchor_json, indent=2))
-        db.append_progress(job_id, "generation", "Creative direction locked — anchor write complete", pct=0.10)
+        db.append_progress(job_id, "generation", "Canonical argument locked — source-grounded Anchor complete", pct=0.10)
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_generation", "status": "failed", "error": str(e)[:500]})
         db.update_job(job_id, status="failed", error_message=f"Anchor writer failed: {e}")
         return
 
-    # Phase 1b: parallel Visual Grammar and Founder Narrative synthesis.
-    # Both calls receive the untouched anchor narrative and run concurrently. Their
-    # outputs are then appended in a fixed order before the Deck Builder receives the
-    # prompt: anchor -> visual production grammar -> founder presentation grammar.
+    # Phase 1b: synthesize the separate Ghostwriter and Spirit Boarder system
+    # prompts in parallel from the untouched canonical Anchor.
     try:
         (
             deck_generation_prompt,
@@ -2088,7 +2481,7 @@ async def generation_worker(job_id: str):
         db.append_progress(
             job_id,
             "generation",
-            "Visual and founder presentation grammars synthesized",
+            "Founder voice and visual identity synthesized in parallel",
             pct=0.18,
         )
     except Exception as e:
@@ -2108,14 +2501,11 @@ async def generation_worker(job_id: str):
         )
         return
 
-    # Phase 2: Deck builder storyboard — one text call that plans all N slides with
-    # explicit visual consistency across every image_prompt.
-    deck_builder_prompt_text = prompts.paid_deck_builder_prompt(
+    # Phase 2: Deck Builder owns rhetorical organization only.
+    deck_builder_prompt_text = prompts.rhetorical_deck_builder_prompt(
         deck_generation_prompt=deck_generation_prompt,
-        user_inputs=user_inputs,
-        selected_template=selected_template,
-        slide_count=slide_count,
-        excepted_inference_elements=_excepted_inference_elements,
+        slide_numbers=list(range(1, slide_count + 1)),
+        total_slide_count=slide_count,
     )
     d = job_dir(job_id) / "strategy"
     d.mkdir(exist_ok=True)
@@ -2124,29 +2514,73 @@ async def generation_worker(job_id: str):
             job_id,
             stage="paid_storyboard",
             model=prompts.DECK_DRAFTER_MODEL,
-            input=_deck_drafter_input(
-                _anchor_payload(anchor_json, focused_prompt=deck_builder_prompt_text),
-                job_id,
+            input=_rhetorical_deck_builder_input(
+                anchor_json, deck_builder_prompt_text, job_id
             ),
             output_path=(d / "paid_storyboard").relative_to(job_dir(job_id)),
         )
         storyboard_json = _parse_model_json(_response_text(storyboard_resp))
-        paid_storyboard = storyboard_json.get("storyboard") or []
-        if len(paid_storyboard) != slide_count:
-            raise RuntimeError(f"Deck builder returned {len(paid_storyboard)} storyboard entries; expected {slide_count}")
-        actual_numbers = [int(item.get("slide_number") or 0) for item in paid_storyboard]
+        rhetorical_storyboard = storyboard_json.get("rhetorical_storyboard") or []
+        if len(rhetorical_storyboard) != slide_count:
+            raise RuntimeError(f"Deck builder returned {len(rhetorical_storyboard)} storyboard entries; expected {slide_count}")
+        actual_numbers = [int(item.get("slide_number") or 0) for item in rhetorical_storyboard]
         expected_numbers = list(range(1, slide_count + 1))
         if actual_numbers != expected_numbers:
             raise RuntimeError(f"Deck builder slide_numbers must be {expected_numbers}; got {actual_numbers}")
+        db.append_progress(
+            job_id,
+            "generation",
+            f"Argument organized — {slide_count}-slide rhetorical storyboard complete",
+            pct=0.22,
+        )
+        ghostwritten_storyboard = await _ghostwrite_storyboard_copy(
+            job_id,
+            storyboard=rhetorical_storyboard,
+            founder_narrative_result=founder_narrative_result,
+            total_slide_count=slide_count,
+            strategy_dir=d,
+            stage_prefix="paid",
+        )
+        db.append_progress(
+            job_id,
+            "generation",
+            "Founder voice applied — final visible copy complete",
+            pct=0.26,
+        )
+        paid_storyboard = await _spirit_board_storyboard(
+            job_id,
+            rhetorical_storyboard=rhetorical_storyboard,
+            ghostwritten_storyboard=ghostwritten_storyboard,
+            visual_grammar_result=visual_grammar_result,
+            strategy_dir=d,
+            stage_prefix="paid",
+        )
+        db.append_progress(
+            job_id,
+            "generation",
+            "Art direction complete — Spirit Boarder render specifications locked",
+            pct=0.30,
+        )
+        storyboard_json["storyboard"] = paid_storyboard
         for item in paid_storyboard:
             if not str(item.get("image_prompt") or "").strip():
-                raise RuntimeError(f"Deck builder storyboard entry for slide {item.get('slide_number')} is missing image_prompt")
-            if not [p for p in (item.get("body_points") or []) if str(p).strip()]:
+                raise RuntimeError(f"Spirit Boarder storyboard entry for slide {item.get('slide_number')} is missing image_prompt")
+            slide_number = int(item.get("slide_number") or 0)
+            if slide_number not in {1, slide_count} and not [p for p in (item.get("body_points") or []) if str(p).strip()]:
                 raise RuntimeError(f"Deck builder storyboard entry for slide {item.get('slide_number')} is missing body_points")
+        copy_errors = prompts.storyboard_copy_errors(
+            paid_storyboard,
+            total_slide_count=slide_count,
+        )
+        if copy_errors:
+            raise RuntimeError(
+                "Deck builder storyboard copy budget violations: "
+                + " | ".join(copy_errors)
+            )
         image_prompts = {int(item["slide_number"]): item["image_prompt"] for item in paid_storyboard}
-        visual_grammar = storyboard_json.get("visual_grammar") or {}
+        visual_grammar = {}
         (d / "paid_storyboard.json").write_text(json.dumps(storyboard_json, indent=2))
-        db.append_progress(job_id, "generation", f"Storyboard complete — {slide_count} slides planned, starting render", pct=0.25)
+        db.append_progress(job_id, "generation", f"Render package complete — starting {slide_count} slide renders", pct=0.32)
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "paid_generation", "status": "failed", "error": str(e)[:500]})
         db.update_job(job_id, status="failed", error_message=f"Deck builder storyboard failed: {e}")
@@ -2158,7 +2592,7 @@ async def generation_worker(job_id: str):
             "slide_label": f"Slide {item['slide_number']}",
             "headline": item.get("title") or f"Slide {item['slide_number']}",
             "body_points": [str(p).strip() for p in (item.get("body_points") or []) if str(p).strip()],
-            "speaker_note": item.get("purpose") or "",
+            "speaker_note": item.get("rhetorical_job") or "",
         }
         for item in paid_storyboard
     ]
@@ -2168,7 +2602,7 @@ async def generation_worker(job_id: str):
         "slide_count": slide_count,
         "requested_content_slide_count": content_slide_count,
         "deck_storyboard": [
-            {"slide_number": item["slide_number"], "title": item.get("title", ""), "purpose": item.get("purpose", "")}
+            {"slide_number": item["slide_number"], "title": item.get("title", ""), "purpose": item.get("rhetorical_job", "")}
             for item in paid_storyboard
         ],
         "anchor_writer_output": anchor_json,
@@ -2198,7 +2632,12 @@ async def generation_worker(job_id: str):
 
     async def _generate_slide(spec: dict):
         idx = spec["slide_index"]
-        image_prompt = prompts.paid_slide_image_prompt(image_prompts.get(idx, ""), visual_grammar)
+        image_prompt = prompts.paid_slide_image_prompt(
+            image_prompts.get(idx, ""),
+            visual_grammar,
+            title=spec.get("headline", ""),
+            body_points=spec.get("body_points") or [],
+        )
         for attempt in range(2):
             try:
                 out = slides_dir / f"slide_{idx:02d}_proof.png"
@@ -2207,10 +2646,7 @@ async def generation_worker(job_id: str):
                     job_id,
                     stage=f"paid_slide_{idx}",
                     model=prompts.DECK_DRAFTER_MODEL,
-                    input=_deck_drafter_input(
-                        _anchor_payload(anchor_json, focused_prompt=image_prompt, slide_number=idx),
-                        job_id,
-                    ),
+                    input=_render_input(image_prompt, job_id),
                     tools=[prompts.image_generation_tool(stage="paid")],
                     output_path=out.relative_to(job_dir(job_id)),
                 )
@@ -2218,7 +2654,7 @@ async def generation_worker(job_id: str):
                 if not images:
                     raise RuntimeError("No image returned")
                 await _write_image_from_b64(images[0], out)
-                pct = 0.25 + 0.70 * (idx / len(slide_specs))
+                pct = 0.32 + 0.63 * (idx / len(slide_specs))
                 db.append_progress(job_id, "generation", f"Slide {idx} of {len(slide_specs)} rendered", pct=pct)
                 return idx, True
             except Exception as exc:
@@ -2290,7 +2726,7 @@ async def convert_generation_worker(job_id: str):
         slide_count = prompts.deck_builder_slide_count(
             explicit_slide_count=job.get("explicit_slide_count")
         )
-        anchor_prompt = prompts.anchor_writer_prompt(
+        anchor_prompt = prompts.canonical_anchor_writer_prompt(
             mode="CONVERT" if convert_uses_kept_previews else "PAID",
             user_inputs=user_inputs,
             selected_template=selected_template,
@@ -2304,7 +2740,9 @@ async def convert_generation_worker(job_id: str):
             model=prompts.ANCHOR_MODEL,
             input=_anchor_input(anchor_prompt, job_id),
         )
-        anchor_json = _parse_model_json(_response_text(anchor_resp))
+        anchor_json = _validate_canonical_anchor_output(
+            _parse_model_json(_response_text(anchor_resp)), user_inputs
+        )
         deck_generation_prompt = anchor_json["deck_generation_prompt"]
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "convert_generation", "status": "failed", "error": str(e)[:500]})
@@ -2314,58 +2752,80 @@ async def convert_generation_worker(job_id: str):
     d = job_dir(job_id) / "strategy"
     d.mkdir(exist_ok=True)
     try:
+        (
+            deck_generation_prompt,
+            visual_grammar_result,
+            founder_narrative_result,
+        ) = await _synthesize_anchor_expansions(
+            job_id,
+            deck_generation_prompt=deck_generation_prompt,
+            user_inputs=user_inputs,
+            selected_template=selected_template,
+            strategy_dir=d,
+            stage_prefix="convert",
+        )
+    except Exception as e:
+        append_telemetry(job_id, {
+            "event_type": "workflow",
+            "stage": "convert_anchor_expansion",
+            "status": "failed",
+            "error": str(e)[:500],
+        })
+        db.update_job(
+            job_id,
+            status="failed",
+            error_message=f"Convert anchor expansion synthesis failed: {e}",
+        )
+        return
+
+    try:
+        kept_preview_manifest = []
         if convert_uses_kept_previews:
-            deck_builder_prompt_text = prompts.convert_deck_builder_prompt(
-                deck_generation_prompt=deck_generation_prompt,
-                user_inputs=user_inputs,
-                selected_template=selected_template,
-                slide_count=slide_count,
-                kept_preview_count=keep_preview_count,
-            )
-            storyboard_vertex_instruction = (
-                "The following photographs are kept preview slides from this same pitch deck. "
-                "They replace the template as the governing style anchor. Each one must appear "
-                "exactly once in the full deck. Choose where each belongs in the deck argument, "
-                "and for those storyboard entries set source_preview_index to the matching input "
-                "image number in the order shown here. Newly generated slides must use these kept "
-                "preview slides as style guidance and must not introduce a different aesthetic."
-            )
-        else:
-            deck_builder_prompt_text = prompts.paid_deck_builder_prompt(
-                deck_generation_prompt=deck_generation_prompt,
-                user_inputs=user_inputs,
-                selected_template=selected_template,
-                slide_count=slide_count,
-                excepted_inference_elements=job.get("excepted_inference_elements"),
-            )
-            storyboard_vertex_instruction = None
+            preview_storyboard = job.get("preview_storyboard_json") or []
+            for input_index, candidate_id in enumerate(
+                job.get("convert_keep_candidate_ids") or [], start=1
+            ):
+                try:
+                    source_index = int(str(candidate_id).split("_", 1)[-1]) - 1
+                    source = preview_storyboard[source_index]
+                except (ValueError, IndexError, TypeError):
+                    source = {}
+                kept_preview_manifest.append({
+                    "source_preview_index": input_index,
+                    "title": source.get("title") or "",
+                    "body_points": source.get("body_points") or [],
+                    "rhetorical_job": source.get("rhetorical_job") or "",
+                })
+        deck_builder_prompt_text = prompts.rhetorical_deck_builder_prompt(
+            deck_generation_prompt=deck_generation_prompt,
+            slide_numbers=list(range(1, slide_count + 1)),
+            total_slide_count=slide_count,
+            allow_source_preview_index=convert_uses_kept_previews,
+            kept_preview_count=keep_preview_count,
+            kept_preview_manifest=kept_preview_manifest,
+        )
 
         storyboard_resp = await _responses_create(
             job_id,
             stage="convert_storyboard",
             model=prompts.DECK_DRAFTER_MODEL,
-            input=_deck_drafter_input(
-                _anchor_payload(anchor_json, focused_prompt=deck_builder_prompt_text),
-                job_id,
-                vertex_images=vertex_paths if convert_uses_kept_previews else None,
-                vertex_instruction=storyboard_vertex_instruction,
+            input=_rhetorical_deck_builder_input(
+                anchor_json, deck_builder_prompt_text, job_id
             ),
             output_path=(d / "convert_storyboard").relative_to(job_dir(job_id)),
         )
         storyboard_json = _parse_model_json(_response_text(storyboard_resp))
-        convert_storyboard = storyboard_json.get("storyboard") or []
-        if len(convert_storyboard) != slide_count:
-            raise RuntimeError(f"Deck builder returned {len(convert_storyboard)} storyboard entries; expected {slide_count}")
+        rhetorical_storyboard = storyboard_json.get("rhetorical_storyboard") or []
+        if len(rhetorical_storyboard) != slide_count:
+            raise RuntimeError(f"Deck builder returned {len(rhetorical_storyboard)} storyboard entries; expected {slide_count}")
 
-        actual_numbers = [int(item.get("slide_number") or 0) for item in convert_storyboard]
+        actual_numbers = [int(item.get("slide_number") or 0) for item in rhetorical_storyboard]
         expected_numbers = list(range(1, slide_count + 1))
         if actual_numbers != expected_numbers:
             raise RuntimeError(f"Deck builder slide_numbers must be {expected_numbers}; got {actual_numbers}")
 
         assigned_preview_indexes: list[int] = []
-        for item in convert_storyboard:
-            if not str(item.get("image_prompt") or "").strip():
-                raise RuntimeError(f"Deck builder storyboard entry for slide {item.get('slide_number')} is missing image_prompt")
+        for item in rhetorical_storyboard:
             preview_index = item.get("source_preview_index")
             if preview_index is None:
                 continue
@@ -2391,8 +2851,37 @@ async def convert_generation_worker(job_id: str):
         elif assigned_preview_indexes:
             raise RuntimeError("Deck builder must not emit source_preview_index when no kept preview slides were supplied")
 
+        ghostwritten_storyboard = await _ghostwrite_storyboard_copy(
+            job_id,
+            storyboard=rhetorical_storyboard,
+            founder_narrative_result=founder_narrative_result,
+            total_slide_count=slide_count,
+            strategy_dir=d,
+            stage_prefix="convert",
+        )
+        convert_storyboard = await _spirit_board_storyboard(
+            job_id,
+            rhetorical_storyboard=rhetorical_storyboard,
+            ghostwritten_storyboard=ghostwritten_storyboard,
+            visual_grammar_result=visual_grammar_result,
+            strategy_dir=d,
+            stage_prefix="convert",
+            vertex_images=vertex_paths if convert_uses_kept_previews else None,
+        )
+        storyboard_json["storyboard"] = convert_storyboard
+
+        copy_errors = prompts.storyboard_copy_errors(
+            convert_storyboard,
+            total_slide_count=slide_count,
+        )
+        if copy_errors:
+            raise RuntimeError(
+                "Deck builder storyboard copy budget violations: "
+                + " | ".join(copy_errors)
+            )
+
         image_prompts = {int(item["slide_number"]): item["image_prompt"] for item in convert_storyboard}
-        visual_grammar = storyboard_json.get("visual_grammar") or {}
+        visual_grammar = {}
         (d / "convert_storyboard.json").write_text(json.dumps(storyboard_json, indent=2))
     except Exception as e:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "convert_generation", "status": "failed", "error": str(e)[:500]})
@@ -2404,8 +2893,8 @@ async def convert_generation_worker(job_id: str):
             "slide_index": item["slide_number"],
             "slide_label": f"Slide {item['slide_number']}",
             "headline": item.get("title") or f"Slide {item['slide_number']}",
-            "body_points": [],
-            "speaker_note": item.get("purpose") or "",
+            "body_points": [str(point) for point in (item.get("body_points") or [])],
+            "speaker_note": item.get("rhetorical_job") or "",
         }
         for item in convert_storyboard
     ]
@@ -2419,7 +2908,7 @@ async def convert_generation_worker(job_id: str):
             {
                 "slide_number": item["slide_number"],
                 "title": item.get("title", ""),
-                "purpose": item.get("purpose", ""),
+                "purpose": item.get("rhetorical_job", ""),
                 "source_preview_index": item.get("source_preview_index"),
             }
             for item in convert_storyboard
@@ -2429,8 +2918,15 @@ async def convert_generation_worker(job_id: str):
     }
     (d / "deck_proof_plan.json").write_text(json.dumps(plan_json, indent=2))
     (d / "slide_specs.json").write_text(json.dumps(slide_specs, indent=2))
-    (d / "expected_text_map.json").write_text(json.dumps({}, indent=2))
-    db.update_job(job_id, status="plan_ready", deck_proof_plan=plan_json, slide_specs=slide_specs, expected_text_map={})
+    expected_text_map = {
+        str(spec["slide_index"]): {
+            "headline": spec["headline"],
+            "body_points": spec["body_points"],
+        }
+        for spec in slide_specs
+    }
+    (d / "expected_text_map.json").write_text(json.dumps(expected_text_map, indent=2))
+    db.update_job(job_id, status="plan_ready", deck_proof_plan=plan_json, slide_specs=slide_specs, expected_text_map=expected_text_map)
     db.update_job(job_id, status="rendering_slides")
 
     slides_dir = job_dir(job_id) / "slides"
@@ -2448,15 +2944,23 @@ async def convert_generation_worker(job_id: str):
             prompt_text = prompts.preserved_preview_to_paid_slide_image_prompt(
                 image_prompt=image_prompts.get(idx, ""),
                 source_preview_index=preview_index_int,
+                title=str(storyboard_item.get("title") or ""),
+                body_points=storyboard_item.get("body_points") or [],
             )
             slide_vertex_images = [vertex_paths[preview_index_int - 1]]
             slide_vertex_instruction = (
                 f"The following input image is kept preview slide {preview_index_int} for this same deck. "
-                "Preserve its on-canvas content and composition exactly, and convert only the artifact "
-                "surface into a clean full-bleed slide screenshot with no software UI chrome."
+                "Preserve its composition and visual treatment, but replace its visible wording with "
+                "the exact storyboard text contract. Convert only the artifact surface into a clean "
+                "full-bleed slide screenshot with no software UI chrome."
             )
         else:
-            prompt_text = prompts.paid_slide_image_prompt(image_prompts.get(idx, ""), visual_grammar)
+            prompt_text = prompts.paid_slide_image_prompt(
+                image_prompts.get(idx, ""),
+                visual_grammar,
+                title=str(storyboard_item.get("title") or ""),
+                body_points=storyboard_item.get("body_points") or [],
+            )
             slide_vertex_images = vertex_paths if convert_uses_kept_previews else None
             slide_vertex_instruction = (
                 "The following kept preview slides belong to this same deck. Use them as governing "
@@ -2471,8 +2975,8 @@ async def convert_generation_worker(job_id: str):
                     job_id,
                     stage=f"convert_slide_{idx}",
                     model=prompts.DECK_DRAFTER_MODEL,
-                    input=_deck_drafter_input(
-                        _anchor_payload(anchor_json, focused_prompt=prompt_text, slide_number=idx),
+                    input=_render_input(
+                        prompt_text,
                         job_id,
                         vertex_images=slide_vertex_images,
                         vertex_instruction=slide_vertex_instruction,
@@ -3036,9 +3540,7 @@ async def _verify_and_finalize_slide(
     # branch only runs for slides that made it past that check.
     strip_notes = []
     slide_override = (canon_overrides or {}).get(str(label)) or {}
-    slide_has_override = any(
-        str(slide_override.get(k) or "").strip() for k in ("headline", "body", "notes")
-    )
+    slide_has_override = bool(slide_override.get("_edited"))
     if slide_has_override:
         for element in checked_elements:
             decided_value = authorized_inferences.get(element)
@@ -3070,6 +3572,34 @@ async def _verify_and_finalize_slide(
         )
         disposition["verdict"] = "regenerate"
 
+    reviewed_body_value = slide_override.get("body")
+    if isinstance(reviewed_body_value, list):
+        reviewed_body_points = [
+            str(point).strip() for point in reviewed_body_value
+            if str(point).strip()
+        ]
+    elif isinstance(reviewed_body_value, str):
+        reviewed_body_points = [
+            point.strip() for point in reviewed_body_value.split(" | ")
+            if point.strip()
+        ]
+    else:
+        reviewed_body_points = []
+    original_body_points = [
+        str(point).strip() for point in (storyboard_entry.get("body_points") or [])
+        if str(point).strip()
+    ]
+    if slide_has_override and reviewed_body_points != original_body_points:
+        body_correction = (
+            "Change the body text to exactly these strings in this order: "
+            + json.dumps(reviewed_body_points, ensure_ascii=False)
+        )
+        existing_cc = (disposition.get("corrective_constraints") or "").strip()
+        disposition["corrective_constraints"] = (
+            f"{body_correction}\n{existing_cc}" if existing_cc else body_correction
+        )
+        disposition["verdict"] = "regenerate"
+
     entry = {
         "slide": label,
         "verifier_reports": verifier_reports,
@@ -3094,23 +3624,24 @@ async def _verify_and_finalize_slide(
             f"prompt is otherwise unchanged:\n{corrections}"
         )
         if original_image_prompt:
+            render_title = reviewed_headline or original_title
+            render_body_points = (
+                reviewed_body_points if slide_has_override else original_body_points
+            )
             regen_prompt = prompts.paid_slide_image_prompt(
-                f"{original_image_prompt}\n\n{correction_block}", visual_grammar,
+                f"{original_image_prompt}\n\n{correction_block}",
+                visual_grammar,
+                title=render_title,
+                body_points=render_body_points,
             )
         else:
             # Hero has no stored per-slide image_prompt to splice back in --
             # its base prompt is the same fixed template used originally.
             regen_prompt = f"{prompts.hero_slide_image_prompt(visual_grammar)}\n\n{correction_block}"
 
-        # The original per-slide generation call was never just the bare
-        # image_prompt -- it was wrapped with the deck's anchor narrative
-        # (deck_generation_prompt + user_inputs) via _deck_drafter_input, so
-        # every slide's generation shared the same grounding context. Without
-        # that, a regeneration reads only this one slide's text in isolation
-        # and can independently invent a different product concept from the
-        # same underspecified line (e.g. "console-style product screenshot"
-        # rendered as a GPS hiking app instead of the AI companion console
-        # every other slide depicts). Reuse the exact same wrapping here.
+        # The Spirit Boarder already made this prompt self-contained. Reuse the
+        # final visual authority, exact-copy contract, and actual image references;
+        # do not reopen Anchor/source prose during rendering or regeneration.
         append_telemetry(job_id, {
             "event_type": "regen_prompt_compiled",
             "stage": f"regen_{label}",
@@ -3119,14 +3650,26 @@ async def _verify_and_finalize_slide(
         })
         await _throttle_image_generation()
         try:
+            preview_paths = _preview_vertex_paths(job_id)
+            source_preview_index = storyboard_entry.get("source_preview_index")
+            if source_preview_index is not None and preview_paths:
+                preview_index = int(source_preview_index)
+                regen_vertex_images = [preview_paths[preview_index - 1]]
+                regen_vertex_instruction = (
+                    f"This is kept preview slide {preview_index}. Preserve its "
+                    "composition and visual treatment while the exact storyboard "
+                    "text contract replaces all visible wording."
+                )
+            else:
+                regen_vertex_images = preview_paths or None
+                regen_vertex_instruction = None
             resp = await _responses_create(
                 job_id, stage=f"regen_{label}", model=prompts.DECK_DRAFTER_MODEL,
-                input=_deck_drafter_input(
-                    _anchor_payload(
-                        anchor_json, focused_prompt=regen_prompt,
-                        slide_number=label if isinstance(label, int) else None,
-                    ),
+                input=_render_input(
+                    regen_prompt,
                     job_id,
+                    vertex_images=regen_vertex_images,
+                    vertex_instruction=regen_vertex_instruction,
                 ),
                 tools=[prompts.image_generation_tool(stage="paid")],
                 output_path=final_path.relative_to(job_dir(job_id)),
@@ -3181,9 +3724,7 @@ def _gate_check_inferred_element_decisions(
         ]
         for idx in affected:
             override = canon_overrides.get(str(idx)) or {}
-            has_replacement = any(
-                str(override.get(k) or "").strip() for k in ("headline", "body", "notes")
-            )
+            has_replacement = bool(override.get("_edited"))
             if not has_replacement:
                 errors.append(
                     f"Element '{element}' is checked for removal but slide {idx} "
@@ -3191,6 +3732,23 @@ def _gate_check_inferred_element_decisions(
                     f"write what {element} should be instead, or uncheck the box."
                 )
     return errors
+
+
+def _completed_storyboard_from_plan(plan: dict) -> list[dict]:
+    """Resolve the one completed storyboard for paid or converted decks."""
+    return list(
+        plan.get("paid_storyboard")
+        or plan.get("convert_storyboard")
+        or []
+    )
+
+
+def _storyboard_artifact_filename(plan: dict) -> str:
+    return (
+        "convert_storyboard.json"
+        if plan.get("mode") == "CONVERT"
+        else "paid_storyboard.json"
+    )
 
 
 async def verification_worker(job_id: str):
@@ -3205,18 +3763,15 @@ async def verification_worker(job_id: str):
     slide_specs = job.get("slide_specs") or []
     plan = job.get("deck_proof_plan") or {}
     deck_title = plan.get("deck_title", "Pitch Deck")
-    deck_storyboard = plan.get("paid_storyboard") or []
+    deck_storyboard = _completed_storyboard_from_plan(plan)
     storyboard_by_idx = {item["slide_number"]: item for item in deck_storyboard}
     elevator_pitch = job.get("elevator_pitch") or ""
     doc_text = job.get("doc_text")
     pitch_aspect_modes = prompts.normalize_pitch_aspect_modes(
         job.get("pitch_aspect_modes")
     )
-    # Original per-slide generation calls were grounded by the deck-wide
-    # anchor narrative (deck_generation_prompt + user_inputs), not just each
-    # slide's own image_prompt in isolation. A regeneration must reuse the
-    # same grounding or it can independently invent an unrelated concept from
-    # an underspecified line -- see _verify_and_finalize_slide.
+    # Retained for verifier context. Rendering/regeneration uses the completed
+    # Spirit Boarder prompt, exact-copy contract, and actual image references.
     anchor_json = plan.get("anchor_writer_output") or {}
 
     slides_dir = job_dir(job_id) / "slides"
@@ -3227,12 +3782,11 @@ async def verification_worker(job_id: str):
     export_slides_dir.mkdir(exist_ok=True)
     export_presenter_dir.mkdir(exist_ok=True)
 
-    # visual_grammar and authorized_inferences both live on disk
-    # (strategy/paid_storyboard.json) -- neither is persisted to the DB job
-    # record by generation_worker.
+    # Compatibility metadata lives in the mode-specific storyboard artifact.
     visual_grammar: dict = {}
     authorized_inferences: dict = {}
-    strategy_path = job_dir(job_id) / "strategy" / "paid_storyboard.json"
+    storyboard_filename = _storyboard_artifact_filename(plan)
+    strategy_path = job_dir(job_id) / "strategy" / storyboard_filename
     if strategy_path.exists():
         _storyboard_doc = json.loads(strategy_path.read_text()) or {}
         visual_grammar = _storyboard_doc.get("visual_grammar") or {}
@@ -3247,7 +3801,7 @@ async def verification_worker(job_id: str):
 
     gate_errors = _gate_check_inferred_element_decisions(
         inferred_element_decisions, authorized_inferences, canon_overrides,
-        [item for item in (plan.get("paid_storyboard") or [])],
+        deck_storyboard,
     )
     if gate_errors:
         append_telemetry(job_id, {"event_type": "workflow", "stage": "verification_finalization", "status": "blocked", "errors": gate_errors})
@@ -3262,7 +3816,10 @@ async def verification_worker(job_id: str):
             return idx, None, None
         shutil.copyfile(proof_path, export_presenter_dir / f"slide_{idx:02d}_proof.png")
         slide_review = (canon_overrides or {}).get(str(idx)) or {}
-        if not slide_review.get("_reverify", True):
+        if (
+            not slide_review.get("_reverify", True)
+            and not slide_review.get("_edited")
+        ):
             shutil.copyfile(proof_path, final_path)
             return idx, final_path, {
                 "slide": idx, "verdict": "passthrough",
@@ -3306,9 +3863,13 @@ async def verification_worker(job_id: str):
             append_telemetry(job_id, {"event_type": "workflow", "stage": "verification_finalization", "status": "slide_dropped", "slide": idx, "reason": (entry or {}).get("reasoning")})
             continue
         spec = next(s for s in slide_specs if s["slide_index"] == idx)
+        reviewed = (canon_overrides or {}).get(str(idx)) or {}
         composited.append((
-            spec, final_path, spec.get("headline", ""),
-            " | ".join(spec.get("body_points", [])), spec.get("speaker_note", ""),
+            spec,
+            final_path,
+            reviewed.get("headline") or spec.get("headline", ""),
+            reviewed.get("body") or " | ".join(spec.get("body_points", [])),
+            reviewed.get("notes") or spec.get("speaker_note", ""),
         ))
         manifest_entries.append(entry)
 
