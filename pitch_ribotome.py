@@ -207,10 +207,12 @@ async def _canonical_anchor(values: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 async def _founder_narrative(values: Mapping[str, Any]) -> Mapping[str, Any]:
+    page_2 = dict(values["user_inputs"].get("page_2") or {})
+    founder_writing_sample = str(page_2.get("elevator_pitch") or "").strip()
+    if not founder_writing_sample:
+        raise RuntimeError("FNS received no founder elevator-pitch writing sample")
     prompt = prompts.founder_narrative_synthesis_prompt(
-        deck_generation_prompt=values["canonical_anchor"]["deck_generation_prompt"],
-        user_inputs=values["user_inputs"],
-        selected_template=values["selected_template"],
+        founder_writing_sample=founder_writing_sample,
     )
     response = await workers._responses_create(
         str(values["job_id"]), stage="ribotome_founder_narrative",
@@ -488,8 +490,7 @@ PITCH_GRAPH = Graph([
     Node(
         id="founder_narrative", depends=("canonical_anchor",),
         inputs={name: P(kind) for name, kind in {
-            "job_id":"str", "canonical_anchor":"dict", "user_inputs":"dict",
-            "selected_template":"dict", "strategy_dir":"path",
+            "job_id":"str", "user_inputs":"dict", "strategy_dir":"path",
         }.items()},
         outputs={"founder_identity": P("dict")}, run=_founder_narrative,
         description="Create the Ghostwriter system prompt.",

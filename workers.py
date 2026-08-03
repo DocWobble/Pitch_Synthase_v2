@@ -1039,10 +1039,15 @@ async def _synthesize_anchor_expansions(
         deck_generation_prompt=deck_generation_prompt,
         selected_template=selected_template,
     )
+    founder_writing_sample = str(
+        (user_inputs.get("page_2") or {}).get("elevator_pitch")
+        or user_inputs.get("elevator_pitch")
+        or ""
+    ).strip()
+    if not founder_writing_sample:
+        raise RuntimeError("FNS received no founder elevator-pitch writing sample")
     founder_narrative_prompt = prompts.founder_narrative_synthesis_prompt(
-        deck_generation_prompt=deck_generation_prompt,
-        user_inputs=user_inputs,
-        selected_template=selected_template,
+        founder_writing_sample=founder_writing_sample,
     )
 
     visual_grammar_response, founder_narrative_response = await asyncio.gather(

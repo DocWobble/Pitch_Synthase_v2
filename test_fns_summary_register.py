@@ -59,33 +59,24 @@ class FounderSummaryRegisterTests(unittest.TestCase):
 
     def test_fns_builds_roleplay_character_for_ghostwriter_only(self):
         prompt = prompts.founder_narrative_synthesis_prompt(
-            deck_generation_prompt="Anchor narrative",
-            user_inputs={"audience": "investors"},
-            selected_template={"archetype": "operator"},
+            founder_writing_sample="I built this because the old way kept breaking.",
         )
 
-        self.assertIn("Build a roleplay", prompt)
-        self.assertIn("YOU ARE", prompt)
-        self.assertIn("WHAT SHAPED YOU", prompt)
-        self.assertIn("WHAT YOU NOTICE", prompt)
-        self.assertIn("HOW YOU THINK", prompt)
-        self.assertIn("HOW YOU TALK", prompt)
-        self.assertIn("WORDS YOU USE", prompt)
-        self.assertIn("YOUR RHETORICAL HABITS", prompt)
-        self.assertIn("WHEN YOU ARE PUSHED", prompt)
-        self.assertIn("WHEN YOU WRITE THESE SLIDES", prompt)
-        self.assertIn("write the page again from a blank page", prompt)
-        self.assertIn("addressed to the dedicated storyboard ghostwriter", prompt)
+        self.assertIn("FOUNDER VOICE FORGE 🧬", prompt)
+        self.assertIn("🪞 SELF", prompt)
+        self.assertIn("🧱 ORIGIN", prompt)
+        self.assertIn("👁️ WORLD", prompt)
+        self.assertIn("🤝 AUDIENCE", prompt)
+        self.assertIn("⚙️ BEHAVIOR", prompt)
+        self.assertIn("🔥 PRESSURE", prompt)
+        self.assertIn("🎭 RANGE TEST", prompt)
+        self.assertIn("Do not produce a style guide. Reconstruct the speaker.", prompt)
+        self.assertIn("Treat every odd choice as evidence", prompt)
         self.assertIn('"ghostwriter_system_prompt"', prompt)
-        self.assertIn('open with "You are..."', prompt)
-        self.assertIn("maintain that subject position throughout", prompt)
-        self.assertIn("The system prompt installs an identity", prompt)
-        self.assertIn("The target is a person, not an optimized presenter", prompt)
-        self.assertIn("ordinary words, contractions where natural", prompt)
-        self.assertIn("human subjectivity, not a rhetorical framework", prompt)
-        self.assertIn("The Deck Builder never receives it", prompt)
-        self.assertNotIn('"archetype": "operator"', prompt)
-        self.assertNotIn("Write one continuous 140-240 word summary", prompt)
+        self.assertIn("I built this because the old way kept breaking.", prompt)
+        self.assertIn("Rewrite the supplied deck copy as though this character personally originated it", prompt)
+        self.assertNotIn("Anchor narrative", prompt)
+        self.assertNotIn("selected_template", prompt)
 
     def test_deck_builder_has_hard_copy_and_space_budget(self):
         prompt = prompts.paid_deck_builder_prompt(
