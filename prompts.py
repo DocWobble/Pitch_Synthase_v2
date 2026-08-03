@@ -2865,7 +2865,9 @@ def format_storyboard_text_contract(
         f"""
         STORYBOARD TEXT CONTRACT — VERBATIM AND EXHAUSTIVE:
         The storyboard is the sole authority for visible prose on this slide.
-        Render only these exact strings, preserving every word, spelling mark,
+        Render every string below as legible typography inside the finished slide.
+        This output is the complete slide, not a background for later typesetting.
+        Preserve every word, spelling mark,
         punctuation mark, number, capitalization choice, and order:
         {_json(approved)}
 
@@ -4231,8 +4233,9 @@ def spirit_boarder_user_prompt(
         You own per-slide visual interpretation only. Preserve every rhetorical
         job, required relationship, layout constraint, and any source_preview_index.
         Treat supplied title and body_points as immutable text slots whose lengths
-        and hierarchy determine composition. Do not quote, restate, edit,
-        paraphrase, shorten, expand, or add visible prose. Do not invent captions,
+        and hierarchy determine composition. They will be rendered as typography
+        inside the finished slide, not added later. Do not quote, restate, edit,
+        paraphrase, shorten, expand, or add any other visible prose. Do not invent captions,
         labels, legends, annotations, axis text, logo lettering, or pagination.
 
         Actual images attached to this call are visual evidence. Use their real
@@ -4244,8 +4247,12 @@ def spirit_boarder_user_prompt(
         Every image_prompt must be self-contained because it will be sent to an
         image worker without your system prompt. Restate the concrete palette,
         typography, material, grid, subject, composition, hierarchy, negative
-        space, and placement of separately supplied text slots required for that
-        slide. It must contain no visible prose.
+        space, and typographic treatment and placement of the immutable title and
+        body-point slots required for that slide. Do not include their wording in
+        image_prompt; code appends the exact copy before rendering. End every
+        image_prompt with this exact sentence: "Render the immutable storyboard
+        title and body copy supplied with this specification as finished
+        typography in those placements. Add no other visible prose."
 
         Return strict JSON only with exactly one top-level key,
         "visual_storyboard". Return one object per slide containing exactly

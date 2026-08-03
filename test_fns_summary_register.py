@@ -46,6 +46,8 @@ class FounderSummaryRegisterTests(unittest.TestCase):
         self.assertIn("Actual images attached to this call are visual evidence", prompt)
         self.assertIn("immutable text slots", prompt)
         self.assertIn("Every image_prompt must be self-contained", prompt)
+        self.assertIn("supplied with this specification as finished", prompt)
+        self.assertIn("typography in those placements. Add no other visible prose", prompt)
         self.assertIn("How It Works", prompt)
 
     def test_fns_builds_roleplay_character_for_ghostwriter_only(self):
