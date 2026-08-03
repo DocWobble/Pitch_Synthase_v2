@@ -147,8 +147,9 @@ It creates the only visual specification for each slide:
 ```
 
 It may make wholesale visual judgments within the rhetorical job and VGS
-identity. It cannot add, quote, paraphrase, or rewrite visible prose in the image
-prompt. Actual references outrank prose about factual appearance.
+identity. It preserves supplied prose exactly and may integrate or quote it when
+describing the finished graphic design, but cannot add, paraphrase, or rewrite
+it. Actual references outrank prose about factual appearance.
 
 ### 2.6 Image workers
 
@@ -243,7 +244,7 @@ The worker rejects outputs that violate any of these boundaries:
 - Deck Builder visible copy or visual instructions;
 - Ghostwriter copy exceeding the Deck Builder's capacity budget;
 - Ghostwriter changes to slide coverage;
-- Spirit Boarder missing a slide or inserting visible prose into image prompts;
+- Spirit Boarder missing a slide or changing supplied visible prose;
 - missing title/body copy or image prompt at render time;
 - a renderer prompt without the exhaustive exact-copy contract.
 

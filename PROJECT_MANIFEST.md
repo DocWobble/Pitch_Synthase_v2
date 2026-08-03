@@ -58,8 +58,8 @@ rewrite copy. Image workers do not reopen Anchor/source prose.
 - VGS output is the Spirit Boarder **system prompt**.
 - Ghostwriter may rewrite wholesale while slide coverage, facts, and capacity
   budgets remain enforced.
-- Spirit Boarder receives actual visual-reference images but does not embed
-  visible copy in its image prompts.
+- Spirit Boarder receives actual visual-reference images and integrates the
+  preserved Ghostwriter copy into its finished-slide design specifications.
 - Renderer prompts contain the exhaustive final-copy contract and prohibit all
   additional readable prose.
 - One RunReady slide rendered through the repaired final package with exact

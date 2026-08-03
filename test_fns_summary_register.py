@@ -50,6 +50,13 @@ class FounderSummaryRegisterTests(unittest.TestCase):
         self.assertIn("How It Works", prompt)
         self.assertEqual(1, prompt.count('"slide_number": 2'))
 
+        synthesis_prompt = prompts.spirit_boarder_system_synthesis_prompt(
+            deck_generation_prompt="Canonical argument.",
+            selected_template={"visual_direction": "Documentary proof."},
+        )
+        self.assertIn("preserve that prose exactly and integrate it", synthesis_prompt)
+        self.assertNotIn("never quote them into image prompts", synthesis_prompt)
+
     def test_fns_builds_roleplay_character_for_ghostwriter_only(self):
         prompt = prompts.founder_narrative_synthesis_prompt(
             deck_generation_prompt="Anchor narrative",

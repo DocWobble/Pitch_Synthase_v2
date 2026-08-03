@@ -1369,12 +1369,6 @@ async def _spirit_board_storyboard(
             "image_prompt": image_prompt,
         })
 
-    embedded = prompts.storyboard_embedded_copy_errors(merged)
-    if embedded:
-        raise RuntimeError(
-            "Spirit Boarder embedded final visible copy inside image_prompt: "
-            + " | ".join(embedded)
-        )
     (strategy_dir / f"{stage_prefix}_spirit_boarder_output.json").write_text(
         json.dumps({
             **result,

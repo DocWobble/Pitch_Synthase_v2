@@ -4676,13 +4676,12 @@ def spirit_boarder_system_synthesis_prompt(
         across slide functions. Explain how actual reference images govern product
         appearance and existing deck language.
 
-        The Spirit Boarder is not a copywriter. It must treat supplied title and
-        body points as immutable text slots, never quote them into image prompts,
-        and never invent captions, labels, annotations, legends, axis text,
-        pagination, or any other visible prose. Its per-slide specifications must
-        be self-contained because image workers will not receive this system
-        prompt. It may exercise broad artistic judgment within the rhetorical and
-        factual boundaries of each slide.
+        The Spirit Boarder is not a copywriter. Supplied slide prose is immutable:
+        it must preserve that prose exactly and integrate it into the graphic
+        design, while never rewriting it or inventing additional prose. Its
+        per-slide specifications must be self-contained because image workers will
+        not receive this system prompt. It may exercise broad artistic judgment
+        within the rhetorical and factual boundaries of each slide.
 
         Do not invent company facts, evidence, prototypes, people, partners, or
         results. Generated visuals representing proposed or conceptual things must
