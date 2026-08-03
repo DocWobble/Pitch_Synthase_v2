@@ -1,0 +1,210 @@
+VOLTEX — USER INPUTS TO PITCH SYNTHASE
+Run log: pitch_synthase_archetype_workshop/samples/run-logs/voltex/
+Compiled: 2026-08-03
+═══════════════════════════════════════════════════════════════════════════════
+
+
+FIELD: AUDIENCE
+───────────────────────────────────────────────────────────────────────────────
+Suburban kids aged 8 to 14 who have exhausted every Nerf blaster in the house,
+and the parents who will buy this anyway
+
+
+FIELD: WHAT TO CONVEY
+───────────────────────────────────────────────────────────────────────────────
+A toy so viscerally real and dangerous-feeling that kids cannot stop screaming
+about it on camera, and parents rationalize the risk as memorable play. The
+visual register must be hypercolor 90s radical toy ad: oversaturated neon
+palette (hot pinks, electric blues, screaming yellows), diegetic action poses
+where the kids are caught mid-chaos like Super Soaker box photography,
+scorched-earth 'THIS IS THE MOST RADICAL THING' energy. The counterintuitive
+challenge: market a genuinely high-tech plasma emitter entirely in the register
+of a coke-fueled 90s children's toy campaign — no tech-lab aesthetics, no
+adult credibility signaling, pure dangerous-fun toy aisle aggression. One
+approach must emphasize that the product is so unbelievable you can barely
+register photos of it as real — not stylized, not CGI, not illustrated: actual
+photographic documentation of physics working, raw footage credibility, the
+kind of image where you think the camera is lying but it isn't. The toy design
+is translucent frosted bright-colored plastic (never black or silver), wide
+flared muzzle, visible glowing cartridge bay, clearly and aggressively
+non-threatening silhouette — closer to a handheld plasma globe than any
+firearm.
+
+
+FIELD: PRIMARY ARCHETYPE SELECTION
+───────────────────────────────────────────────────────────────────────────────
+Newton — The Efficiency Optimizer
+"This pitch wins because it takes an existing process and makes it an order of
+magnitude faster or cheaper through a fundamental, provable understanding of
+the system's governing laws."
+
+
+FIELD: APPROACH SELECTION
+───────────────────────────────────────────────────────────────────────────────
+Scream Proof (approach_1)
+Secondary archetype: Cicero — The Market Evangelist
+Effective archetype: Cicero
+
+Pitch angle: Lead with the impossible visual fact that Voltex forms a real
+glowing plasma orb, launches a self-stabilizing bolt, and does it in a package
+engineered for backyard play. This wins by turning physics into playground
+legend: the more mechanically explainable it is, the more contagious the kid
+reaction becomes.
+
+
+FIELD: ELEVATOR PITCH
+───────────────────────────────────────────────────────────────────────────────
+*[OPEN ON: Slow motion. A plasma bolt — vivid argon purple — crosses the frame
+left to right. The air around it shimmers. A dog watches it go by. The dog is
+losing its mind.]*
+
+*[SMASH CUT TO: Three kids in a backyard. One raises Voltex. Pulls the
+trigger.]*
+
+**KID 1:** WHOOOOOA—
+
+*[The bolt hits a cardboard castle. It scorches a perfect circle. The castle
+tips over.]*
+
+*[SMASH CUT TO: Product rotating in void. Blue-white arc crawling along the
+translucent barrel.]*
+
+**ANNOUNCER:** VOLTEX.
+
+*[Beat.]*
+
+**ANNOUNCER:** It shoots. **Lightning.**
+
+*[SMASH CUT TO: Kid running in slow motion, firing over shoulder. Three bolts
+in the air simultaneously. His face is a religious experience.]*
+
+**KID 2:** It's actually REAL—
+
+**KID 3:** I KNOW—
+
+*[SMASH CUT TO: Product close-up. The piezo igniter clicks. The field goes
+live. Noble gas blooms purple inside the translucent frosted chamber — you can
+see it glow through the housing. The muzzle is wide and flared, tapered back
+to a chunky grip. It looks nothing like a firearm. It looks like a plasma globe
+you can point at things.]*
+
+**ANNOUNCER:** Real plasma vortex projectile. Self-stabilizing. Color changing.
+Fires up to THIRTY FEET.
+
+*[SMASH CUT TO: Chromatic cartridge swap. Orange cartridge clicks into the
+visible bay window — the whole housing shifts color through the frosted plastic.
+Orange neon bolt arcs across frame.]*
+
+**ANNOUNCER:** Choose your color. **Choose your power.**
+
+*[Three kids vs. three kids across a yard. Bolts crossing in midair. Slow
+motion chaos. Someone's lawn chair is on fire in the background. No one has
+noticed.]*
+
+**KID 1:** *(screaming into camera)* IT'S BETTER THAN EVERYTHING.
+
+*[SMASH CUT TO: Mom in doorway. She watches a purple bolt sail past. She does
+not look alarmed. She looks vaguely impressed. This is the entire parent beat.
+Three seconds.]*
+
+*[SMASH CUT TO: Product on black. Translucent body, wide flared muzzle, frosted
+purple housing lit from inside — six color variants racked behind it, each one
+a different glow.]*
+
+**ANNOUNCER:** Voltex. Chromatic edition. Collect all six colors.
+
+*[Logo hits with a crack of actual electricity.]*
+
+**ANNOUNCER:** Ask your parents.
+
+*[Fine print scrolls at genuinely illegal speed: "Adult supervision
+recommended. Not for indoor use. Allow 90 seconds between power block
+activation and firing. Do not fire at face. Do not fire at pets. Lawn chair
+incident not representative of typical use. Noble gas cartridges sold
+separately. Krypton Green available Q4."]*
+
+**ANNOUNCER:** VOLTEX.
+
+*[The dog from the opening runs through frame chasing a bolt.]*
+
+*[Cut to black.]*
+
+
+FIELD: SUPPORTING DOCUMENT (TECHNICAL ADDENDUM)
+───────────────────────────────────────────────────────────────────────────────
+VOLTEX — TECHNICAL ADDENDUM TO PITCH MATERIAL
+Mechanism brief for generation purposes. Appended to elevator pitch as source
+material.
+
+WHAT IT ACTUALLY IS
+
+Voltex is a modified Tesla coil coupled to an integrated magnetic accelerator,
+purpose-built to ignite and launch self-stabilizing ball lightning. The
+projectile is real plasma — not a laser, not an arc, not a beam — trapped in
+a rotating magnetic vortex and accelerated down the barrel like a coilgun
+round.
+
+The key physics is rotating magnetic fields: not mechanical rotation, but a
+phase envelope — an m=1 surface wave forced to propagate around a looped
+surface (a spherical cap geometry), cycling fast enough to create a sealed
+pocket in space. This is the same principle as whispering gallery mode
+resonators — RF energy confined to a surface physically smaller than its own
+wavelength, which forces evanescence rather than radiation. The result is a
+toroidal maelstrom of short-range, high-intensity magnetic field that can hold
+plasma suspended in midair without direct contact.
+
+THE MECHANISM SEQUENCE
+
+The barrel contains a birdcage resonator — an impeller coil that traces the
+full length of the barrel in a tight helix, exactly like rifling. When the
+circuit is activated, the resonator generates the rotating confinement field at
+the center of the chamber. This is visually spectacular before the shot is even
+fired: a visible plasma orb forms inside the translucent center globe, held
+suspended in the middle of the housing.
+
+The offhand operates a piezo striker mounted like a shotgun pump. Pressing it
+ignites the air in the chamber into breakdown — the noble gas cartridge
+determines the color. The rotating field holds the plasma ball in an excited,
+coherent state while it charges.
+
+Pulling the trigger changes the circuit state: the chamber confinement drops
+and a discharge pulse propagates through the impeller coils in sequence,
+creating a collimated rotating vortex down the barrel that accelerates the
+plasma slug like a coilgun round. The plasma exits the muzzle still spinning,
+still self-confined by its own magnetic curl. It begins decohering immediately
+— like eddy currents dissipating, or a firework losing coherence — traveling
+a variable distance before the vortex unravels and it dissipates.
+
+HONEST LIMITATIONS (WHICH ARE ALSO THE SAFETY CASE)
+
+The plasma slug has too little mass to carry meaningful thermal energy. It
+cannot ignite a fuse, cannot start a fire, cannot sustain contact — it scorches
+cardboard at close range and dissipates on contact. Accuracy is variable
+because decoherence is environmentally sensitive. It requires both hands because
+the offhand piezo is part of the firing sequence — you cannot operate it
+single-handed. The two-hand form factor, combined with a body sized
+specifically to prevent self-targeting, is not a compliance workaround; it is
+a mechanical requirement of the design.
+
+FORM FACTOR
+
+Not a pistol. The closest existing cultural analog is the Heavy Plasma Cannon:
+two-hand grip, wide rounded body, substantial length, large emitter. The body
+is bright ASA plastic — not acrylic, which cannot withstand prolonged UV from
+the plasma — in the color of the cartridge variant. All metal components are
+sheathed in the housing; nothing electrically active is touchable during
+operation. The translucent globe at the center of the housing is structural —
+it is the visible charging chamber, and it glows the color of the loaded noble
+gas as the plasma builds. The muzzle is wide and flared, the barrel visibly
+long, and the overall silhouette reads as science equipment before it reads as
+anything else. The device is specifically engineered to be too large for a
+child to aim at themselves.
+
+INVENTOR LINEAGE
+
+The first Super Soaker was designed by a NASA engineer. The first Voltex was
+designed by an engineer who would have been at NASA if NASA had still been
+hiring in plasma confinement and field propulsion at the time they graduated.
+The design philosophy is identical: take physics that belongs in a laboratory
+and find the exact configuration that makes it safe, manufacturable, and
+undeniably fun.
