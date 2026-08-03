@@ -43,12 +43,12 @@ class FounderSummaryRegisterTests(unittest.TestCase):
                 "body_points": ["One exact fact"],
             }],
         )
-        self.assertIn("Actual images attached to this call are visual evidence", prompt)
-        self.assertIn("immutable text slots", prompt)
-        self.assertIn("Every image_prompt must be self-contained", prompt)
-        self.assertIn("supplied with this specification as finished", prompt)
-        self.assertIn("typography in those placements. Add no other visible prose", prompt)
+        self.assertIn("Here is the slide deck outline for this pitch", prompt)
+        self.assertIn("director described in the system prompt", prompt)
+        self.assertIn("Preserve all prose as written", prompt)
+        self.assertIn("creative latitude", prompt)
         self.assertIn("How It Works", prompt)
+        self.assertEqual(1, prompt.count('"slide_number": 2'))
 
     def test_fns_builds_roleplay_character_for_ghostwriter_only(self):
         prompt = prompts.founder_narrative_synthesis_prompt(

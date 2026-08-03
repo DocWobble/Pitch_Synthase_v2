@@ -4225,46 +4225,32 @@ def spirit_boarder_user_prompt(
     storyboard_copy: Sequence[Mapping[str, Any]],
 ) -> str:
     """Ask the visual counterpart of the Ghostwriter for render specifications."""
+    copy_by_number = {
+        int(item.get("slide_number") or 0): dict(item)
+        for item in storyboard_copy
+    }
+    deck_outline = [
+        {
+            **dict(item),
+            **copy_by_number.get(int(item.get("slide_number") or 0), {}),
+        }
+        for item in rhetorical_storyboard
+    ]
     return dedent(f"""
-        These slides have already been rhetorically organized and written.
-        Art-direct each slide so its composition expresses the visual identity
-        installed in your system prompt.
-
-        You own per-slide visual interpretation only. Preserve every rhetorical
-        job, required relationship, layout constraint, and any source_preview_index.
-        Treat supplied title and body_points as immutable text slots whose lengths
-        and hierarchy determine composition. They will be rendered as typography
-        inside the finished slide, not added later. Do not quote, restate, edit,
-        paraphrase, shorten, expand, or add any other visible prose. Do not invent captions,
-        labels, legends, annotations, axis text, logo lettering, or pagination.
-
-        Actual images attached to this call are visual evidence. Use their real
-        appearance, materials, proportions, spatial behavior, and established deck
-        language where relevant. Ignore and never reproduce words visible inside
-        reference images. Written source facts do not override an actual supplied
-        product or design reference's appearance.
-
-        Every image_prompt must be self-contained because it will be sent to an
-        image worker without your system prompt. Restate the concrete palette,
-        typography, material, grid, subject, composition, hierarchy, negative
-        space, and typographic treatment and placement of the immutable title and
-        body-point slots required for that slide. Do not include their wording in
-        image_prompt; code appends the exact copy before rendering. End every
-        image_prompt with this exact sentence: "Render the immutable storyboard
-        title and body copy supplied with this specification as finished
-        typography in those placements. Add no other visible prose."
+        Here is the slide deck outline for this pitch. You are the creative
+        director described in the system prompt. Your job is to describe each of
+        these slides in terms of its graphic design so it can be passed to an
+        image generator to visualize. Preserve all prose as written and preserve
+        the slide content. You otherwise have creative latitude to craft the deck
+        visuals as you see fit for making the pitch successful.
 
         Return strict JSON only with exactly one top-level key,
         "visual_storyboard". Return one object per slide containing exactly
         slide_number, composition_intent, and image_prompt.
 
-        RHETORICAL STORYBOARD
-        ---------------------
-        {_json(list(rhetorical_storyboard))}
-
-        FINAL VISIBLE COPY — IMMUTABLE
-        ------------------------------
-        {_json(list(storyboard_copy))}
+        SLIDE DECK OUTLINE
+        ------------------
+        {_json(deck_outline)}
     """).strip()
 
 
