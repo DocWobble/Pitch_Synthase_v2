@@ -294,7 +294,9 @@ performs approach drafting plus one preview render per approach, returns their
 paths, and cannot execute selection, paid generation, or any later node.
 
 Use `spirit_boarder` as the terminal node for storyboard-only work. Select
-`render_slides` only when image calls are wanted. The corresponding internal
+`compile_image_calls` to inspect the exact per-slide prompts, tool settings,
+reference paths, and output paths without generating images. Select
+`render_slides` only after those calls are approved. The corresponding internal
 HTTP adapters are `GET /api/graph/steps`, `GET /api/graph/plan`, and
 `POST /api/graph/run`; the CLI remains the primary operator surface.
 

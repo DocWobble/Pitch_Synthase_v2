@@ -310,12 +310,10 @@ async def _spirit_boarder(values: Mapping[str, Any]) -> Mapping[str, Any]:
     return {"completed_storyboard": completed}
 
 
-async def _render_slides(values: Mapping[str, Any]) -> Mapping[str, Any]:
+def _compile_image_calls(values: Mapping[str, Any]) -> Mapping[str, Any]:
     job_id = str(values["job_id"])
     storyboard = list(values["completed_storyboard"])
     strategy_dir = Path(str(values["strategy_dir"]))
-    slides_dir = workers.job_dir(job_id) / "slides"
-    slides_dir.mkdir(parents=True, exist_ok=True)
     slide_specs = [{
         "slide_index": int(item["slide_number"]),
         "slide_label": f"Slide {int(item['slide_number'])}",
@@ -343,24 +341,59 @@ async def _render_slides(values: Mapping[str, Any]) -> Mapping[str, Any]:
         "expected_text_map.json": expected_text_map,
     }.items():
         (strategy_dir / name).write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    db.update_job(
-        job_id, status="rendering_slides", deck_proof_plan=proof_plan,
-        slide_specs=slide_specs, expected_text_map=expected_text_map,
-    )
-
-    async def render(spec: dict[str, Any]) -> tuple[int, str]:
+    reference_paths = [str(path) for path in workers._visual_reference_paths(job_id)]
+    image_calls = []
+    for spec in slide_specs:
         index = int(spec["slide_index"])
         item = next(row for row in storyboard if int(row["slide_number"]) == index)
         prompt = prompts.paid_slide_image_prompt(
             str(item["image_prompt"]), {}, title=spec["headline"],
             body_points=spec["body_points"],
         )
-        output = slides_dir / f"slide_{index:02d}_proof.png"
+        image_calls.append({
+            "slide_index": index,
+            "stage": f"ribotome_render_{index}",
+            "model": prompts.DECK_DRAFTER_MODEL,
+            "tool": prompts.image_generation_tool(stage="paid"),
+            "prompt": prompt,
+            "reference_image_paths": reference_paths,
+            "output_path": f"slides/slide_{index:02d}_proof.png",
+        })
+    (strategy_dir / "image_calls.json").write_text(
+        json.dumps({"image_calls": image_calls}, indent=2), encoding="utf-8"
+    )
+    return {
+        "slide_specs": slide_specs,
+        "deck_proof_plan": proof_plan,
+        "image_calls": image_calls,
+    }
+
+
+async def _render_slides(values: Mapping[str, Any]) -> Mapping[str, Any]:
+    job_id = str(values["job_id"])
+    slides_dir = workers.job_dir(job_id) / "slides"
+    slides_dir.mkdir(parents=True, exist_ok=True)
+    slide_specs = list(values["slide_specs"])
+    proof_plan = dict(values["deck_proof_plan"])
+    image_calls = list(values["image_calls"])
+    expected_text_map = {
+        str(spec["slide_index"]): {
+            "headline": spec["headline"], "body_points": spec["body_points"]
+        } for spec in slide_specs
+    }
+    db.update_job(
+        job_id, status="rendering_slides", deck_proof_plan=proof_plan,
+        slide_specs=slide_specs, expected_text_map=expected_text_map,
+    )
+
+    async def render(call: dict[str, Any]) -> tuple[int, str]:
+        index = int(call["slide_index"])
+        output = workers.job_dir(job_id) / str(call["output_path"])
         await workers._throttle_image_generation()
         response = await workers._responses_create(
-            job_id, stage=f"ribotome_render_{index}", model=prompts.DECK_DRAFTER_MODEL,
-            input=workers._render_input(prompt, job_id),
-            tools=[prompts.image_generation_tool(stage="paid")],
+            job_id, stage=str(call["stage"]), model=str(call["model"]),
+            input=workers._render_input(str(call["prompt"]), job_id),
+            tools=[dict(call["tool"])],
             output_path=output.relative_to(workers.job_dir(job_id)),
         )
         images = workers._response_images(response)
@@ -369,7 +402,7 @@ async def _render_slides(values: Mapping[str, Any]) -> Mapping[str, Any]:
         await workers._write_image_from_b64(images[0], output)
         return index, str(output)
 
-    rendered = await workers._chunked_gather([render(spec) for spec in slide_specs])
+    rendered = await workers._chunked_gather([render(call) for call in image_calls])
     proof_paths = [path for _, path in sorted(rendered)]
     db.update_job(
         job_id, status="awaiting_review",
@@ -377,11 +410,7 @@ async def _render_slides(values: Mapping[str, Any]) -> Mapping[str, Any]:
             "decision": "as_generated", "layout_usable": True, "text_regions": []
         } for spec in slide_specs},
     )
-    return {
-        "slide_specs": slide_specs,
-        "deck_proof_plan": proof_plan,
-        "proof_image_paths": proof_paths,
-    }
+    return {"proof_image_paths": proof_paths}
 
 
 P = Port
@@ -502,7 +531,7 @@ PITCH_GRAPH = Graph([
         description="Author the final visual specifications without rewriting copy.",
     ),
     Node(
-        id="render_slides", depends=("spirit_boarder",),
+        id="compile_image_calls", depends=("spirit_boarder",),
         inputs={name: P(kind) for name, kind in {
             "job_id":"str", "completed_storyboard":"list", "strategy_dir":"path",
             "canonical_anchor":"dict", "content_slide_count":"int",
@@ -510,8 +539,18 @@ PITCH_GRAPH = Graph([
         }.items()},
         outputs={
             "slide_specs": P("list"), "deck_proof_plan": P("dict"),
-            "proof_image_paths": P("list"),
+            "image_calls": P("list"),
         },
+        run=_compile_image_calls,
+        description="Compile inspectable per-slide image calls without generating images.",
+    ),
+    Node(
+        id="render_slides", depends=("compile_image_calls",),
+        inputs={name: P(kind) for name, kind in {
+            "job_id":"str", "slide_specs":"list", "deck_proof_plan":"dict",
+            "image_calls":"list",
+        }.items()},
+        outputs={"proof_image_paths": P("list")},
         run=_render_slides,
         description="Render every completed slide with one exact-copy authority.",
     ),

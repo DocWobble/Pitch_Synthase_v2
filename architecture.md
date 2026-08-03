@@ -27,8 +27,9 @@ missing, undeclared, wrongly typed, dropped, or extra ports.
 `pitch_ribotome.py` declares the real approach and paid-generation nodes:
 `prepare_pitch`, `approach_draft`, `approach_previews`, `select_approach`, `prepare_paid`,
 `canonical_anchor`, parallel `founder_narrative` /
-`visual_grammar` / `rhetorical_storyboard`, `ghostwriter`, `spirit_boarder`, and
-optional `render_slides`. These adapters use the same prompt/worker helpers as
+`visual_grammar` / `rhetorical_storyboard`, `ghostwriter`, `spirit_boarder`,
+`compile_image_calls`, and optional `render_slides`. The compile node is the
+native review boundary before any image-generation call. These adapters use the same prompt/worker helpers as
 the web workflow.
 
 `ribotome_cli.py` and `/api/graph/*` are adapters over this same module. The
