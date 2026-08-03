@@ -25,7 +25,7 @@ node runners whose interface is not exactly one input mapping. Execution rejects
 missing, undeclared, wrongly typed, dropped, or extra ports.
 
 `pitch_ribotome.py` declares the real approach and paid-generation nodes:
-`prepare_pitch`, `approach_draft`, `select_approach`, `prepare_paid`,
+`prepare_pitch`, `approach_draft`, `approach_previews`, `select_approach`, `prepare_paid`,
 `canonical_anchor`, parallel `founder_narrative` /
 `visual_grammar` / `rhetorical_storyboard`, `ghostwriter`, `spirit_boarder`, and
 optional `render_slides`. These adapters use the same prompt/worker helpers as

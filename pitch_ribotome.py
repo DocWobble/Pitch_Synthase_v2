@@ -66,6 +66,7 @@ def _prepare_pitch(values: Mapping[str, Any]) -> Mapping[str, Any]:
         excepted_inference_elements=excepted,
         inferred_element_decisions={key: False for key in excepted},
         infer_prototype=0,
+        explicit_slide_count=(int(values["slide_count"]) - 2) if values.get("slide_count") else None,
     )
     user_inputs = {
         "page_1": {
@@ -116,6 +117,32 @@ async def _draft_approaches(values: Mapping[str, Any]) -> Mapping[str, Any]:
     return {"approach_candidates": list(candidates)}
 
 
+async def _render_approach_previews(values: Mapping[str, Any]) -> Mapping[str, Any]:
+    job_id = str(values["job_id"])
+    candidates = list(values["approach_candidates"])
+    await workers._chunked_gather([
+        workers.single_slide_preview_worker(job_id, str(candidate["approach_id"]))
+        for candidate in candidates
+    ], chunk_size=4)
+    preview_dir = workers.job_dir(job_id) / "single_slide_previews"
+    previews = []
+    for candidate in candidates:
+        approach_id = str(candidate["approach_id"])
+        matches = [
+            path for suffix in (".png", ".jpg", ".jpeg", ".webp")
+            if (path := preview_dir / f"{approach_id}{suffix}").is_file()
+        ]
+        if len(matches) != 1:
+            raise RuntimeError(f"preview worker produced no image for {approach_id}")
+        path = matches[0]
+        previews.append({
+            "approach_id": approach_id,
+            "label": str(candidate.get("label") or approach_id),
+            "image_path": str(path),
+        })
+    return {"approach_previews": previews}
+
+
 def _select_approach(values: Mapping[str, Any]) -> Mapping[str, Any]:
     approach_id = str(values["selected_approach_id"])
     selected = next(
@@ -138,10 +165,16 @@ def _select_approach(values: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _prepare_paid(values: Mapping[str, Any]) -> Mapping[str, Any]:
-    requested = int(values["explicit_slide_count"])
-    content_count = prompts.paid_slide_count(explicit_slide_count=requested)
-    total_count = prompts.deck_builder_slide_count(explicit_slide_count=requested)
-    db.update_job(str(values["job_id"]), explicit_slide_count=requested)
+    total_requested = int(values["slide_count"])
+    content_requested = total_requested - 2
+    content_count = prompts.paid_slide_count(explicit_slide_count=content_requested)
+    total_count = prompts.deck_builder_slide_count(explicit_slide_count=content_requested)
+    if total_count != total_requested:
+        raise ValueError(
+            f"slide_count must include opening and close; requested {total_requested}, "
+            f"compiled {total_count}"
+        )
+    db.update_job(str(values["job_id"]), explicit_slide_count=content_count)
     return {
         "content_slide_count": content_count,
         "total_slide_count": total_count,
@@ -366,6 +399,8 @@ PITCH_GRAPH = Graph([
             "supporting_image_paths": P("list", required=False),
             "pitch_aspect_modes": P("dict", required=False),
             "excepted_inference_elements": P("list", required=False),
+            "selected_approach_id": P("str", required=False, description="Future approach choice; may be supplied before previews"),
+            "slide_count": P("int", required=False, description="Total finished slides including opening and close"),
         },
         outputs={
             "job_id": P("str"), "user_inputs": P("dict"),
@@ -382,9 +417,17 @@ PITCH_GRAPH = Graph([
         description="Draft four selectable rhetorical approaches.",
     ),
     Node(
-        id="select_approach", depends=("approach_draft",),
+        id="approach_previews", depends=("approach_draft",),
+        inputs={"job_id": P("str"), "approach_candidates": P("list")},
+        outputs={"approach_previews": P("list")},
+        run=_render_approach_previews,
+        description="Render one visual calibration slide for each approach.",
+    ),
+    Node(
+        id="select_approach", depends=("approach_previews",),
         inputs={
             "job_id": P("str"), "approach_candidates": P("list"),
+            "approach_previews": P("list"),
             "selected_approach_id": P("str", description="Approach ID chosen for downstream work"),
         },
         outputs={"selected_template": P("dict")},
@@ -397,7 +440,7 @@ PITCH_GRAPH = Graph([
         id="prepare_paid", depends=("select_approach",),
         inputs={
             "job_id": P("str"),
-            "explicit_slide_count": P("int", description="Requested content-slide count"),
+            "slide_count": P("int", description="Total finished slides including opening and close"),
         },
         outputs={"content_slide_count": P("int"), "total_slide_count": P("int")},
         run=_prepare_paid,

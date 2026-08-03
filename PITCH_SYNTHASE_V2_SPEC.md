@@ -289,6 +289,10 @@ Spirit Boarder to run uninterrupted. If it is not supplied, `plan` reports it
 under `preconfigurable_decisions`; the wizard adapter may continue to satisfy
 the same decision interactively through its existing human gate.
 
+`approach_previews` is a valid terminal node. A calibration run ending there
+performs approach drafting plus one preview render per approach, returns their
+paths, and cannot execute selection, paid generation, or any later node.
+
 Use `spirit_boarder` as the terminal node for storyboard-only work. Select
 `render_slides` only when image calls are wanted. The corresponding internal
 HTTP adapters are `GET /api/graph/steps`, `GET /api/graph/plan`, and

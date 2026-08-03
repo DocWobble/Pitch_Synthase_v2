@@ -91,7 +91,7 @@ class RiboTomeGraphTests(unittest.TestCase):
             "elevator_pitch": "A factual narrow-model pitch.",
             "association_words": ["plainspoken", "forensic", "spare"],
             "selected_approach_id": "approach_1",
-            "explicit_slide_count": 4,
+            "slide_count": 6,
         }
         selected_approach = {
                 "approach_id": "approach_1",
@@ -150,12 +150,19 @@ class RiboTomeGraphTests(unittest.TestCase):
         async def fake_drafter(job_id):
             db.update_job(job_id, status="approaches_ready", approach_candidates_json=[selected_approach])
 
+        async def fake_preview(job_id, approach_id):
+            from workers import job_dir
+            path = job_dir(job_id) / "single_slide_previews" / f"{approach_id}.png"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"fake png")
+
         pipeline = pitch_graph()
         plan = pipeline.plan("prepare_pitch", "spirit_boarder")
         with (
             patch("workers._responses_create", side_effect=fake_response),
             patch("workers._visual_reference_paths", return_value=[]),
             patch("workers.approach_drafter_worker", side_effect=fake_drafter),
+            patch("workers.single_slide_preview_worker", side_effect=fake_preview),
         ):
             result = pipeline.run(plan, inputs)
         self.assertEqual(len(result.values["completed_storyboard"]), 6)

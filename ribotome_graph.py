@@ -292,6 +292,10 @@ class Graph:
                         f"{existing.type!r} and {port.type!r}"
                     )
                 target[name] = port
+                if port.required:
+                    optional.pop(name, None)
+                elif name in required:
+                    optional.pop(name, None)
 
         waves: list[tuple[str, ...]] = []
         remaining = list(ordered)
@@ -330,7 +334,10 @@ class Graph:
     async def run_async(
         self, plan: ExecutionPlan, inputs: Mapping[str, Any]
     ) -> RunResult:
-        unknown = set(inputs) - set(plan.required_inputs) - set(plan.optional_inputs)
+        graph_inputs = {
+            name for node in self.nodes.values() for name in node.inputs
+        }
+        unknown = set(inputs) - graph_inputs
         if unknown:
             raise NodeExecutionError(f"undeclared external inputs: {sorted(unknown)}")
         values = dict(inputs)
