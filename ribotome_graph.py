@@ -198,13 +198,21 @@ class Graph:
 
         for node in self.nodes.values():
             ancestors = self.ancestors(node.id) if not errors else set(node.depends)
-            for name in node.inputs:
+            for name, input_port in node.inputs.items():
                 producer = producers.get(name)
                 if producer and producer not in ancestors:
                     errors.append(
                         f"node {node.id!r} consumes {name!r} from non-upstream "
                         f"producer {producer!r}"
                     )
+                if producer:
+                    output_port = self.nodes[producer].outputs[name]
+                    if input_port.type != "any" and output_port.type != "any" and input_port.type != output_port.type:
+                        errors.append(
+                            f"port {name!r} type mismatch: producer {producer!r} "
+                            f"emits {output_port.type!r}, consumer {node.id!r} expects "
+                            f"{input_port.type!r}"
+                        )
         consumed = {
             name for node in self.nodes.values() for name in node.inputs
         }

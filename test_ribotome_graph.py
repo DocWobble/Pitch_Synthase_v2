@@ -60,6 +60,14 @@ class RiboTomeGraphTests(unittest.TestCase):
                      depends=("a",), run=lambda v: {"done": v["used"]}),
             ])
 
+    def test_validation_rejects_incompatible_stage_binding(self):
+        with self.assertRaisesRegex(GraphValidationError, "type mismatch"):
+            Graph([
+                Node("a", outputs={"value": Port("str")}, run=lambda v: {"value": "x"}),
+                Node("b", inputs={"value": Port("int")}, outputs={"done": Port("str")},
+                     depends=("a",), run=lambda v: {"done": str(v["value"])}),
+            ])
+
     def test_execution_rejects_dropped_and_undeclared_outputs(self):
         graph = Graph([
             Node("a", {"source": Port("str")}, {"x": Port("str")}, run=lambda v: {"wrong": v["source"]}),

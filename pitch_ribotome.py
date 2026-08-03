@@ -559,3 +559,9 @@ PITCH_GRAPH = Graph([
 
 def graph() -> Graph:
     return PITCH_GRAPH
+
+
+def runtime():
+    """Return the durable control-plane runtime for this checkout."""
+    from ribotome_runtime import RiboTomeRuntime
+    return RiboTomeRuntime(PITCH_GRAPH, _HERE / "local_state" / "ribotome")

@@ -48,8 +48,9 @@ sys.path.insert(0, str(_HERE))
 import db as _db
 import workers as _workers
 import prompts as _prompts
-from pitch_ribotome import PITCH_GRAPH as _RIBOTOME_GRAPH
+from pitch_ribotome import PITCH_GRAPH as _RIBOTOME_GRAPH, runtime as _ribotome_runtime
 from ribotome_graph import GraphError as _RibotomeGraphError
+from ribotome_runtime import RuntimeError as _RibotomeRuntimeError, RunNotFound as _RibotomeRunNotFound
 
 _db.init_db()
 
@@ -915,18 +916,75 @@ def graph_plan(start: str, end: str):
 
 @app.post("/api/graph/run")
 async def graph_run(request: Request):
-    """Execute the same bounded plan used by the CLI.
-
-    Body: {"from": "prepare_run", "to": "spirit_boarder", "inputs": {...}}
-    The call is deliberately synchronous so the response is the bounded range's
-    actual terminal outputs, not merely a background-thread acknowledgement.
-    """
+    """Create a durable run and advance it to completion or suspension."""
     body = await request.json()
     try:
-        plan = _RIBOTOME_GRAPH.plan(str(body.get("from") or ""), str(body.get("to") or ""))
-        result = await _RIBOTOME_GRAPH.run_async(plan, body.get("inputs") or {})
-        return result.serializable()
-    except (_RibotomeGraphError, ValueError) as exc:
+        engine = _ribotome_runtime()
+        run = engine.create(str(body.get("from") or ""), str(body.get("to") or ""), body.get("inputs") or {})
+        return await engine.advance_async(run["id"])
+    except (_RibotomeGraphError, _RibotomeRuntimeError, ValueError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.post("/api/graph/runs")
+async def graph_create_run(request: Request):
+    body = await request.json()
+    try:
+        engine = _ribotome_runtime()
+        run = engine.create(str(body.get("from") or ""), str(body.get("to") or ""), body.get("inputs") or {})
+        return run if body.get("execute") is False else await engine.advance_async(run["id"])
+    except (_RibotomeGraphError, _RibotomeRuntimeError, ValueError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.get("/api/graph/runs")
+def graph_list_runs():
+    return _ribotome_runtime().list()
+
+
+@app.get("/api/graph/runs/{run_id}")
+def graph_get_run(run_id: str):
+    try:
+        return _ribotome_runtime().get(run_id)
+    except _RibotomeRunNotFound as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+
+
+@app.post("/api/graph/runs/{run_id}/resume")
+async def graph_resume_run(run_id: str, request: Request):
+    try:
+        body = await request.json()
+        return await _ribotome_runtime().advance_async(run_id, body.get("inputs") or {})
+    except _RibotomeRunNotFound as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+    except (_RibotomeGraphError, _RibotomeRuntimeError, ValueError) as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
+@app.get("/api/graph/runs/{run_id}/events")
+def graph_run_events(run_id: str):
+    try:
+        return _ribotome_runtime().events(run_id)
+    except _RibotomeRunNotFound as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+
+
+@app.get("/api/graph/runs/{run_id}/artifacts")
+def graph_run_artifacts(run_id: str):
+    try:
+        return _ribotome_runtime().artifacts(run_id)
+    except _RibotomeRunNotFound as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+
+
+@app.post("/api/graph/runs/{run_id}/complete")
+async def graph_complete_human(run_id: str, request: Request):
+    try:
+        body = await request.json()
+        return _ribotome_runtime().complete_human(run_id, body.get("outputs") or {})
+    except _RibotomeRunNotFound as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+    except (_RibotomeGraphError, _RibotomeRuntimeError, ValueError) as exc:
         return JSONResponse({"error": str(exc)}, status_code=400)
 
 
@@ -2010,7 +2068,7 @@ def ui():
 
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] in {"validate", "steps", "plan", "run", "resume"}:
+    if len(sys.argv) > 1 and sys.argv[1] in {"validate", "steps", "plan", "start", "run", "resume", "status", "runs", "events", "artifacts", "complete", "cancel"}:
         from ribotome_cli import main as cli_main
         raise SystemExit(cli_main(sys.argv[1:]))
     import signal
